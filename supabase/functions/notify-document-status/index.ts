@@ -68,35 +68,65 @@ serve(async (req) => {
     const recipientName = profile?.full_name ?? 'Resident'
     const message = statusMessages[record.status] ?? `Your request status has been updated to: ${statusLabel}`
 
-    // Send email via Supabase built-in SMTP (uses the project's auth email settings)
-    // We use the admin API to send a custom email
-    const { error: emailError } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'email',
-      email: userData.user.email,
-      // Note: This is a workaround - for production use Resend or SendGrid
-    })
+    // Send email via Resend API if RESEND_API_KEY is configured
+    const resendApiKey = Deno.env.get('RESEND_API_KEY')
 
-    // Since Supabase admin generateLink doesn't send custom emails,
-    // we'll use a direct fetch to the Supabase SMTP endpoint via pg_net
-    // Instead, log the notification intent and return success
-    // The actual email sending requires Resend/SMTP integration
-    console.log(`Email notification for ${userData.user.email}:`, {
-      subject: `BrgyConnect: ${docLabel} Request Update`,
-      body: `Hi ${recipientName},\n\n${message}\n\nDocument Type: ${docLabel}\nNew Status: ${statusLabel}\n\nBarangay Daine, Indang, Cavite`,
-    })
+    if (resendApiKey) {
+      console.log(`Sending email via Resend to ${userData.user.email}...`)
+      const resendRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'Barangay Daine <onboarding@resend.dev>',
+          to: [userData.user.email],
+          subject: `BrgyConnect: ${docLabel} Request Update`,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; padding: 28px; background-color: #ffffff;">
+              <div style="text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 16px; margin-bottom: 20px;">
+                <h1 style="color: #0038A8; font-size: 22px; margin: 0;">Barangay Daine, Indang, Cavite</h1>
+                <p style="color: #64748b; font-size: 13px; margin-top: 4px;">Digital Barangay Services & Community Hub</p>
+              </div>
+              <p style="font-size: 15px; color: #1e293b; line-height: 1.6;">Hi <strong>${recipientName}</strong>,</p>
+              <p style="font-size: 15px; color: #1e293b; line-height: 1.6;">${message}</p>
+              
+              <div style="background-color: #f8fafc; border-left: 4px solid #0038A8; padding: 14px 18px; border-radius: 6px; margin: 20px 0;">
+                <p style="margin: 0 0 6px 0; font-size: 13px; color: #64748b;">REQUEST DETAILS</p>
+                <p style="margin: 0 0 4px 0; font-size: 15px; color: #0f172a;"><strong>Document:</strong> ${docLabel}</p>
+                <p style="margin: 0; font-size: 15px; color: #0f172a;"><strong>Current Status:</strong> <span style="color: #0038A8; font-weight: 600;">${statusLabel}</span></p>
+              </div>
 
-    // TODO: Integrate with Resend for actual email delivery
-    // const resend = new Resend(Deno.env.get('RESEND_API_KEY'))
-    // await resend.emails.send({ from: 'noreply@brgyconnect.ph', to: userData.user.email, ... })
+              <p style="font-size: 13px; color: #94a3b8; text-align: center; margin-top: 28px; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                This is an automated advisory from BrgyConnect. Please do not reply directly to this email.
+              </p>
+            </div>
+          `,
+        }),
+      })
+
+      if (!resendRes.ok) {
+        const errText = await resendRes.text()
+        console.error('Resend API error:', errText)
+      } else {
+        console.log(`Email successfully sent to ${userData.user.email} via Resend.`)
+      }
+    } else {
+      console.log(`[Simulation Mode] Notification for ${userData.user.email}:`, {
+        subject: `BrgyConnect: ${docLabel} Request Update`,
+        body: message,
+      })
+    }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Notification logged for ${userData.user.email}`,
+        message: `Notification processed for ${userData.user.email}`,
         details: { status: record.status, document_type: record.document_type }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    )`
   } catch (error) {
     console.error('Edge function error:', error)
     return new Response(JSON.stringify({ error: error.message }), {
