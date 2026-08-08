@@ -98,6 +98,8 @@ function NavBar() {
     { to: '/announcements', label: 'Announcements' },
     { to: '/events', label: 'Events' },
     { to: '/documents', label: 'Documents' },
+    { to: '/officials', label: 'Officials' },
+    { to: '/map', label: 'GIS Map' },
     { to: '/emergency', label: 'Emergency' },
   ] as const
   async function handleSignOut() {

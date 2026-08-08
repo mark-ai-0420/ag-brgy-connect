@@ -28,6 +28,8 @@ import { Route as DirectoryIndexRouteImport } from './routes/directory/index'
 import { Route as DirectoryBusinessIdRouteImport } from './routes/directory/$businessId'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as EventsEventIdRouteImport } from './routes/events/$eventId'
+import { Route as MapIndexRouteImport } from './routes/map/index'
+import { Route as OfficialsIndexRouteImport } from './routes/officials/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminAnnouncementsRouteImport } from './routes/_authenticated/admin/announcements'
 import { Route as AuthenticatedAdminBusinessesRouteImport } from './routes/_authenticated/admin/businesses'
@@ -138,6 +140,16 @@ const EventsEventIdRoute = EventsEventIdRouteImport.update({
   path: '/events/$eventId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MapIndexRoute = MapIndexRouteImport.update({
+  id: '/map/',
+  path: '/map/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OfficialsIndexRoute = OfficialsIndexRouteImport.update({
+  id: '/officials/',
+  path: '/officials/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -234,6 +246,8 @@ export interface FileRoutesByFullPath {
   '/announcements/': typeof AnnouncementsIndexRoute
   '/directory/': typeof DirectoryIndexRoute
   '/events/': typeof EventsIndexRoute
+  '/map/': typeof MapIndexRoute
+  '/officials/': typeof OfficialsIndexRoute
   '/admin/announcements': typeof AuthenticatedAdminAnnouncementsRoute
   '/admin/businesses': typeof AuthenticatedAdminBusinessesRoute
   '/admin/complaints': typeof AuthenticatedAdminComplaintsRoute
@@ -266,6 +280,8 @@ export interface FileRoutesByTo {
   '/announcements': typeof AnnouncementsIndexRoute
   '/directory': typeof DirectoryIndexRoute
   '/events': typeof EventsIndexRoute
+  '/map': typeof MapIndexRoute
+  '/officials': typeof OfficialsIndexRoute
   '/admin/announcements': typeof AuthenticatedAdminAnnouncementsRoute
   '/admin/businesses': typeof AuthenticatedAdminBusinessesRoute
   '/admin/complaints': typeof AuthenticatedAdminComplaintsRoute
@@ -301,6 +317,8 @@ export interface FileRoutesById {
   '/announcements/': typeof AnnouncementsIndexRoute
   '/directory/': typeof DirectoryIndexRoute
   '/events/': typeof EventsIndexRoute
+  '/map/': typeof MapIndexRoute
+  '/officials/': typeof OfficialsIndexRoute
   '/_authenticated/admin/announcements': typeof AuthenticatedAdminAnnouncementsRoute
   '/_authenticated/admin/businesses': typeof AuthenticatedAdminBusinessesRoute
   '/_authenticated/admin/complaints': typeof AuthenticatedAdminComplaintsRoute
@@ -336,6 +354,8 @@ export interface FileRouteTypes {
     | '/announcements/'
     | '/directory/'
     | '/events/'
+    | '/map/'
+    | '/officials/'
     | '/admin/announcements'
     | '/admin/businesses'
     | '/admin/complaints'
@@ -368,6 +388,8 @@ export interface FileRouteTypes {
     | '/announcements'
     | '/directory'
     | '/events'
+    | '/map'
+    | '/officials'
     | '/admin/announcements'
     | '/admin/businesses'
     | '/admin/complaints'
@@ -402,6 +424,8 @@ export interface FileRouteTypes {
     | '/announcements/'
     | '/directory/'
     | '/events/'
+    | '/map/'
+    | '/officials/'
     | '/_authenticated/admin/announcements'
     | '/_authenticated/admin/businesses'
     | '/_authenticated/admin/complaints'
@@ -434,6 +458,8 @@ export interface RootRouteChildren {
   AnnouncementsIndexRoute: typeof AnnouncementsIndexRoute
   DirectoryIndexRoute: typeof DirectoryIndexRoute
   EventsIndexRoute: typeof EventsIndexRoute
+  MapIndexRoute: typeof MapIndexRoute
+  OfficialsIndexRoute: typeof OfficialsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -569,6 +595,20 @@ declare module '@tanstack/react-router' {
       path: '/events/$eventId'
       fullPath: '/events/$eventId'
       preLoaderRoute: typeof EventsEventIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/map/': {
+      id: '/map/'
+      path: '/map'
+      fullPath: '/map/'
+      preLoaderRoute: typeof MapIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/officials/': {
+      id: '/officials/'
+      path: '/officials'
+      fullPath: '/officials/'
+      preLoaderRoute: typeof OfficialsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/': {
@@ -734,6 +774,8 @@ const rootRouteChildren: RootRouteChildren = {
   AnnouncementsIndexRoute: AnnouncementsIndexRoute,
   DirectoryIndexRoute: DirectoryIndexRoute,
   EventsIndexRoute: EventsIndexRoute,
+  MapIndexRoute: MapIndexRoute,
+  OfficialsIndexRoute: OfficialsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

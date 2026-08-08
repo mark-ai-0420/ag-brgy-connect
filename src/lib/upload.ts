@@ -49,3 +49,29 @@ export async function uploadComplaintPhoto(file: File, complaintId: string): Pro
   
   return publicUrl
 }
+
+export async function uploadOfficialPhoto(file: File, officialId?: string): Promise<string | null> {
+  const supabase = createBrowserClient(
+    import.meta.env.VITE_SUPABASE_URL,
+    import.meta.env.VITE_SUPABASE_ANON_KEY
+  )
+  
+  const ext = file.name.split('.').pop()
+  const fileName = `${officialId || 'official'}-${Date.now()}.${ext}`
+  
+  const { error } = await supabase.storage
+    .from('official-photos')
+    .upload(fileName, file, { cacheControl: '3600', upsert: true })
+  
+  if (error) {
+    console.error('Upload error:', error)
+    return null
+  }
+  
+  const { data: { publicUrl } } = supabase.storage
+    .from('official-photos')
+    .getPublicUrl(fileName)
+  
+  return publicUrl
+}
+

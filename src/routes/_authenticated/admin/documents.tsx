@@ -10,8 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '#/components/ui/badge'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
-import { FileText, Filter } from 'lucide-react'
+import { FileText, Filter, Printer } from 'lucide-react'
 import { useState } from 'react'
+import { CertificatePrintModal } from '#/components/documents/CertificatePrintModal'
 
 const STATUSES = ['pending', 'in_review', 'ready', 'completed', 'rejected']
 
@@ -168,6 +169,8 @@ function AdminDocumentsRoute() {
   const requests = Route.useLoaderData()
   const router = useRouter()
   const [filterStatus, setFilterStatus] = useState<string>('all')
+  const [printModalOpen, setPrintModalOpen] = useState(false)
+  const [selectedPrintRequest, setSelectedPrintRequest] = useState<Request | null>(null)
 
   const filtered = filterStatus === 'all'
     ? requests
@@ -264,7 +267,23 @@ function AdminDocumentsRoute() {
                       {req.notes ?? <span className="italic">—</span>}
                     </TableCell>
                     <TableCell className="text-right">
-                      <UpdateStatusDialog request={req} onSuccess={() => router.invalidate()} />
+                      <div className="flex items-center justify-end gap-2">
+                        {(req.status === 'ready' || req.status === 'completed') && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="min-h-[40px] px-3 font-medium text-amber-900 border-amber-300 hover:bg-amber-50"
+                            onClick={() => {
+                              setSelectedPrintRequest(req)
+                              setPrintModalOpen(true)
+                            }}
+                          >
+                            <Printer className="h-4 w-4 mr-1.5" />
+                            Print
+                          </Button>
+                        )}
+                        <UpdateStatusDialog request={req} onSuccess={() => router.invalidate()} />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -273,6 +292,12 @@ function AdminDocumentsRoute() {
           </div>
         </CardContent>
       </Card>
+
+      <CertificatePrintModal
+        open={printModalOpen}
+        onOpenChange={setPrintModalOpen}
+        request={selectedPrintRequest}
+      />
     </div>
   )
 }

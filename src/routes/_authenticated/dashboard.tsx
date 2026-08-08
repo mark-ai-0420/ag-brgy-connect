@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#/components/ui/card'
+import { useState } from 'react'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '#/components/ui/card'
 import { Button } from '#/components/ui/button'
-import { PlusCircle, FileText, Store, Clock, CheckCircle, XCircle, AlertCircle, Info, ShieldAlert, Search, Gavel, Ban, EyeOff } from 'lucide-react'
+import { PlusCircle, FileText, Store, Clock, CheckCircle, XCircle, AlertCircle, Info, ShieldAlert, Search, Gavel, Ban, EyeOff, Printer } from 'lucide-react'
 import { format } from 'date-fns'
+import { CertificatePrintModal } from '#/components/documents/CertificatePrintModal'
 
 const DOC_TYPE_LABELS: Record<string, string> = {
   barangay_clearance: 'Barangay Clearance',
@@ -19,12 +21,15 @@ const getMyDocumentRequests = createServerFn({ method: 'GET' })
   .validator((userId: string) => userId)
   .handler(async ({ data: userId }) => {
   const supabase = createSupabaseServerClient()
-  const { data } = await supabase
-    .from('document_requests')
-    .select('*')
-    .eq('requester_id', userId)
-    .order('created_at', { ascending: false })
-  return data ?? []
+  const [{ data: reqs }, { data: profile }] = await Promise.all([
+    supabase.from('document_requests').select('*').eq('requester_id', userId).order('created_at', { ascending: false }),
+    supabase.from('profiles').select('full_name').eq('id', userId).maybeSingle(),
+  ])
+  const residentName = profile?.full_name || 'Resident'
+  return (reqs ?? []).map(r => ({
+    ...r,
+    resident_name: residentName,
+  }))
 })
 
 const getMyBusinesses = createServerFn({ method: 'GET' })
@@ -133,6 +138,8 @@ function ComplaintStatusBadge({ status }: { status: string }) {
 
 function DashboardRoute() {
   const { documents, businesses, complaints } = Route.useLoaderData();
+  const [printModalOpen, setPrintModalOpen] = useState(false);
+  const [selectedDoc, setSelectedDoc] = useState<any>(null);
 
   return (
     <div className="container mx-auto py-10 px-4 md:px-6 space-y-8 max-w-6xl">
@@ -192,6 +199,21 @@ function DashboardRoute() {
                         <span><span className="font-semibold">Barangay Staff:</span> {doc.notes}</span>
                       </div>
                     </CardContent>
+                  )}
+                  {(doc.status === 'ready' || doc.status === 'completed') && (
+                    <CardFooter className="pt-0 pb-4 px-5 flex justify-end">
+                      <Button
+                        size="sm"
+                        className="min-h-[40px] px-4 font-semibold gap-2 bg-amber-700 hover:bg-amber-800 text-white"
+                        onClick={() => {
+                          setSelectedDoc(doc)
+                          setPrintModalOpen(true)
+                        }}
+                      >
+                        <Printer className="h-4 w-4" />
+                        Download / Print Official Document
+                      </Button>
+                    </CardFooter>
                   )}
                 </Card>
               ))
@@ -307,6 +329,12 @@ function DashboardRoute() {
           )}
         </div>
       </section>
+
+      <CertificatePrintModal
+        open={printModalOpen}
+        onOpenChange={setPrintModalOpen}
+        request={selectedDoc}
+      />
     </div>
   )
 }
