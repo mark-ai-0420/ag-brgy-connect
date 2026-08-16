@@ -2,6 +2,16 @@ import { createServerFn } from '@tanstack/react-start';
 import { createSupabaseServerClient } from '#/lib/supabase.server';
 import { getAuthSession } from '#/server/auth';
 
+function hashPostId(text: string): string {
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) {
+    const char = text.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return `fb_${Math.abs(hash).toString(36)}`;
+}
+
 // 1. fetchLGUIndangPosts via Headless Chrome / Puppeteer
 export async function fetchLGUIndangPosts() {
   console.log('Fetching live posts from https://www.facebook.com/LGUIndangCavite/ ...');
@@ -31,7 +41,7 @@ export async function fetchLGUIndangPosts() {
     if (extractedPosts.length > 0) {
       console.log(`Scraped ${extractedPosts.length} live post blocks from @LGUIndangCavite.`);
       return extractedPosts.map((text, idx) => ({
-        fb_post_id: `fb_live_${Date.now()}_${idx}`,
+        fb_post_id: hashPostId(text),
         post_text: text,
         post_url: 'https://www.facebook.com/LGUIndangCavite/'
       }));
@@ -146,15 +156,24 @@ export const syncLGUIndangAnnouncements = createServerFn({ method: 'POST' })
       let syncedCount = 0;
       let newSuspensions = 0;
       
-      for (const post of posts) {
-        // Check if already ingested
+      const postIds = posts.map(p => p.fb_post_id);
+      const existingIds = new Set<string>();
+      
+      if (postIds.length > 0) {
         const { data: existing } = await supabase
           .from('ingested_fb_posts')
-          .select('id')
-          .eq('fb_post_id', post.fb_post_id)
-          .maybeSingle();
+          .select('fb_post_id')
+          .in('fb_post_id', postIds);
           
-        if (existing) continue;
+        if (existing) {
+          existing.forEach(e => existingIds.add(e.fb_post_id));
+        }
+      }
+      
+      const postsToInsert = [];
+
+      for (const post of posts) {
+        if (existingIds.has(post.fb_post_id)) continue;
         
         const classification = await classifyPostWithGemini(post.post_text);
         let announcementId = null;
@@ -178,8 +197,7 @@ export const syncLGUIndangAnnouncements = createServerFn({ method: 'POST' })
           }
         }
         
-        // Log into ingested_fb_posts
-        await supabase.from('ingested_fb_posts').insert({
+        postsToInsert.push({
           fb_post_id: post.fb_post_id,
           post_url: post.post_url,
           post_text: post.post_text,
@@ -190,6 +208,10 @@ export const syncLGUIndangAnnouncements = createServerFn({ method: 'POST' })
         });
         
         syncedCount++;
+      }
+      
+      if (postsToInsert.length > 0) {
+        await supabase.from('ingested_fb_posts').insert(postsToInsert);
       }
       
       // Update last_synced_at

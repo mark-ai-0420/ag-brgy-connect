@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
@@ -17,9 +17,14 @@ import { Input } from '#/components/ui/input'
 import { toast } from 'sonner'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 
+const signInFnSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1)
+})
+
 // Server function — signs in and sets the session cookie server-side
 const signInFn = createServerFn({ method: 'POST' })
-  .validator((data: { email: string; password: string }) => data)
+  .validator(signInFnSchema)
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
     const { data: authData, error } = await supabase.auth.signInWithPassword({
@@ -53,6 +58,7 @@ const signInSchema = z.object({
 type SignInFormValues = z.infer<typeof signInSchema>
 
 function SignIn() {
+  const router = useRouter()
   const [isHydrated, setIsHydrated] = useState(false)
   useEffect(() => {
     setIsHydrated(true)
@@ -68,9 +74,13 @@ function SignIn() {
       const res = await signInFn({ data })
       toast.success('Signed in successfully!')
       // Full page reload to the target route so SSR re-evaluates session cookies
-      window.location.href = res.redirectUrl
-    } catch (error: any) {
-      toast.error(error.message ?? 'Invalid email or password')
+      if (res.redirectUrl === '/admin/businesses') {
+        router.navigate({ to: '/admin/businesses' })
+      } else {
+        router.navigate({ to: '/dashboard' })
+      }
+    } catch (error: Error | unknown) {
+      toast.error(error instanceof Error ? error.message : 'Invalid email or password')
     }
   }
 

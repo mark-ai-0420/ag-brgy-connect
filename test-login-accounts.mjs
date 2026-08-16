@@ -49,8 +49,9 @@ async function testLogin(email, password, roleLabel) {
 }
 
 async function run() {
-  await testLogin('markhersonhuelgas@gmail.com', 'brgyconnectadmin', 'Admin');
-  await testLogin('markai0420@gmail.com', 'resident', 'Resident');
+  // Credentials should be set in .env.local
+  await testLogin(process.env.TEST_ADMIN_EMAIL, process.env.TEST_ADMIN_PASSWORD, 'Admin');
+  await testLogin(process.env.TEST_RESIDENT_EMAIL, process.env.TEST_RESIDENT_PASSWORD, 'Resident');
 }
 
 run();

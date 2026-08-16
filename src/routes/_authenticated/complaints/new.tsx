@@ -42,7 +42,7 @@ const formSchema = z.object({
 })
 
 const createComplaint = createServerFn({ method: 'POST' })
-  .validator((d: z.infer<typeof formSchema>) => d)
+  .validator((d: z.infer<typeof formSchema>) => formSchema.parse(d))
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
     const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -61,7 +61,7 @@ const createComplaint = createServerFn({ method: 'POST' })
         location: data.location || null,
         incident_date: data.incident_date || null,
         is_anonymous: data.is_anonymous,
-        status: 'Pending'
+        status: 'pending'
       })
       .select('id')
       .single()
@@ -75,7 +75,7 @@ const createComplaint = createServerFn({ method: 'POST' })
   })
 
 const updateComplaintPhoto = createServerFn({ method: 'POST' })
-  .validator((d: { id: string; photo_url: string }) => d)
+  .validator((d: { id: string; photo_url: string }) => z.object({ id: z.string(), photo_url: z.string() }).parse(d))
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
     const { error } = await supabase

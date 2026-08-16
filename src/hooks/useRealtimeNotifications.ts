@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
+import { supabase } from '#/lib/supabase'
 import { toast } from 'sonner'
 
 const DOC_TYPE_LABELS: Record<string, string> = {
@@ -24,10 +24,7 @@ export function useRealtimeNotifications(userId: string | null) {
   useEffect(() => {
     if (!userId) return
 
-    const supabase = createBrowserClient(
-      import.meta.env.VITE_SUPABASE_URL,
-      import.meta.env.VITE_SUPABASE_ANON_KEY
-    )
+    
 
     const channel = supabase
       .channel('doc-request-updates')

@@ -13,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '#/components/ui/input'
 import { Textarea } from '#/components/ui/textarea'
 import { Badge } from '#/components/ui/badge'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select'
 import { Pin, PinOff, Pencil, Trash2, Plus, RefreshCw, Facebook, CheckCircle2, AlertTriangle, ShieldCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
@@ -22,20 +23,21 @@ const announcementSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
   body: z.string().min(10, 'Body must be at least 10 characters'),
   pinned: z.boolean().default(false),
+  category: z.enum(['General', 'Health', 'Infrastructure', 'Emergency', 'Advisory', 'Programs']).default('General'),
 })
 
 const getAnnouncements = createServerFn({ method: 'GET' }).handler(async () => {
   const supabase = createSupabaseServerClient()
   const { data } = await supabase
     .from('announcements')
-    .select('*')
+    .select('id, title, body, pinned, author_id, created_at, category')
     .order('pinned', { ascending: false })
     .order('created_at', { ascending: false })
   return data ?? []
 })
 
 const upsertAnnouncement = createServerFn({ method: 'POST' })
-  .validator((data: { id?: string } & z.infer<typeof announcementSchema>) => data)
+  .validator((data: unknown) => z.object({ id: z.string().optional() }).merge(announcementSchema).parse(data))
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
     const { session } = await getAuthSession()
@@ -43,19 +45,19 @@ const upsertAnnouncement = createServerFn({ method: 'POST' })
 
     if (data.id) {
       const { error } = await supabase.from('announcements')
-        .update({ title: data.title, body: data.body, pinned: data.pinned, updated_at: new Date().toISOString() })
+        .update({ title: data.title, body: data.body, pinned: data.pinned, category: data.category, updated_at: new Date().toISOString() })
         .eq('id', data.id)
       if (error) throw new Error(error.message)
     } else {
       const { error } = await supabase.from('announcements')
-        .insert({ title: data.title, body: data.body, pinned: data.pinned, author_id: session.user.id })
+        .insert({ title: data.title, body: data.body, pinned: data.pinned, category: data.category, author_id: session.user.id })
       if (error) throw new Error(error.message)
     }
     return { success: true }
   })
 
 const deleteAnnouncement = createServerFn({ method: 'POST' })
-  .validator((id: string) => id)
+  .validator((id: unknown) => z.string().min(1).parse(id))
   .handler(async ({ data: id }) => {
     const supabase = createSupabaseServerClient()
     const { error } = await supabase.from('announcements').delete().eq('id', id)
@@ -64,7 +66,7 @@ const deleteAnnouncement = createServerFn({ method: 'POST' })
   })
 
 const togglePin = createServerFn({ method: 'POST' })
-  .validator((data: { id: string; pinned: boolean }) => data)
+  .validator((data: unknown) => z.object({ id: z.string().min(1), pinned: z.boolean() }).parse(data))
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
     const { error } = await supabase.from('announcements')
@@ -100,6 +102,7 @@ function AnnouncementForm({
       title: defaultValues?.title ?? '',
       body: defaultValues?.body ?? '',
       pinned: defaultValues?.pinned ?? false,
+      category: (defaultValues?.category as any) ?? 'General',
     },
   })
 
@@ -120,6 +123,24 @@ function AnnouncementForm({
           <FormItem>
             <FormLabel>Title</FormLabel>
             <FormControl><Input placeholder="Announcement title..." {...field} /></FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+        <FormField control={form.control} name="category" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Category</FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {['General', 'Health', 'Infrastructure', 'Emergency', 'Advisory', 'Programs'].map(cat => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <FormMessage />
           </FormItem>
         )} />
@@ -156,6 +177,7 @@ function AdminAnnouncementsRoute() {
   const [editItem, setEditItem] = useState<Announcement | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   async function handleSyncNow() {
     try {
@@ -186,12 +208,12 @@ function AdminAnnouncementsRoute() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Delete this announcement?')) return
     try {
       await deleteAnnouncement({ data: id })
       toast.success('Deleted')
       router.invalidate()
     } catch { toast.error('Failed to delete') }
+    setDeleteId(null)
   }
 
   async function handlePin(id: string, pinned: boolean) {
@@ -248,7 +270,7 @@ function AdminAnnouncementsRoute() {
                 size="sm"
                 onClick={handleSyncNow}
                 disabled={isSyncing}
-                className="min-h-[40px] px-3 font-semibold bg-white shadow-sm border-blue-200"
+                className="min-h-[40px] px-3 font-semibold bg-card shadow-sm border-blue-200"
               >
                 <RefreshCw className={`h-3.5 w-3.5 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
                 {isSyncing ? 'Checking...' : 'Check FB Now'}
@@ -261,7 +283,7 @@ function AdminAnnouncementsRoute() {
                   onChange={(e) => handleToggleSync(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[12px] after:left-[10px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-background after:content-[''] after:absolute after:top-[12px] after:left-[10px] after:bg-background after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
             </div>
           </div>
@@ -287,6 +309,7 @@ function AdminAnnouncementsRoute() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     {ann.pinned && <Badge variant="secondary" className="text-xs">Pinned</Badge>}
+                    {ann.category && <Badge variant="outline" className="text-xs">{ann.category}</Badge>}
                     <span className="text-xs text-muted-foreground">{format(new Date(ann.created_at), 'MMM d, yyyy')}</span>
                   </div>
                   <CardTitle className="text-base truncate">{ann.title}</CardTitle>
@@ -306,7 +329,7 @@ function AdminAnnouncementsRoute() {
                     </DialogContent>
                   </Dialog>
                   <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px] text-destructive hover:text-destructive"
-                    onClick={() => handleDelete(ann.id)}>
+                    onClick={() => setDeleteId(ann.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -315,6 +338,21 @@ function AdminAnnouncementsRoute() {
           </Card>
         ))}
       </div>
+
+      <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 text-sm text-slate-600">
+            Are you sure you want to delete this announcement? This action cannot be undone.
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={() => deleteId && handleDelete(deleteId)}>Delete</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

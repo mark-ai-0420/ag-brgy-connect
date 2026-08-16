@@ -205,7 +205,7 @@ export default function Home() {
       </section>
 
       {/* ── Stats Bar ────────────────────────────────────────────────────── */}
-      <section className="bg-white border-b border-border shadow-sm" id="stats">
+      <section className="bg-background border-b border-border shadow-sm" id="stats">
         <div className="page-container">
           <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border">
             {stats.map((stat) => (
@@ -305,7 +305,7 @@ export default function Home() {
               <div key={i} className="relative flex flex-col items-center text-center md:items-center">
                 {/* Step number + icon */}
                 <div className="relative mb-6">
-                  <div className="w-16 h-16 rounded-2xl bg-white shadow-lg border border-border flex items-center justify-center text-[#0038A8] relative z-10">
+                  <div className="w-16 h-16 rounded-2xl bg-background shadow-lg border border-border flex items-center justify-center text-[#0038A8] relative z-10">
                     {step.icon}
                   </div>
                   <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#0038A8] text-white text-[10px] font-extrabold flex items-center justify-center shadow-md z-20">

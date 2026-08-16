@@ -17,7 +17,7 @@ import { createSupabaseServerClient } from '#/lib/supabase.server'
 const getEmergencyContacts = createServerFn({ method: 'GET' }).handler(async () => {
   try {
     const supabase = createSupabaseServerClient()
-    const { data, error } = await supabase.from('emergency_contacts').select('*').order('display_order', { ascending: true })
+    const { data, error } = await supabase.from('emergency_contacts').select('id, name, label, phone, display_order').order('display_order', { ascending: true })
     if (error) console.error('Error fetching emergency contacts:', error)
     return data ?? []
   } catch (error) {

@@ -1,16 +1,17 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Card, CardContent, CardFooter, CardHeader } from '#/components/ui/card'
 import { Button } from '#/components/ui/button'
-import { Bell, Pin, CalendarDays, ChevronRight } from 'lucide-react'
+import { Bell, Pin, CalendarDays, ChevronRight, Filter } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
+import { useState, useMemo } from 'react'
 
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 
-const getAnnouncements = createServerFn({ method: 'GET' }).handler(async () => {
+export const getAnnouncements = createServerFn({ method: 'GET' }).handler(async () => {
   try {
     const supabase = createSupabaseServerClient()
-    const { data, error } = await supabase.from('announcements').select('*').order('pinned', { ascending: false }).order('created_at', { ascending: false })
+    const { data, error } = await supabase.from('announcements').select('id, title, body, pinned, created_at, author_id, category').order('pinned', { ascending: false }).order('created_at', { ascending: false })
     if (error) console.error('Error fetching announcements:', error)
     return data ?? []
   } catch (error) {
@@ -28,11 +29,9 @@ const CATEGORY_COLORS: Record<string, string> = {
   General: 'bg-slate-100 text-slate-950 dark:bg-slate-800 dark:text-slate-100 border border-slate-300 font-semibold',
   Advisory: 'bg-amber-100 text-amber-950 dark:bg-amber-900/50 dark:text-amber-200 border border-amber-300 font-semibold',
   Emergency: 'bg-red-100 text-red-950 dark:bg-red-900/50 dark:text-red-200 border border-red-300 font-semibold',
-  Event: 'bg-purple-100 text-purple-950 dark:bg-purple-900/50 dark:text-purple-200 border border-purple-300 font-semibold',
+  Programs: 'bg-purple-100 text-purple-950 dark:bg-purple-900/50 dark:text-purple-200 border border-purple-300 font-semibold',
   Infrastructure: 'bg-orange-100 text-orange-950 dark:bg-orange-900/50 dark:text-orange-200 border border-orange-300 font-semibold',
   Health: 'bg-emerald-100 text-emerald-950 dark:bg-emerald-900/50 dark:text-emerald-200 border border-emerald-300 font-semibold',
-  Sanitation: 'bg-teal-100 text-teal-950 dark:bg-teal-900/50 dark:text-teal-200 border border-teal-300 font-semibold',
-  Administrative: 'bg-blue-100 text-blue-950 dark:bg-blue-900/50 dark:text-blue-200 border border-blue-300 font-semibold',
 }
 
 function AnnouncementCard({ item, highlighted = false }: { item: any; highlighted?: boolean }) {
@@ -50,9 +49,11 @@ function AnnouncementCard({ item, highlighted = false }: { item: any; highlighte
                   Pinned
                 </span>
               )}
-              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${CATEGORY_COLORS[item.category] ?? 'bg-muted text-muted-foreground'}`}>
-                {item.category}
-              </span>
+              {item.category && (
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${CATEGORY_COLORS[item.category] ?? 'bg-muted text-muted-foreground'}`}>
+                  {item.category}
+                </span>
+              )}
             </div>
             <h2 className="text-lg font-semibold leading-snug">{item.title}</h2>
           </div>
@@ -78,13 +79,22 @@ function AnnouncementCard({ item, highlighted = false }: { item: any; highlighte
 
 function AnnouncementsRoute() {
   const announcements = Route.useLoaderData()
-  const pinned = announcements.filter((a: any) => a.pinned)
-  const regular = announcements.filter((a: any) => !a.pinned)
+  const [selectedCategory, setSelectedCategory] = useState<string>('All')
+
+  const categories = ['All', 'General', 'Health', 'Infrastructure', 'Emergency', 'Advisory', 'Programs']
+
+  const filteredAnnouncements = useMemo(() => {
+    if (selectedCategory === 'All') return announcements
+    return announcements.filter((a: any) => a.category === selectedCategory)
+  }, [announcements, selectedCategory])
+
+  const pinned = filteredAnnouncements.filter((a: any) => a.pinned)
+  const regular = filteredAnnouncements.filter((a: any) => !a.pinned)
 
   return (
     <div className="container mx-auto py-10 px-4 md:px-6 max-w-5xl">
       {/* Page Header */}
-      <div className="flex items-center gap-3 mb-10">
+      <div className="flex items-center gap-3 mb-6">
         <div className="bg-primary/10 p-3 rounded-full">
           <Bell className="h-6 w-6 text-primary" />
         </div>
@@ -94,7 +104,22 @@ function AnnouncementsRoute() {
         </div>
       </div>
 
-      {announcements.length === 0 ? (
+      <div className="flex flex-wrap items-center gap-2 mb-8">
+        <Filter className="h-4 w-4 text-muted-foreground mr-1" />
+        {categories.map(cat => (
+          <Button
+            key={cat}
+            variant={selectedCategory === cat ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedCategory(cat)}
+            className="rounded-full min-h-[32px]"
+          >
+            {cat}
+          </Button>
+        ))}
+      </div>
+
+      {filteredAnnouncements.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
           <div className="bg-muted rounded-full p-6">
             <Bell className="h-10 w-10 text-muted-foreground" />

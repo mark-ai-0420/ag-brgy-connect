@@ -24,12 +24,14 @@ import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
+import { Route as AuthUpdatePasswordRouteImport } from './routes/auth/update-password'
 import { Route as DirectoryIndexRouteImport } from './routes/directory/index'
 import { Route as DirectoryBusinessIdRouteImport } from './routes/directory/$businessId'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as EventsEventIdRouteImport } from './routes/events/$eventId'
 import { Route as MapIndexRouteImport } from './routes/map/index'
 import { Route as OfficialsIndexRouteImport } from './routes/officials/index'
+import { Route as VerifyRequestIdRouteImport } from './routes/verify/$requestId'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminAnnouncementsRouteImport } from './routes/_authenticated/admin/announcements'
 import { Route as AuthenticatedAdminBusinessesRouteImport } from './routes/_authenticated/admin/businesses'
@@ -37,6 +39,7 @@ import { Route as AuthenticatedAdminComplaintsRouteImport } from './routes/_auth
 import { Route as AuthenticatedAdminDocumentsRouteImport } from './routes/_authenticated/admin/documents'
 import { Route as AuthenticatedAdminEmergencyRouteImport } from './routes/_authenticated/admin/emergency'
 import { Route as AuthenticatedAdminEventsRouteImport } from './routes/_authenticated/admin/events'
+import { Route as AuthenticatedAdminOfficialsRouteImport } from './routes/_authenticated/admin/officials'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedBusinessesNewRouteImport } from './routes/_authenticated/businesses/new'
 import { Route as AuthenticatedComplaintsNewRouteImport } from './routes/_authenticated/complaints/new'
@@ -120,6 +123,11 @@ const AuthSignUpRoute = AuthSignUpRouteImport.update({
   path: '/auth/sign-up',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthUpdatePasswordRoute = AuthUpdatePasswordRouteImport.update({
+  id: '/auth/update-password',
+  path: '/auth/update-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DirectoryIndexRoute = DirectoryIndexRouteImport.update({
   id: '/directory/',
   path: '/directory/',
@@ -144,17 +152,26 @@ const MapIndexRoute = MapIndexRouteImport.update({
   id: '/map/',
   path: '/map/',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/map/index.lazy').then((d) => d.Route))
 const OfficialsIndexRoute = OfficialsIndexRouteImport.update({
   id: '/officials/',
   path: '/officials/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/officials/index.lazy').then((d) => d.Route),
+)
+const VerifyRequestIdRoute = VerifyRequestIdRouteImport.update({
+  id: '/verify/$requestId',
+  path: '/verify/$requestId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_authenticated/admin/index.lazy').then((d) => d.Route),
+)
 const AuthenticatedAdminAnnouncementsRoute =
   AuthenticatedAdminAnnouncementsRouteImport.update({
     id: '/announcements',
@@ -189,6 +206,12 @@ const AuthenticatedAdminEventsRoute =
   AuthenticatedAdminEventsRouteImport.update({
     id: '/events',
     path: '/events',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminOfficialsRoute =
+  AuthenticatedAdminOfficialsRouteImport.update({
+    id: '/officials',
+    path: '/officials',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
@@ -241,8 +264,10 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
+  '/auth/update-password': typeof AuthUpdatePasswordRoute
   '/directory/$businessId': typeof DirectoryBusinessIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/verify/$requestId': typeof VerifyRequestIdRoute
   '/announcements/': typeof AnnouncementsIndexRoute
   '/directory/': typeof DirectoryIndexRoute
   '/events/': typeof EventsIndexRoute
@@ -254,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/admin/documents': typeof AuthenticatedAdminDocumentsRoute
   '/admin/emergency': typeof AuthenticatedAdminEmergencyRoute
   '/admin/events': typeof AuthenticatedAdminEventsRoute
+  '/admin/officials': typeof AuthenticatedAdminOfficialsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/businesses/new': typeof AuthenticatedBusinessesNewRoute
   '/complaints/new': typeof AuthenticatedComplaintsNewRoute
@@ -275,8 +301,10 @@ export interface FileRoutesByTo {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
+  '/auth/update-password': typeof AuthUpdatePasswordRoute
   '/directory/$businessId': typeof DirectoryBusinessIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/verify/$requestId': typeof VerifyRequestIdRoute
   '/announcements': typeof AnnouncementsIndexRoute
   '/directory': typeof DirectoryIndexRoute
   '/events': typeof EventsIndexRoute
@@ -288,6 +316,7 @@ export interface FileRoutesByTo {
   '/admin/documents': typeof AuthenticatedAdminDocumentsRoute
   '/admin/emergency': typeof AuthenticatedAdminEmergencyRoute
   '/admin/events': typeof AuthenticatedAdminEventsRoute
+  '/admin/officials': typeof AuthenticatedAdminOfficialsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/businesses/new': typeof AuthenticatedBusinessesNewRoute
   '/complaints/new': typeof AuthenticatedComplaintsNewRoute
@@ -312,8 +341,10 @@ export interface FileRoutesById {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
+  '/auth/update-password': typeof AuthUpdatePasswordRoute
   '/directory/$businessId': typeof DirectoryBusinessIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/verify/$requestId': typeof VerifyRequestIdRoute
   '/announcements/': typeof AnnouncementsIndexRoute
   '/directory/': typeof DirectoryIndexRoute
   '/events/': typeof EventsIndexRoute
@@ -325,6 +356,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/documents': typeof AuthenticatedAdminDocumentsRoute
   '/_authenticated/admin/emergency': typeof AuthenticatedAdminEmergencyRoute
   '/_authenticated/admin/events': typeof AuthenticatedAdminEventsRoute
+  '/_authenticated/admin/officials': typeof AuthenticatedAdminOfficialsRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/businesses/new': typeof AuthenticatedBusinessesNewRoute
   '/_authenticated/complaints/new': typeof AuthenticatedComplaintsNewRoute
@@ -349,8 +381,10 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/auth/update-password'
     | '/directory/$businessId'
     | '/events/$eventId'
+    | '/verify/$requestId'
     | '/announcements/'
     | '/directory/'
     | '/events/'
@@ -362,6 +396,7 @@ export interface FileRouteTypes {
     | '/admin/documents'
     | '/admin/emergency'
     | '/admin/events'
+    | '/admin/officials'
     | '/admin/users'
     | '/businesses/new'
     | '/complaints/new'
@@ -383,8 +418,10 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/auth/update-password'
     | '/directory/$businessId'
     | '/events/$eventId'
+    | '/verify/$requestId'
     | '/announcements'
     | '/directory'
     | '/events'
@@ -396,6 +433,7 @@ export interface FileRouteTypes {
     | '/admin/documents'
     | '/admin/emergency'
     | '/admin/events'
+    | '/admin/officials'
     | '/admin/users'
     | '/businesses/new'
     | '/complaints/new'
@@ -419,8 +457,10 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/auth/update-password'
     | '/directory/$businessId'
     | '/events/$eventId'
+    | '/verify/$requestId'
     | '/announcements/'
     | '/directory/'
     | '/events/'
@@ -432,6 +472,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/documents'
     | '/_authenticated/admin/emergency'
     | '/_authenticated/admin/events'
+    | '/_authenticated/admin/officials'
     | '/_authenticated/admin/users'
     | '/_authenticated/businesses/new'
     | '/_authenticated/complaints/new'
@@ -453,8 +494,10 @@ export interface RootRouteChildren {
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
+  AuthUpdatePasswordRoute: typeof AuthUpdatePasswordRoute
   DirectoryBusinessIdRoute: typeof DirectoryBusinessIdRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
+  VerifyRequestIdRoute: typeof VerifyRequestIdRoute
   AnnouncementsIndexRoute: typeof AnnouncementsIndexRoute
   DirectoryIndexRoute: typeof DirectoryIndexRoute
   EventsIndexRoute: typeof EventsIndexRoute
@@ -569,6 +612,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignUpRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/update-password': {
+      id: '/auth/update-password'
+      path: '/auth/update-password'
+      fullPath: '/auth/update-password'
+      preLoaderRoute: typeof AuthUpdatePasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/directory/': {
       id: '/directory/'
       path: '/directory'
@@ -609,6 +659,13 @@ declare module '@tanstack/react-router' {
       path: '/officials'
       fullPath: '/officials/'
       preLoaderRoute: typeof OfficialsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify/$requestId': {
+      id: '/verify/$requestId'
+      path: '/verify/$requestId'
+      fullPath: '/verify/$requestId'
+      preLoaderRoute: typeof VerifyRequestIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/': {
@@ -658,6 +715,13 @@ declare module '@tanstack/react-router' {
       path: '/events'
       fullPath: '/admin/events'
       preLoaderRoute: typeof AuthenticatedAdminEventsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/officials': {
+      id: '/_authenticated/admin/officials'
+      path: '/officials'
+      fullPath: '/admin/officials'
+      preLoaderRoute: typeof AuthenticatedAdminOfficialsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/users': {
@@ -712,6 +776,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminDocumentsRoute: typeof AuthenticatedAdminDocumentsRoute
   AuthenticatedAdminEmergencyRoute: typeof AuthenticatedAdminEmergencyRoute
   AuthenticatedAdminEventsRoute: typeof AuthenticatedAdminEventsRoute
+  AuthenticatedAdminOfficialsRoute: typeof AuthenticatedAdminOfficialsRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
@@ -723,6 +788,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminDocumentsRoute: AuthenticatedAdminDocumentsRoute,
   AuthenticatedAdminEmergencyRoute: AuthenticatedAdminEmergencyRoute,
   AuthenticatedAdminEventsRoute: AuthenticatedAdminEventsRoute,
+  AuthenticatedAdminOfficialsRoute: AuthenticatedAdminOfficialsRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
@@ -769,8 +835,10 @@ const rootRouteChildren: RootRouteChildren = {
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,
+  AuthUpdatePasswordRoute: AuthUpdatePasswordRoute,
   DirectoryBusinessIdRoute: DirectoryBusinessIdRoute,
   EventsEventIdRoute: EventsEventIdRoute,
+  VerifyRequestIdRoute: VerifyRequestIdRoute,
   AnnouncementsIndexRoute: AnnouncementsIndexRoute,
   DirectoryIndexRoute: DirectoryIndexRoute,
   EventsIndexRoute: EventsIndexRoute,

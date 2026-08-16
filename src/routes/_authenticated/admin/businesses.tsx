@@ -6,23 +6,28 @@ import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#/components/ui/table'
 import { CheckCircle, XCircle, Clock } from 'lucide-react'
 import { toast } from 'sonner'
+import { z } from 'zod'
 
 const getBusinesses = createServerFn({ method: 'GET' }).handler(async () => {
   const supabase = createSupabaseServerClient()
   const { data } = await supabase
     .from('businesses')
-    .select('id, name, category, owner_id, status, created_at')
+    .select('id, name, category, owner_id, status, created_at, notes')
     .order('created_at', { ascending: false })
   return data ?? []
 })
 
 const updateBusinessStatus = createServerFn({ method: 'POST' })
-  .validator((data: { id: string; status: string }) => data)
+  .validator((data: unknown) => z.object({ id: z.string(), status: z.enum(['pending', 'approved', 'rejected', 'archived']), notes: z.string().optional() }).parse(data))
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
+    const updateData: any = { status: data.status, updated_at: new Date().toISOString() }
+    if (data.notes !== undefined) {
+      updateData.notes = data.notes
+    }
     const { error } = await supabase
       .from('businesses')
-      .update({ status: data.status, updated_at: new Date().toISOString() })
+      .update(updateData)
       .eq('id', data.id)
     if (error) throw new Error(error.message)
     return { success: true }
@@ -45,8 +50,18 @@ function AdminBusinessesRoute() {
   const router = useRouter()
 
   async function handleStatus(id: string, status: string) {
+    let notes = undefined;
+    if (status === 'rejected') {
+      const reason = window.prompt('Please enter the reason for rejection (this will be visible to the resident):')
+      if (reason === null) return // user cancelled
+      notes = reason
+    }
+    if (status === 'archived') {
+      if (!window.confirm('Are you sure you want to archive this business listing?')) return
+    }
+
     try {
-      await updateBusinessStatus({ data: { id, status } })
+      await updateBusinessStatus({ data: { id, status, notes } })
       toast.success(`Business ${status}`)
       router.invalidate()
     } catch {

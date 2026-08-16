@@ -9,6 +9,7 @@ import { Textarea } from '#/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '#/components/ui/dialog'
 import { Badge } from '#/components/ui/badge'
 import { toast } from 'sonner'
+import { z } from 'zod'
 import { format } from 'date-fns'
 import { FileText, Filter, Printer } from 'lucide-react'
 import { useState } from 'react'
@@ -62,7 +63,7 @@ const getDocumentRequests = createServerFn({ method: 'GET' }).handler(async () =
 })
 
 const updateRequestStatus = createServerFn({ method: 'POST' })
-  .validator((data: { id: string; status: string; notes: string }) => data)
+  .validator((data: unknown) => z.object({ id: z.string(), status: z.enum(['pending', 'in_review', 'ready', 'completed', 'rejected']), notes: z.string() }).parse(data))
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
     const { error } = await supabase

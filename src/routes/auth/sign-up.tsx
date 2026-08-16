@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
@@ -16,8 +16,14 @@ import { Input } from '#/components/ui/input'
 import { toast } from 'sonner'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 
+const signUpFnSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+  fullName: z.string().optional()
+})
+
 const signUpFn = createServerFn({ method: 'POST' })
-  .validator((data: { email: string; password: string; fullName?: string }) => data)
+  .validator(signUpFnSchema)
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
     const { data: authData, error } = await supabase.auth.signUp({
@@ -53,6 +59,7 @@ const signUpSchema = z.object({
 type SignUpFormValues = z.infer<typeof signUpSchema>
 
 function SignUp() {
+  const router = useRouter()
   const form = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -69,16 +76,17 @@ function SignUp() {
       
       if (res.autoLoggedIn) {
         toast.success('Account created successfully!')
-        window.location.href = '/dashboard'
+        router.navigate({ to: '/dashboard' })
       } else {
         toast.success('Registration successful! Check your inbox or sign in.')
-        window.location.href = '/auth/sign-in'
+        router.navigate({ to: '/auth/sign-in' })
       }
-    } catch (error: any) {
-      if (error.message?.includes('rate limit')) {
+    } catch (error: Error | unknown) {
+      const msg = error instanceof Error ? error.message : '';
+      if (msg.includes('rate limit')) {
         toast.error('Email rate limit reached. Please disable "Confirm email" in Supabase Authentication settings for development, or wait a few minutes.')
       } else {
-        toast.error(error.message ?? 'Failed to register account')
+        toast.error(msg || 'Failed to register account')
       }
     }
   }

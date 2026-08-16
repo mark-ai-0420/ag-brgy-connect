@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
+import { z } from 'zod'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader } from '#/components/ui/card'
 import { Separator } from '#/components/ui/separator'
@@ -14,12 +15,12 @@ import {
 } from 'lucide-react'
 
 const getBusiness = createServerFn({ method: 'GET' })
-  .validator((id: string) => id)
+  .validator((id: string) => z.string().min(1).parse(id))
   .handler(async ({ data: id }) => {
     const supabase = createSupabaseServerClient()
     const { data, error } = await supabase
       .from('businesses')
-      .select('*')
+      .select('id, name, category, description, address, phone, hours, status, photo_url, map_url, owner_id, created_at')
       .eq('id', id)
       .single()
     if (error || !data) return null
@@ -94,13 +95,23 @@ function BusinessDetail() {
     CATEGORY_COLORS[business.category as string] ??
     'bg-gray-100 text-gray-700 border-gray-200'
 
-  // Build OpenStreetMap embed URL for Daine, Indang, Cavite
-  const mapSrc = business.lat && business.lng
-    ? `https://www.openstreetmap.org/export/embed.html?bbox=${business.lng - 0.005}%2C${business.lat - 0.004}%2C${business.lng + 0.005}%2C${business.lat + 0.004}&layer=mapnik&marker=${business.lat}%2C${business.lng}`
+  // Try extracting lat/lng from map_url (if it exists)
+  let lat: number | null = null;
+  let lng: number | null = null;
+  if (business.map_url) {
+    const coordsMatch = business.map_url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || business.map_url.match(/mlat=(-?\d+\.\d+)&mlon=(-?\d+\.\d+)/);
+    if (coordsMatch) {
+      lat = parseFloat(coordsMatch[1]);
+      lng = parseFloat(coordsMatch[2]);
+    }
+  }
+
+  const mapSrc = lat && lng
+    ? `https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.005}%2C${lat - 0.004}%2C${lng + 0.005}%2C${lat + 0.004}&layer=mapnik&marker=${lat}%2C${lng}`
     : 'https://www.openstreetmap.org/export/embed.html?bbox=120.840%2C14.183%2C120.850%2C14.192&layer=mapnik&marker=14.1875%2C120.8452'
 
-  const mapLink = business.lat && business.lng
-    ? `https://www.openstreetmap.org/?mlat=${business.lat}&mlon=${business.lng}#map=17/${business.lat}/${business.lng}`
+  const mapLink = lat && lng
+    ? `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=17/${lat}/${lng}`
     : 'https://www.openstreetmap.org/?mlat=14.1875&mlon=120.8452#map=16/14.1875/120.8452'
 
   return (

@@ -6,10 +6,10 @@ import { Calendar, MapPin, Clock, CalendarX } from 'lucide-react'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 
-const getEvents = createServerFn({ method: 'GET' }).handler(async () => {
+export const getEvents = createServerFn({ method: 'GET' }).handler(async () => {
   try {
     const supabase = createSupabaseServerClient()
-    const { data, error } = await supabase.from('events').select('*').order('starts_at', { ascending: true })
+    const { data, error } = await supabase.from('events').select('id, title, description, location, starts_at, ends_at, created_at').order('starts_at', { ascending: true })
     if (error) console.error('Error fetching events:', error)
     return data ?? []
   } catch (error) {
@@ -86,11 +86,13 @@ function EventsRoute() {
               >
                 <CardHeader className="pb-3">
                   {/* Type badge */}
-                  <span
-                    className={`inline-flex self-start text-[11px] font-semibold px-2.5 py-0.5 rounded-full border mb-2 ${badgeClass}`}
-                  >
-                    {category}
-                  </span>
+                  {category !== 'Other' && (
+                    <span
+                      className={`inline-flex self-start text-[11px] font-semibold px-2.5 py-0.5 rounded-full border mb-2 ${badgeClass}`}
+                    >
+                      {category}
+                    </span>
+                  )}
                   <CardTitle className="text-base leading-snug">{event.title}</CardTitle>
                 </CardHeader>
 

@@ -17,7 +17,7 @@ const getNotificationsFn = createServerFn({ method: 'GET' })
     const supabase = await createSupabaseServerClient()
     const { data, error } = await supabase
       .from('document_requests')
-      .select('*')
+      .select('id, document_type, status, notes, updated_at')
       .eq('requester_id', user.id)
       .order('updated_at', { ascending: false })
 

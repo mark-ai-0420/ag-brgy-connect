@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
+import { getAuthSession } from '#/server/auth'
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '#/components/ui/card'
 import { Button } from '#/components/ui/button'
@@ -18,12 +19,13 @@ const DOC_TYPE_LABELS: Record<string, string> = {
 }
 
 const getMyDocumentRequests = createServerFn({ method: 'GET' })
-  .validator((userId: string) => userId)
-  .handler(async ({ data: userId }) => {
+  .handler(async () => {
+  const { user } = await getAuthSession()
+  if (!user) return []
   const supabase = createSupabaseServerClient()
   const [{ data: reqs }, { data: profile }] = await Promise.all([
-    supabase.from('document_requests').select('*').eq('requester_id', userId).order('created_at', { ascending: false }),
-    supabase.from('profiles').select('full_name').eq('id', userId).maybeSingle(),
+    supabase.from('document_requests').select('id, document_type, status, purpose, notes, created_at, updated_at, requester_id').eq('requester_id', user.id).order('created_at', { ascending: false }),
+    supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle(),
   ])
   const residentName = profile?.full_name || 'Resident'
   return (reqs ?? []).map(r => ({
@@ -33,25 +35,27 @@ const getMyDocumentRequests = createServerFn({ method: 'GET' })
 })
 
 const getMyBusinesses = createServerFn({ method: 'GET' })
-  .validator((userId: string) => userId)
-  .handler(async ({ data: userId }) => {
+  .handler(async () => {
+  const { user } = await getAuthSession()
+  if (!user) return []
   const supabase = createSupabaseServerClient()
   const { data } = await supabase
     .from('businesses')
-    .select('*')
-    .eq('owner_id', userId)
+    .select('id, name, category, address, status, created_at, notes')
+    .eq('owner_id', user.id)
     .order('created_at', { ascending: false })
   return data ?? []
 })
 
 const getMyComplaints = createServerFn({ method: 'GET' })
-  .validator((userId: string) => userId)
-  .handler(async ({ data: userId }) => {
+  .handler(async () => {
+    const { user } = await getAuthSession()
+    if (!user) return []
     const supabase = createSupabaseServerClient()
     const { data } = await supabase
       .from('complaints')
-      .select('*')
-      .eq('complainant_id', userId)
+      .select('id, title, status, priority, location, created_at')
+      .eq('complainant_id', user.id)
       .order('created_at', { ascending: false })
     return data ?? []
   })
@@ -59,11 +63,10 @@ const getMyComplaints = createServerFn({ method: 'GET' })
 export const Route = createFileRoute('/_authenticated/dashboard')({
   component: DashboardRoute,
   loader: async ({ context }) => {
-    const userId = (context as any).auth.user.id;
     const [documents, businesses, complaints] = await Promise.all([
-      getMyDocumentRequests({ data: userId }),
-      getMyBusinesses({ data: userId }),
-      getMyComplaints({ data: userId })
+      getMyDocumentRequests(),
+      getMyBusinesses(),
+      getMyComplaints()
     ])
     return { documents, businesses, complaints }
   },
@@ -126,6 +129,36 @@ function ComplaintStatusBadge({ status }: { status: string }) {
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-300 whitespace-nowrap">
         <Ban className="h-3.5 w-3.5" /> Dismissed
+      </span>
+    )
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300 whitespace-nowrap">
+      <Clock className="h-3.5 w-3.5" /> Pending Review
+    </span>
+  )
+}
+
+function BusinessStatusBadge({ status }: { status: string }) {
+  const s = status?.toLowerCase() || 'pending'
+  if (s === 'approved') {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 whitespace-nowrap">
+        <CheckCircle className="h-3.5 w-3.5" /> Approved
+      </span>
+    )
+  }
+  if (s === 'rejected') {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 border border-rose-300 whitespace-nowrap">
+        <XCircle className="h-3.5 w-3.5" /> Rejected
+      </span>
+    )
+  }
+  if (s === 'archived') {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-300 whitespace-nowrap">
+        <Info className="h-3.5 w-3.5" /> Archived
       </span>
     )
   }
@@ -248,17 +281,28 @@ function DashboardRoute() {
             ) : (
               businesses.map(biz => (
                 <Card key={biz.id} className="hover:border-primary/40 transition-colors">
-                  <CardHeader className="py-4 px-5">
+                  <CardHeader className="py-4 px-5 pb-3">
                     <div className="flex justify-between items-start gap-4">
                       <div>
                         <CardTitle className="text-base font-bold">{biz.name}</CardTitle>
                         <CardDescription className="text-xs mt-1">{biz.category} • {biz.address}</CardDescription>
                       </div>
-                      <Button variant="outline" size="sm" asChild className="min-h-[40px] px-3 font-medium">
-                        <Link to={`/businesses/${biz.id}/edit` as any}>Edit Listing</Link>
-                      </Button>
+                      <div className="flex flex-col items-end gap-2">
+                        <BusinessStatusBadge status={biz.status} />
+                        <Button variant="outline" size="sm" asChild className="min-h-[32px] px-3 text-xs font-medium">
+                          <Link to={`/businesses/${biz.id}/edit` as any}>Edit Listing</Link>
+                        </Button>
+                      </div>
                     </div>
                   </CardHeader>
+                  {biz.status === 'rejected' && biz.notes && (
+                    <CardContent className="pt-0 pb-4 px-5">
+                      <div className="flex items-start gap-2 p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-900">
+                        <AlertCircle className="h-3.5 w-3.5 mt-0.5 shrink-0 text-rose-600" />
+                        <span><span className="font-semibold">Review Notes:</span> {biz.notes}</span>
+                      </div>
+                    </CardContent>
+                  )}
                 </Card>
               ))
             )}
@@ -306,7 +350,7 @@ function DashboardRoute() {
                       </div>
                       <CardDescription className="text-xs mt-1">
                         <span className="font-semibold">{comp.category}</span>
-                        {comp.incident_location && ` • ${comp.incident_location}`}
+                        {comp.location && ` • ${comp.location}`}
                         {comp.incident_date && ` • ${format(new Date(comp.incident_date), 'MMM d, yyyy')}`}
                       </CardDescription>
                       <p className="text-xs text-muted-foreground/70 mt-1">

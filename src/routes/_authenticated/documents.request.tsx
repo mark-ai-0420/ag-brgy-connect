@@ -21,7 +21,7 @@ const formSchema = z.object({
 })
 
 const submitDocumentRequest = createServerFn({ method: 'POST' })
-  .validator((data: z.infer<typeof formSchema>) => data)
+  .validator((data: unknown) => formSchema.parse(data))
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient();
     const { session } = await getAuthSession();

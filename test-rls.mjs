@@ -25,8 +25,8 @@ async function testAuthAndRls() {
   
   // Sign In Admin
   const { data: adminData, error: adminErr } = await adminClient.auth.signInWithPassword({
-    email: 'markhersonhuelgas@gmail.com',
-    password: 'brgyconnectadmin'
+    email: process.env.TEST_ADMIN_EMAIL,
+    password: process.env.TEST_ADMIN_PASSWORD
   });
   if (adminErr) {
     console.error("Admin Login Failed:", adminErr.message);
@@ -36,8 +36,8 @@ async function testAuthAndRls() {
 
   // Sign In Resident
   const { data: resData, error: resErr } = await residentClient.auth.signInWithPassword({
-    email: 'markai0420@gmail.com',
-    password: 'resident'
+    email: process.env.TEST_RESIDENT_EMAIL,
+    password: process.env.TEST_RESIDENT_PASSWORD
   });
   if (resErr) {
     console.error("Resident Login Failed:", resErr.message);

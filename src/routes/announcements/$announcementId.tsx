@@ -2,16 +2,17 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { Button } from '#/components/ui/button'
 import { ArrowLeft, CalendarDays, User, Pin } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
+import { z } from 'zod'
 
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 
 const getAnnouncement = createServerFn({ method: 'GET' })
-  .validator((id: string) => id)
+  .validator((id: string) => z.string().min(1).parse(id))
   .handler(async ({ data: id }) => {
     const supabase = createSupabaseServerClient()
     const { data, error } = await supabase
-      .from('announcements').select('*').eq('id', id).single()
+      .from('announcements').select('id, title, body, pinned, created_at, author_id, category').eq('id', id).single()
     if (error || !data) return null
     return data
   })
@@ -22,10 +23,12 @@ export const Route = createFileRoute('/announcements/$announcementId')({
 })
 
 const CATEGORY_COLORS: Record<string, string> = {
+  General: 'bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-300',
+  Advisory: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+  Emergency: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+  Programs: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
   Infrastructure: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
   Health: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-  Sanitation: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300',
-  Administrative: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
 }
 
 function AnnouncementDetail() {
@@ -64,9 +67,11 @@ function AnnouncementDetail() {
               Pinned
             </span>
           )}
-          <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${CATEGORY_COLORS[item.category] ?? 'bg-muted text-muted-foreground'}`}>
-            {item.category}
-          </span>
+          {item.category && (
+            <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${CATEGORY_COLORS[item.category] ?? 'bg-muted text-muted-foreground'}`}>
+              {item.category}
+            </span>
+          )}
         </div>
 
         {/* Title */}
@@ -80,7 +85,7 @@ function AnnouncementDetail() {
           </span>
           <span className="flex items-center gap-1.5">
             <User className="h-4 w-4" />
-            {item.author ?? 'Barangay Council'}
+            {item.author_id ?? 'Barangay Council'}
           </span>
         </div>
 

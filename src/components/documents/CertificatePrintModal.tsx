@@ -2,6 +2,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '#/components/u
 import { Button } from '#/components/ui/button'
 import { Printer, Download, FileCheck } from 'lucide-react'
 import { format } from 'date-fns'
+import { createServerFn } from '@tanstack/react-start'
+import { createSupabaseServerClient } from '#/lib/supabase.server'
+import { useEffect, useState } from 'react'
+
+const getOfficialsForPrint = createServerFn({ method: 'GET' }).handler(async () => {
+  const supabase = createSupabaseServerClient()
+  const { data } = await supabase
+    .from('barangay_officials')
+    .select('name, position')
+    .in('position', ['Punong Barangay', 'Barangay Secretary'])
+  return data ?? []
+})
 
 export interface DocumentRequest {
   id: string
@@ -28,7 +40,18 @@ const DOCUMENT_TITLES: Record<string, string> = {
 }
 
 export function CertificatePrintModal({ open, onOpenChange, request }: CertificatePrintModalProps) {
+  const [officials, setOfficials] = useState<{name: string, position: string}[]>([])
+
+  useEffect(() => {
+    if (open) {
+      getOfficialsForPrint().then(setOfficials).catch(console.error)
+    }
+  }, [open])
+
   if (!request) return null
+
+  const secretaryName = officials.find(o => o.position === 'Barangay Secretary')?.name || '[ Secretary Name ]'
+  const captainName = officials.find(o => o.position === 'Punong Barangay')?.name || '[ Punong Barangay Name ]'
 
   const handlePrint = () => {
     window.print()
@@ -192,10 +215,10 @@ export function CertificatePrintModal({ open, onOpenChange, request }: Certifica
               <div className="space-y-1 text-left">
                 <p className="text-xs text-slate-500 font-medium">Prepared by:</p>
                 <div className="h-12 flex items-end">
-                  <span className="font-serif italic text-slate-400 text-xs">[ Signature ]</span>
+                  <span className="font-serif italic text-slate-400 text-xs text-transparent select-none">[ Signature ]</span>
                 </div>
                 <p className="font-bold text-slate-900 border-t border-slate-400 pt-1 inline-block min-w-[180px] uppercase">
-                  HON. SECRETARY
+                  {secretaryName}
                 </p>
                 <p className="text-xs text-slate-600 font-medium">Barangay Secretary</p>
               </div>
@@ -204,10 +227,10 @@ export function CertificatePrintModal({ open, onOpenChange, request }: Certifica
               <div className="space-y-1 text-right">
                 <p className="text-xs text-slate-500 font-medium">Approved by:</p>
                 <div className="h-12 flex items-end justify-end">
-                  <span className="font-serif italic text-slate-400 text-xs">[ Signature ]</span>
+                  <span className="font-serif italic text-slate-400 text-xs text-transparent select-none">[ Signature ]</span>
                 </div>
                 <p className="font-bold text-slate-900 border-t border-slate-400 pt-1 inline-block min-w-[180px] uppercase">
-                  HON. PUNONG BARANGAY
+                  {captainName}
                 </p>
                 <p className="text-xs text-slate-600 font-medium">Barangay Captain</p>
               </div>

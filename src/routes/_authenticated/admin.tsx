@@ -13,7 +13,9 @@ export const Route = createFileRoute('/_authenticated/admin')({
 })
 
 const NAV_ITEMS = [
+  { to: '/admin', icon: LayoutDashboard, label: 'Overview' },
   { to: '/admin/businesses', icon: Store, label: 'Businesses' },
+  { to: '/admin/officials', icon: Users, label: 'Officials' },
   { to: '/admin/announcements', icon: Megaphone, label: 'Announcements' },
   { to: '/admin/events', icon: Calendar, label: 'Events' },
   { to: '/admin/documents', icon: FileText, label: 'Doc Requests' },

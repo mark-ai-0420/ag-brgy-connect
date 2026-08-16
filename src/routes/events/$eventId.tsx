@@ -1,19 +1,21 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent } from '#/components/ui/card'
-import { ArrowLeft, Calendar, MapPin, Clock, Users, CalendarPlus } from 'lucide-react'
+import { ArrowLeft, Calendar, MapPin, Clock, Users, CalendarPlus, Download, ExternalLink } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '#/components/ui/dropdown-menu'
 import { toast } from 'sonner'
+import { z } from 'zod'
 
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 
 const getEvent = createServerFn({ method: 'GET' })
-  .validator((id: string) => id)
+  .validator((id: string) => z.string().min(1).parse(id))
   .handler(async ({ data: id }) => {
     const supabase = createSupabaseServerClient()
     const { data, error } = await supabase
-      .from('events').select('*').eq('id', id).single()
+      .from('events').select('id, title, description, location, starts_at, ends_at, created_at').eq('id', id).single()
     if (error || !data) return null
     return data
   })
@@ -33,6 +35,49 @@ const CATEGORY_STYLES: Record<string, { dot: string; badge: string }> = {
 // Coordinates for Barangay Daine, Indang, Cavite, Philippines
 const BRGY_DAINE_LAT = 14.1875
 const BRGY_DAINE_LON = 120.8452
+
+function formatToICSDate(dateStr: string) {
+  const d = new Date(dateStr)
+  return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+}
+
+function generateICSContent(event: any) {
+  const start = formatToICSDate(event.starts_at)
+  const end = event.ends_at ? formatToICSDate(event.ends_at) : formatToICSDate(new Date(new Date(event.starts_at).getTime() + 60 * 60 * 1000).toISOString())
+  
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//BrgyConnect//EN',
+    'BEGIN:VEVENT',
+    `DTSTART:${start}`,
+    `DTEND:${end}`,
+    `SUMMARY:${event.title}`,
+    `DESCRIPTION:${(event.description || '').replace(/\n/g, '\\n')}`,
+    `LOCATION:${event.location || ''}`,
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ].join('\n')
+}
+
+function handleDownloadICS(event: any) {
+  const content = generateICSContent(event)
+  const blob = new Blob([content], { type: 'text/calendar;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${event.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.ics`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+function formatToGoogleCalendarDates(startStr: string, endStr?: string) {
+  const s = formatToICSDate(startStr)
+  const e = endStr ? formatToICSDate(endStr) : formatToICSDate(new Date(new Date(startStr).getTime() + 60 * 60 * 1000).toISOString())
+  return `${s}/${e}`
+}
 
 function EventDetail() {
   const event = Route.useLoaderData()
@@ -77,7 +122,7 @@ function EventDetail() {
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight mt-3 mb-2">
               {event.title}
             </h1>
-            <p className="text-muted-foreground text-sm">Organized by {event.organizer}</p>
+            {event.organizer && <p className="text-muted-foreground text-sm">Organized by {event.organizer}</p>}
           </div>
 
           {/* Description */}
@@ -91,7 +136,7 @@ function EventDetail() {
           </div>
 
           {/* Map embed */}
-          {event.hasLocation && (
+          {event.location && (
             <div className="space-y-2">
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 <MapPin className="h-5 w-5 text-primary" />
@@ -109,7 +154,7 @@ function EventDetail() {
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                Map shows approximate location of Barangay Daine, Mandaue City.{' '}
+                Map shows approximate location of Barangay Daine, Indang, Cavite.{' '}
                 <a
                   href={`https://www.openstreetmap.org/?mlat=${BRGY_DAINE_LAT}&mlon=${BRGY_DAINE_LON}#map=16/${BRGY_DAINE_LAT}/${BRGY_DAINE_LON}`}
                   target="_blank"
@@ -161,24 +206,47 @@ function EventDetail() {
               </div>
 
               {/* Organizer */}
-              <div className="flex items-start gap-3">
-                <div className="bg-primary/10 rounded-lg p-2 mt-0.5">
-                  <Users className="h-5 w-5 text-primary" />
+              {event.organizer && (
+                <div className="flex items-start gap-3">
+                  <div className="bg-primary/10 rounded-lg p-2 mt-0.5">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Organizer</div>
+                    <div className="font-semibold text-sm">{event.organizer}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">Organizer</div>
-                  <div className="font-semibold text-sm">{event.organizer}</div>
-                </div>
-              </div>
+              )}
 
               <div className="pt-2 border-t">
-                <Button
-                  className="w-full min-h-[44px] font-semibold gap-2"
-                  onClick={() => toast.success(`"${event.title}" saved to your calendar!`)}
-                >
-                  <CalendarPlus className="h-4 w-4" />
-                  Add to Calendar
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button className="w-full min-h-[44px] font-semibold gap-2">
+                      <CalendarPlus className="h-4 w-4" />
+                      Add to Calendar
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem asChild>
+                      <a 
+                        href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&details=${encodeURIComponent(event.description || '')}&location=${encodeURIComponent(event.location || '')}&dates=${formatToGoogleCalendarDates(event.starts_at, event.ends_at)}`}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="cursor-pointer flex items-center"
+                      >
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Google Calendar
+                      </a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleDownloadICS(event)}
+                      className="cursor-pointer flex items-center"
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Download .ics (Apple/Outlook)
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </CardContent>
           </Card>

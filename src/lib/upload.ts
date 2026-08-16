@@ -1,10 +1,7 @@
-import { createBrowserClient } from '@supabase/ssr'
+import { supabase } from '#/lib/supabase'
 
 export async function uploadBusinessPhoto(file: File, businessId: string): Promise<string | null> {
-  const supabase = createBrowserClient(
-    import.meta.env.VITE_SUPABASE_URL,
-    import.meta.env.VITE_SUPABASE_ANON_KEY
-  )
+  
   
   const ext = file.name.split('.').pop()
   const fileName = `${businessId}-${Date.now()}.${ext}`
@@ -26,10 +23,7 @@ export async function uploadBusinessPhoto(file: File, businessId: string): Promi
 }
 
 export async function uploadComplaintPhoto(file: File, complaintId: string): Promise<string | null> {
-  const supabase = createBrowserClient(
-    import.meta.env.VITE_SUPABASE_URL,
-    import.meta.env.VITE_SUPABASE_ANON_KEY
-  )
+  
   
   const ext = file.name.split('.').pop()
   const fileName = `${complaintId}-${Date.now()}.${ext}`
@@ -51,10 +45,7 @@ export async function uploadComplaintPhoto(file: File, complaintId: string): Pro
 }
 
 export async function uploadOfficialPhoto(file: File, officialId?: string): Promise<string | null> {
-  const supabase = createBrowserClient(
-    import.meta.env.VITE_SUPABASE_URL,
-    import.meta.env.VITE_SUPABASE_ANON_KEY
-  )
+  
   
   const ext = file.name.split('.').pop()
   const fileName = `${officialId || 'official'}-${Date.now()}.${ext}`

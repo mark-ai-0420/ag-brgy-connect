@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select'
 import { Input } from '#/components/ui/input'
 import { toast } from 'sonner'
+import { z } from 'zod'
 import { format } from 'date-fns'
 import { Users, Shield, User as UserIcon } from 'lucide-react'
 import { useState } from 'react'
@@ -28,15 +29,33 @@ const getUsers = createServerFn({ method: 'GET' }).handler(async () => {
     .select('id, full_name, phone, address, created_at, user_roles(role)')
     .order('created_at', { ascending: false })
 
+  type RoleJoin = { role: string }
+  type ProfileWithRoles = {
+    id: string
+    full_name: string | null
+    phone: string | null
+    address: string | null
+    created_at: string
+    user_roles: RoleJoin | RoleJoin[] | null
+  }
+
   if (!error && profiles) {
-    return profiles.map(p => ({
-      id: p.id,
-      full_name: p.full_name,
-      phone: p.phone,
-      address: p.address,
-      created_at: p.created_at,
-      role: (Array.isArray(p.user_roles) ? (p.user_roles[0] as any)?.role : (p.user_roles as any)?.role) ?? 'resident',
-    }))
+    return (profiles as unknown as ProfileWithRoles[]).map(p => {
+      let role = 'resident'
+      if (Array.isArray(p.user_roles) && p.user_roles.length > 0) {
+        role = p.user_roles[0].role
+      } else if (p.user_roles && typeof p.user_roles === 'object' && 'role' in p.user_roles) {
+        role = (p.user_roles as RoleJoin).role
+      }
+      return {
+        id: p.id,
+        full_name: p.full_name,
+        phone: p.phone,
+        address: p.address,
+        created_at: p.created_at,
+        role,
+      }
+    })
   }
 
   // Fallback to parallel fetch if relational embed fails
@@ -56,7 +75,7 @@ const getUsers = createServerFn({ method: 'GET' }).handler(async () => {
 })
 
 const setUserRole = createServerFn({ method: 'POST' })
-  .validator((data: { user_id: string; role: string }) => data)
+  .validator((data: unknown) => z.object({ user_id: z.string(), role: z.enum(['admin', 'moderator', 'business_owner', 'resident']) }).parse(data))
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
     const { error } = await supabase
@@ -138,7 +157,7 @@ function AdminUsersRoute() {
         {ROLES.map(r => (
           <div key={r} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold capitalize border ${ROLE_COLORS[r]}`}>
             {r.replace(/_/g, ' ')}
-            <span className="bg-white/60 rounded-full px-1.5 py-0.5 text-[10px] font-bold">
+            <span className="bg-background/60 rounded-full px-1.5 py-0.5 text-[10px] font-bold">
               {roleCounts[r] ?? 0}
             </span>
           </div>

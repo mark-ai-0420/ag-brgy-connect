@@ -12,7 +12,7 @@ const getBusinesses = createServerFn({ method: 'GET' }).handler(async () => {
     const supabase = createSupabaseServerClient()
     const { data, error } = await supabase
       .from('businesses')
-      .select('*')
+      .select('id, name, category, address, phone, hours, photo_url, description')
       .eq('status', 'approved')
       .order('name')
     if (error) console.error('Error fetching businesses:', error)

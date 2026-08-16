@@ -95,3 +95,13 @@ tanstackIntent:
     run: "pnpm dlx @tanstack/intent@latest load @tanstack/virtual-file-routes#virtual-file-routes"
     for: "Programmatic route tree building as an alternative to filesystem conventions: rootRoute, index, route, layout, physical, defineVirtualSubtreeConfig. Use with TanStack Router plugin's virtualRouteConfig option."
 <!-- intent-skills:end -->
+
+<!-- tdd-workflow:start -->
+# Mandatory Development Workflow
+
+## Always follow the TDD workflow defined in `.agents/rules/tdd-workflow.md`:
+1. **Fan-out builds** — parallelize work across subagents, each must build-verify independently
+2. **Critic/Orchestrator** — always spawn critic subagents to review output, take screenshots for visual work, and give PASS/FAIL verdicts
+3. **Nothing breaks** — run `pnpm run build` after every batch, push migrations automatically, never leave manual steps for the user
+4. **Regression check** — verify existing features still work after changes
+<!-- tdd-workflow:end -->

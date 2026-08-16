@@ -3,11 +3,11 @@ import fs from 'fs';
 
 const { Client } = pg;
 const client = new Client({
-  host: '2406:da1a:b00:1301:7c63:ec5a:e5fc:9ff1',
-  port: 5432,
-  user: 'postgres',
-  password: 'agbrgyconnect1',
-  database: 'postgres',
+  host: process.env.SUPABASE_DB_HOST,
+  port: parseInt(process.env.SUPABASE_DB_PORT || '5432'),
+  user: process.env.SUPABASE_DB_USER || 'postgres',
+  password: process.env.SUPABASE_DB_PASSWORD,
+  database: process.env.SUPABASE_DB_NAME || 'postgres',
   ssl: { rejectUnauthorized: false }
 });
 

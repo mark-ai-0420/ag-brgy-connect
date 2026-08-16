@@ -28,13 +28,13 @@ const getEvents = createServerFn({ method: 'GET' }).handler(async () => {
   const supabase = createSupabaseServerClient()
   const { data } = await supabase
     .from('events')
-    .select('*')
+    .select('id, title, description, location, starts_at, ends_at, created_at')
     .order('starts_at', { ascending: true })
   return data ?? []
 })
 
 const upsertEvent = createServerFn({ method: 'POST' })
-  .validator((data: { id?: string } & z.infer<typeof eventSchema>) => data)
+  .validator((data: unknown) => z.object({ id: z.string().optional() }).merge(eventSchema).parse(data))
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
     const { session } = await getAuthSession()
@@ -54,7 +54,7 @@ const upsertEvent = createServerFn({ method: 'POST' })
   })
 
 const deleteEvent = createServerFn({ method: 'POST' })
-  .validator((id: string) => id)
+  .validator((id: unknown) => z.string().min(1).parse(id))
   .handler(async ({ data: id }) => {
     const supabase = createSupabaseServerClient()
     const { error } = await supabase.from('events').delete().eq('id', id)
@@ -148,14 +148,15 @@ function AdminEventsRoute() {
   const router = useRouter()
   const [editItem, setEditItem] = useState<Event | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   async function handleDelete(id: string) {
-    if (!confirm('Delete this event?')) return
     try {
       await deleteEvent({ data: id })
       toast.success('Event deleted')
       router.invalidate()
     } catch { toast.error('Failed to delete') }
+    setDeleteId(null)
   }
 
   return (
@@ -211,7 +212,7 @@ function AdminEventsRoute() {
                     </DialogContent>
                   </Dialog>
                   <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px] text-destructive hover:text-destructive"
-                    onClick={() => handleDelete(ev.id)}>
+                    onClick={() => setDeleteId(ev.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -220,6 +221,21 @@ function AdminEventsRoute() {
           </Card>
         ))}
       </div>
+
+      <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 text-sm text-slate-600">
+            Are you sure you want to delete this event? This action cannot be undone.
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={() => deleteId && handleDelete(deleteId)}>Delete</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

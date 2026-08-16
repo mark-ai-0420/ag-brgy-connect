@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { useState } from 'react'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
+import { z } from 'zod'
 import { ShieldAlert, Search, Filter, MoreHorizontal, User } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '#/components/ui/card'
@@ -28,7 +29,7 @@ const getAdminComplaints = createServerFn({ method: 'GET' }).handler(async () =>
 })
 
 const updateComplaintStatus = createServerFn({ method: 'POST' })
-  .validator((data: { id: string, status: string, priority: string, admin_notes: string }) => data)
+  .validator((data: unknown) => z.object({ id: z.string(), status: z.enum(['pending', 'investigating', 'scheduled_hearing', 'resolved', 'dismissed']), priority: z.string(), admin_notes: z.string() }).parse(data))
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
     const { error } = await supabase

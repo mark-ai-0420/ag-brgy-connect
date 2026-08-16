@@ -30,7 +30,7 @@ const getContacts = createServerFn({ method: 'GET' }).handler(async () => {
 })
 
 const upsertContact = createServerFn({ method: 'POST' })
-  .validator((data: { id?: string } & z.infer<typeof contactSchema>) => data)
+  .validator((data: unknown) => z.object({ id: z.string().optional() }).merge(contactSchema).parse(data))
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
     if (data.id) {
@@ -47,7 +47,7 @@ const upsertContact = createServerFn({ method: 'POST' })
   })
 
 const deleteContact = createServerFn({ method: 'POST' })
-  .validator((id: string) => id)
+  .validator((id: unknown) => z.string().min(1).parse(id))
   .handler(async ({ data: id }) => {
     const supabase = createSupabaseServerClient()
     const { error } = await supabase.from('emergency_contacts').delete().eq('id', id)
