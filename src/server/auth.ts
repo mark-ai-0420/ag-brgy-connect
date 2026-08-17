@@ -42,3 +42,10 @@ export async function getCachedAuthSession() {
 export function clearAuthCache() {
   cachedAuth = null;
 }
+
+// Shared sign-out server function (used by Navbar and SessionTimeoutModal)
+export const signOutFn = createServerFn({ method: 'POST' }).handler(async () => {
+  const supabase = createSupabaseServerClient()
+  await supabase.auth.signOut()
+  return { success: true }
+})

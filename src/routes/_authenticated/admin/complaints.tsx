@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#
 import { Label } from '#/components/ui/label'
 import { Textarea } from '#/components/ui/textarea'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#/components/ui/table'
+import { ScrollArea } from '#/components/ui/scroll-area'
 
 const getAdminComplaints = createServerFn({ method: 'GET' }).handler(async () => {
   const supabase = createSupabaseServerClient()
@@ -221,15 +222,41 @@ function AdminComplaintsRoute() {
       </Card>
 
       <Dialog open={isUpdateModalOpen} onOpenChange={setIsUpdateModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Update Complaint Status</DialogTitle>
+            <DialogTitle>Review & Update Complaint</DialogTitle>
             <DialogDescription>
-              {selectedComplaint && `Update status & response for "${selectedComplaint.title}"`}
+              {selectedComplaint && `"${selectedComplaint.title}" — ${formatText(selectedComplaint.category)}`}
             </DialogDescription>
           </DialogHeader>
           
           <div className="grid gap-4 py-4">
+            {/* Description Section */}
+            {selectedComplaint?.description && (
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Incident Description</Label>
+                <ScrollArea className="max-h-[160px] w-full rounded-lg border bg-muted/40 p-3">
+                  <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{selectedComplaint.description}</p>
+                </ScrollArea>
+              </div>
+            )}
+
+            {/* Photo Evidence */}
+            {selectedComplaint?.photo_url && (
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Photo Evidence</Label>
+                <a href={selectedComplaint.photo_url} target="_blank" rel="noopener noreferrer" className="block">
+                  <img
+                    src={selectedComplaint.photo_url}
+                    alt="Complaint evidence"
+                    className="w-full max-h-[200px] object-cover rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Click to view full size</p>
+                </a>
+              </div>
+            )}
+
+            <div className="border-t pt-4 mt-1" />
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="status" className="text-right">
                 Status

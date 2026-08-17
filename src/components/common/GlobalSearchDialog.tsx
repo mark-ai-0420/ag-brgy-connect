@@ -116,7 +116,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: { open: boolean, onOp
                 <button onClick={() => handleNavigate('/emergency')} className="flex items-center w-full px-2 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground text-left">
                   <Phone className="mr-2 h-4 w-4" /> Emergency Directory
                 </button>
-                <button onClick={() => handleNavigate('/incidents/new')} className="flex items-center w-full px-2 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground text-left">
+                <button onClick={() => handleNavigate('/complaints/new')} className="flex items-center w-full px-2 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground text-left">
                   <AlertTriangle className="mr-2 h-4 w-4" /> File Incident Report
                 </button>
               </div>

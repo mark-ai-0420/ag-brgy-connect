@@ -42,6 +42,8 @@ import { Route as AuthenticatedAdminEventsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminOfficialsRouteImport } from './routes/_authenticated/admin/officials'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedBusinessesNewRouteImport } from './routes/_authenticated/businesses/new'
+import { Route as AuthenticatedComplaintsIndexRouteImport } from './routes/_authenticated/complaints/index'
+import { Route as AuthenticatedComplaintsComplaintIdRouteImport } from './routes/_authenticated/complaints/$complaintId'
 import { Route as AuthenticatedComplaintsNewRouteImport } from './routes/_authenticated/complaints/new'
 import { Route as AuthenticatedDocumentsRequestRouteImport } from './routes/_authenticated/documents.request'
 import { Route as AuthenticatedSettingsProfileRouteImport } from './routes/_authenticated/settings/profile'
@@ -225,6 +227,18 @@ const AuthenticatedBusinessesNewRoute =
     path: '/businesses/new',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedComplaintsIndexRoute =
+  AuthenticatedComplaintsIndexRouteImport.update({
+    id: '/complaints/',
+    path: '/complaints/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedComplaintsComplaintIdRoute =
+  AuthenticatedComplaintsComplaintIdRouteImport.update({
+    id: '/complaints/$complaintId',
+    path: '/complaints/$complaintId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedComplaintsNewRoute =
   AuthenticatedComplaintsNewRouteImport.update({
     id: '/complaints/new',
@@ -282,10 +296,12 @@ export interface FileRoutesByFullPath {
   '/admin/officials': typeof AuthenticatedAdminOfficialsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/businesses/new': typeof AuthenticatedBusinessesNewRoute
+  '/complaints/$complaintId': typeof AuthenticatedComplaintsComplaintIdRoute
   '/complaints/new': typeof AuthenticatedComplaintsNewRoute
   '/documents/request': typeof AuthenticatedDocumentsRequestRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/complaints/': typeof AuthenticatedComplaintsIndexRoute
   '/businesses/$businessId/edit': typeof AuthenticatedBusinessesBusinessIdEditRoute
 }
 export interface FileRoutesByTo {
@@ -319,10 +335,12 @@ export interface FileRoutesByTo {
   '/admin/officials': typeof AuthenticatedAdminOfficialsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/businesses/new': typeof AuthenticatedBusinessesNewRoute
+  '/complaints/$complaintId': typeof AuthenticatedComplaintsComplaintIdRoute
   '/complaints/new': typeof AuthenticatedComplaintsNewRoute
   '/documents/request': typeof AuthenticatedDocumentsRequestRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/complaints': typeof AuthenticatedComplaintsIndexRoute
   '/businesses/$businessId/edit': typeof AuthenticatedBusinessesBusinessIdEditRoute
 }
 export interface FileRoutesById {
@@ -359,10 +377,12 @@ export interface FileRoutesById {
   '/_authenticated/admin/officials': typeof AuthenticatedAdminOfficialsRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/businesses/new': typeof AuthenticatedBusinessesNewRoute
+  '/_authenticated/complaints/$complaintId': typeof AuthenticatedComplaintsComplaintIdRoute
   '/_authenticated/complaints/new': typeof AuthenticatedComplaintsNewRoute
   '/_authenticated/documents/request': typeof AuthenticatedDocumentsRequestRoute
   '/_authenticated/settings/profile': typeof AuthenticatedSettingsProfileRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/complaints/': typeof AuthenticatedComplaintsIndexRoute
   '/_authenticated/businesses/$businessId/edit': typeof AuthenticatedBusinessesBusinessIdEditRoute
 }
 export interface FileRouteTypes {
@@ -399,10 +419,12 @@ export interface FileRouteTypes {
     | '/admin/officials'
     | '/admin/users'
     | '/businesses/new'
+    | '/complaints/$complaintId'
     | '/complaints/new'
     | '/documents/request'
     | '/settings/profile'
     | '/admin/'
+    | '/complaints/'
     | '/businesses/$businessId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -436,10 +458,12 @@ export interface FileRouteTypes {
     | '/admin/officials'
     | '/admin/users'
     | '/businesses/new'
+    | '/complaints/$complaintId'
     | '/complaints/new'
     | '/documents/request'
     | '/settings/profile'
     | '/admin'
+    | '/complaints'
     | '/businesses/$businessId/edit'
   id:
     | '__root__'
@@ -475,10 +499,12 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/officials'
     | '/_authenticated/admin/users'
     | '/_authenticated/businesses/new'
+    | '/_authenticated/complaints/$complaintId'
     | '/_authenticated/complaints/new'
     | '/_authenticated/documents/request'
     | '/_authenticated/settings/profile'
     | '/_authenticated/admin/'
+    | '/_authenticated/complaints/'
     | '/_authenticated/businesses/$businessId/edit'
   fileRoutesById: FileRoutesById
 }
@@ -738,6 +764,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBusinessesNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/complaints/': {
+      id: '/_authenticated/complaints/'
+      path: '/complaints'
+      fullPath: '/complaints/'
+      preLoaderRoute: typeof AuthenticatedComplaintsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/complaints/$complaintId': {
+      id: '/_authenticated/complaints/$complaintId'
+      path: '/complaints/$complaintId'
+      fullPath: '/complaints/$complaintId'
+      preLoaderRoute: typeof AuthenticatedComplaintsComplaintIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/complaints/new': {
       id: '/_authenticated/complaints/new'
       path: '/complaints/new'
@@ -801,9 +841,11 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedBusinessesNewRoute: typeof AuthenticatedBusinessesNewRoute
+  AuthenticatedComplaintsComplaintIdRoute: typeof AuthenticatedComplaintsComplaintIdRoute
   AuthenticatedComplaintsNewRoute: typeof AuthenticatedComplaintsNewRoute
   AuthenticatedDocumentsRequestRoute: typeof AuthenticatedDocumentsRequestRoute
   AuthenticatedSettingsProfileRoute: typeof AuthenticatedSettingsProfileRoute
+  AuthenticatedComplaintsIndexRoute: typeof AuthenticatedComplaintsIndexRoute
   AuthenticatedBusinessesBusinessIdEditRoute: typeof AuthenticatedBusinessesBusinessIdEditRoute
 }
 
@@ -812,9 +854,12 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedBusinessesNewRoute: AuthenticatedBusinessesNewRoute,
+  AuthenticatedComplaintsComplaintIdRoute:
+    AuthenticatedComplaintsComplaintIdRoute,
   AuthenticatedComplaintsNewRoute: AuthenticatedComplaintsNewRoute,
   AuthenticatedDocumentsRequestRoute: AuthenticatedDocumentsRequestRoute,
   AuthenticatedSettingsProfileRoute: AuthenticatedSettingsProfileRoute,
+  AuthenticatedComplaintsIndexRoute: AuthenticatedComplaintsIndexRoute,
   AuthenticatedBusinessesBusinessIdEditRoute:
     AuthenticatedBusinessesBusinessIdEditRoute,
 }

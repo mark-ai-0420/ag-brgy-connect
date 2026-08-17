@@ -57,8 +57,12 @@ const signInSchema = z.object({
 
 type SignInFormValues = z.infer<typeof signInSchema>
 
+import { useAuth } from '#/hooks/useAuth'
+import { clearAuthCache } from '#/server/auth'
+
 function SignIn() {
   const router = useRouter()
+  const { refreshAuth } = useAuth()
   const [isHydrated, setIsHydrated] = useState(false)
   useEffect(() => {
     setIsHydrated(true)
@@ -72,8 +76,10 @@ function SignIn() {
   async function onSubmit(data: SignInFormValues) {
     try {
       const res = await signInFn({ data })
+      clearAuthCache()
+      await refreshAuth()
+      await router.invalidate()
       toast.success('Signed in successfully!')
-      // Full page reload to the target route so SSR re-evaluates session cookies
       if (res.redirectUrl === '/admin/businesses') {
         router.navigate({ to: '/admin/businesses' })
       } else {

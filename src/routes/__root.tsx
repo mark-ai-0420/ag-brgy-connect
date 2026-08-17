@@ -80,6 +80,7 @@ import { NavBar } from '#/components/layout/Navbar'
 import { Footer } from '#/components/layout/Footer'
 import { EmergencySpeedDial } from '#/components/emergency/EmergencySpeedDial'
 import { KaDaineChatbot } from '#/components/chat/KaDaineChatbot'
+import { SessionTimeoutModal } from '#/components/auth/SessionTimeoutModal'
 
 function RootComponent() {
   useEffect(() => {
@@ -100,6 +101,7 @@ function RootComponent() {
       <Footer />
       <EmergencySpeedDial />
       <KaDaineChatbot />
+      <SessionTimeoutModal />
     </AuthProvider>
   )
 }
@@ -116,7 +118,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <Toaster richColors position="top-right" />
         <TanStackDevtools
           config={{
-            position: 'bottom-right',
+            position: 'top-left',
           }}
           plugins={[
             {

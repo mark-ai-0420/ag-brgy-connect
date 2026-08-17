@@ -316,11 +316,16 @@ function DashboardRoute() {
           <h2 className="text-xl font-bold flex items-center gap-2">
             <ShieldAlert className="h-5 w-5 text-primary" /> My Incident Reports & Complaints
           </h2>
-          <Button asChild size="default" variant="outline" className="min-h-[44px] px-4 font-semibold">
-            <Link to="/complaints/new">
-              <PlusCircle className="mr-2 h-4 w-4" /> File Complaint
+          <div className="flex items-center gap-3">
+            <Link to="/complaints" className="text-sm text-primary hover:underline font-medium">
+              View All →
             </Link>
-          </Button>
+            <Button asChild size="default" variant="outline" className="min-h-[44px] px-4 font-semibold">
+              <Link to="/complaints/new">
+                <PlusCircle className="mr-2 h-4 w-4" /> File Complaint
+              </Link>
+            </Button>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -341,7 +346,11 @@ function DashboardRoute() {
                   <div className="flex justify-between items-start gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <CardTitle className="text-base font-bold truncate">{comp.title}</CardTitle>
+                        <CardTitle className="text-base font-bold truncate">
+                          <Link to="/complaints/$complaintId" params={{ complaintId: comp.id }} className="hover:text-primary hover:underline transition-colors">
+                            {comp.title}
+                          </Link>
+                        </CardTitle>
                         {comp.is_anonymous && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
                             <EyeOff className="h-3 w-3" /> Anonymous

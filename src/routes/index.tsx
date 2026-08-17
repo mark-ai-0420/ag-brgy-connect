@@ -11,6 +11,7 @@ import {
   Users,
   Store,
   Shield,
+  ShieldAlert,
   ChevronRight,
   Search,
   Bell,
@@ -98,6 +99,14 @@ const services: ServiceCard[] = [
     description: 'Instant access to police, fire, medical, and barangay emergency hotlines.',
     color: 'text-[#b91c1c]',
     bgColor: 'bg-[#CE1126]/10 group-hover:bg-[#CE1126]/18',
+  },
+  {
+    to: '/complaints',
+    icon: <ShieldAlert className="h-7 w-7" />,
+    title: 'Incident Reports',
+    description: 'File complaints, blotter reports, and track the status of your submitted incidents.',
+    color: 'text-orange-800',
+    bgColor: 'bg-orange-500/10 group-hover:bg-orange-500/18',
   },
 ]
 

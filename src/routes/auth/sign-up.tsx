@@ -58,8 +58,12 @@ const signUpSchema = z.object({
 
 type SignUpFormValues = z.infer<typeof signUpSchema>
 
+import { useAuth } from '#/hooks/useAuth'
+import { clearAuthCache } from '#/server/auth'
+
 function SignUp() {
   const router = useRouter()
+  const { refreshAuth } = useAuth()
   const form = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -75,6 +79,9 @@ function SignUp() {
       const res = await signUpFn({ data: { email: data.email, password: data.password, fullName: data.fullName } })
       
       if (res.autoLoggedIn) {
+        clearAuthCache()
+        await refreshAuth()
+        await router.invalidate()
         toast.success('Account created successfully!')
         router.navigate({ to: '/dashboard' })
       } else {
