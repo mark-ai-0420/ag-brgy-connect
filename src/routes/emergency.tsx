@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useState, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Button } from '#/components/ui/button'
 import { Separator } from '#/components/ui/separator'
@@ -10,7 +11,7 @@ import {
   ShieldCheck,
   AlertTriangle,
 } from 'lucide-react'
-
+import { useBarangayScope } from '#/hooks/useBarangayScope'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 
@@ -71,15 +72,12 @@ const FALLBACK_STYLE = {
   bgAccent: 'bg-slate-50 dark:bg-slate-950/20',
 }
 
-import { useBarangayScope } from '#/hooks/useBarangayScope'
-import { useMemo } from 'react'
-
 function EmergencyRoute() {
-  const allContacts = Route.useLoaderData()
+  const allContacts = Route.useLoaderData() ?? []
   const { scope } = useBarangayScope()
   
   const contacts = useMemo(() => {
-    return allContacts.filter((c: any) => {
+    return (allContacts || []).filter((c: any) => {
       // If contact is tied to a specific barangay (e.g. ops desk), filter by scope
       if (c.barangay && c.barangay !== 'both') {
         const dbScope = scope === 'daine1' ? 'daine_1' : 'daine_2'
