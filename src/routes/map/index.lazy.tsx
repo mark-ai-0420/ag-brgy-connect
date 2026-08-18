@@ -569,7 +569,7 @@ function MapRouteComponent() {
             <CardContent className="p-0 relative">
               <div
                 ref={mapContainerRef}
-                className="w-full h-[450px] sm:h-[550px] lg:h-[600px] z-10 bg-slate-100 dark:bg-slate-900"
+                className="w-full h-[60dvh] min-h-[420px] max-h-[650px] sm:h-[550px] lg:h-[600px] z-10 bg-slate-100 dark:bg-slate-900 rounded-b-lg overflow-hidden"
               />
 
               {!leafletLoaded && (

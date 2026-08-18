@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as EmergencyRouteImport } from './routes/emergency'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -21,6 +22,7 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AnnouncementsIndexRouteImport } from './routes/announcements/index'
 import { Route as AnnouncementsAnnouncementIdRouteImport } from './routes/announcements/$announcementId'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
+import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
@@ -68,6 +70,11 @@ const EmergencyRoute = EmergencyRouteImport.update({
   path: '/emergency',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -108,6 +115,11 @@ const AnnouncementsAnnouncementIdRoute =
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/auth/callback',
   path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
@@ -268,6 +280,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/documents': typeof DocumentsRoute
   '/emergency': typeof EmergencyRoute
+  '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
@@ -275,6 +288,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/announcements/$announcementId': typeof AnnouncementsAnnouncementIdRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/auth/login': typeof AuthLoginRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
@@ -308,12 +322,14 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/documents': typeof DocumentsRoute
   '/emergency': typeof EmergencyRoute
+  '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/announcements/$announcementId': typeof AnnouncementsAnnouncementIdRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/auth/login': typeof AuthLoginRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
@@ -349,6 +365,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/documents': typeof DocumentsRoute
   '/emergency': typeof EmergencyRoute
+  '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
@@ -356,6 +373,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/announcements/$announcementId': typeof AnnouncementsAnnouncementIdRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/auth/login': typeof AuthLoginRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
@@ -391,6 +409,7 @@ export interface FileRouteTypes {
     | '/'
     | '/documents'
     | '/emergency'
+    | '/login'
     | '/privacy'
     | '/terms'
     | '/admin'
@@ -398,6 +417,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/announcements/$announcementId'
     | '/auth/callback'
+    | '/auth/login'
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
@@ -431,12 +451,14 @@ export interface FileRouteTypes {
     | '/'
     | '/documents'
     | '/emergency'
+    | '/login'
     | '/privacy'
     | '/terms'
     | '/dashboard'
     | '/notifications'
     | '/announcements/$announcementId'
     | '/auth/callback'
+    | '/auth/login'
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
@@ -471,6 +493,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/documents'
     | '/emergency'
+    | '/login'
     | '/privacy'
     | '/terms'
     | '/_authenticated/admin'
@@ -478,6 +501,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/announcements/$announcementId'
     | '/auth/callback'
+    | '/auth/login'
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
@@ -513,10 +537,12 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   DocumentsRoute: typeof DocumentsRoute
   EmergencyRoute: typeof EmergencyRoute
+  LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
   AnnouncementsAnnouncementIdRoute: typeof AnnouncementsAnnouncementIdRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
+  AuthLoginRoute: typeof AuthLoginRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
@@ -559,6 +585,13 @@ declare module '@tanstack/react-router' {
       path: '/emergency'
       fullPath: '/emergency'
       preLoaderRoute: typeof EmergencyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -615,6 +648,13 @@ declare module '@tanstack/react-router' {
       path: '/auth/callback'
       fullPath: '/auth/callback'
       preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/reset-password': {
@@ -873,10 +913,12 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   DocumentsRoute: DocumentsRoute,
   EmergencyRoute: EmergencyRoute,
+  LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,
   AnnouncementsAnnouncementIdRoute: AnnouncementsAnnouncementIdRoute,
   AuthCallbackRoute: AuthCallbackRoute,
+  AuthLoginRoute: AuthLoginRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,
