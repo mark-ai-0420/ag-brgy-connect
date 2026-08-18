@@ -36,12 +36,13 @@ const getVerificationData = createServerFn({ method: 'GET' })
         status: 'completed',
         created_at: '2026-08-18T08:00:00.000Z',
         resident_name: 'Juan R. Dela Cruz',
+        barangay: 'daine_1'
       }
     }
 
     const { data: request, error } = await supabase
       .from('document_requests')
-      .select('id, requester_id, document_type, status, created_at, profiles(full_name)')
+      .select('id, requester_id, document_type, status, created_at, barangay, profiles(full_name)')
       .eq('id', data.requestId)
       .single()
 
@@ -87,6 +88,16 @@ function VerifyRoute() {
                   <div>
                     <p className="text-xs text-slate-500 font-medium">Resident Name</p>
                     <p className="text-sm font-semibold text-slate-900">{request.resident_name}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <ShieldCheck className="h-5 w-5 text-slate-400" />
+                  <div>
+                    <p className="text-xs text-slate-500 font-medium">Issuing Unit</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {request.barangay === 'daine_1' ? 'Barangay Daine 1' : request.barangay === 'daine_2' ? 'Barangay Daine 2' : 'Barangay Daine'}
+                    </p>
                   </div>
                 </div>
 

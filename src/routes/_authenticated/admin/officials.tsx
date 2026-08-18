@@ -28,6 +28,7 @@ export interface Official {
   term: string
   display_order: number
   created_at: string
+  barangay: string
 }
 
 const officialSchema = z.object({
@@ -38,6 +39,7 @@ const officialSchema = z.object({
   term: z.string().min(1, 'Term is required'),
   display_order: z.coerce.number().min(0, 'Display order must be 0 or greater'),
   photo_url: z.string().optional(),
+  barangay: z.string().min(1, 'Jurisdiction is required'),
 })
 
 const POSITIONS = [
@@ -65,12 +67,23 @@ const COMMITTEES = [
 
 const getAdminOfficials = createServerFn({ method: 'GET' }).handler(async () => {
   const supabase = createSupabaseServerClient()
-  const { data, error } = await supabase
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+  const { data: profile } = await supabase.from('profiles').select('admin_scope').eq('id', user.id).single()
+  const adminScope = profile?.admin_scope || 'daine_1'
+
+  let query = supabase
     .from('barangay_officials')
-    .select('id, name, position, committee, photo_url, contact_number, term, display_order, created_at')
+    .select('id, name, position, committee, photo_url, contact_number, term, display_order, created_at, barangay')
     .order('display_order', { ascending: true })
+
+  if (adminScope !== 'both') {
+    query = query.eq('barangay', adminScope)
+  }
+
+  const { data, error } = await query
   if (error) console.error('Error fetching admin officials:', error)
-  return (data as Official[]) ?? []
+  return { officials: (data as Official[]) ?? [], adminScope }
 })
 
 const upsertOfficial = createServerFn({ method: 'POST' })
@@ -91,6 +104,7 @@ const upsertOfficial = createServerFn({ method: 'POST' })
           contact_number: data.contact_number || null,
           term: data.term,
           display_order: data.display_order,
+          barangay: data.barangay,
         })
         .eq('id', data.id)
       if (error) throw new Error(error.message)
@@ -105,6 +119,7 @@ const upsertOfficial = createServerFn({ method: 'POST' })
           contact_number: data.contact_number || null,
           term: data.term,
           display_order: data.display_order,
+          barangay: data.barangay,
         })
       if (error) throw new Error(error.message)
     }
@@ -128,7 +143,7 @@ export const Route = createFileRoute('/_authenticated/admin/officials')({
   loader: () => getAdminOfficials(),
 })
 
-function OfficialForm({ defaultValues, onSuccess }: { defaultValues?: Partial<Official>; onSuccess: () => void }) {
+function OfficialForm({ defaultValues, adminScope, onSuccess }: { defaultValues?: Partial<Official>; adminScope: string; onSuccess: () => void }) {
   const [uploading, setUploading] = useState(false)
 
   const form = useForm<z.infer<typeof officialSchema>>({
@@ -141,6 +156,7 @@ function OfficialForm({ defaultValues, onSuccess }: { defaultValues?: Partial<Of
       term: defaultValues?.term ?? '2023 - 2026',
       display_order: defaultValues?.display_order ?? 0,
       photo_url: defaultValues?.photo_url ?? '',
+      barangay: defaultValues?.barangay ?? (adminScope === 'both' ? 'daine_1' : adminScope)
     },
   })
 
@@ -295,15 +311,37 @@ function OfficialForm({ defaultValues, onSuccess }: { defaultValues?: Partial<Of
         </div>
 
         {/* Display Order */}
-        <FormField control={form.control} name="display_order" render={({ field }) => (
-          <FormItem>
-            <FormLabel>Display Order (Priority)</FormLabel>
-            <FormControl>
-              <Input type="number" min={0} {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField control={form.control} name="display_order" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Display Order (Priority)</FormLabel>
+              <FormControl>
+                <Input type="number" min={0} {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+          
+          {adminScope === 'both' && (
+            <FormField control={form.control} name="barangay" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Jurisdiction</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select jurisdiction" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="daine_1">Barangay Daine 1</SelectItem>
+                    <SelectItem value="daine_2">Barangay Daine 2</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )} />
+          )}
+        </div>
 
         <div className="flex justify-end gap-2 pt-3 border-t">
           <Button type="submit" disabled={form.formState.isSubmitting || uploading} className="min-h-[44px] px-6">
@@ -322,11 +360,16 @@ function OfficialForm({ defaultValues, onSuccess }: { defaultValues?: Partial<Of
 }
 
 function AdminOfficialsRoute() {
-  const officials = Route.useLoaderData()
+  const { officials, adminScope } = Route.useLoaderData()
   const router = useRouter()
   const [editItem, setEditItem] = useState<Official | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
   const [deleteItem, setDeleteItem] = useState<{id: string, name: string} | null>(null)
+  const [barangayFilter, setBarangayFilter] = useState<string>('all')
+
+  const filteredOfficials = adminScope === 'both' && barangayFilter !== 'all' 
+    ? officials.filter(o => o.barangay === barangayFilter)
+    : officials
 
   async function handleDelete(id: string) {
     try {
@@ -352,7 +395,25 @@ function AdminOfficialsRoute() {
             Manage Barangay Daine leadership, Kagawad committees, and organizational chart order.
           </p>
         </div>
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <div className="flex flex-col sm:flex-row gap-3">
+          {adminScope === 'both' && (
+            <div className="flex bg-muted p-1 rounded-lg shrink-0">
+              {['all', 'daine_1', 'daine_2'].map(b => (
+                <button
+                  key={b}
+                  onClick={() => setBarangayFilter(b)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    barangayFilter === b
+                      ? 'bg-background shadow-sm text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {b === 'all' ? 'All Units' : b === 'daine_1' ? 'Daine 1' : 'Daine 2'}
+                </button>
+              ))}
+            </div>
+          )}
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
             <Button className="min-h-[44px] px-4 font-semibold shrink-0 gap-2">
               <Plus className="h-4 w-4" /> Add Official
@@ -363,7 +424,8 @@ function AdminOfficialsRoute() {
               <DialogTitle>Add New Barangay Official</DialogTitle>
             </DialogHeader>
             <OfficialForm
-              defaultValues={{ display_order: (officials.length ?? 0) + 1 }}
+              defaultValues={{ display_order: (filteredOfficials.length ?? 0) + 1 }}
+              adminScope={adminScope}
               onSuccess={() => {
                 setCreateOpen(false)
                 router.invalidate()
@@ -371,18 +433,19 @@ function AdminOfficialsRoute() {
             />
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* List / Cards */}
       <div className="space-y-3">
-        {officials.length === 0 ? (
+        {filteredOfficials.length === 0 ? (
           <Card>
             <CardContent className="py-16 text-center text-muted-foreground">
               No barangay officials added yet. Click "Add Official" to add the first official.
             </CardContent>
           </Card>
         ) : (
-          officials.map((official) => {
+          filteredOfficials.map((official) => {
             const initials = official.name
               .replace(/^Hon\.\s+|^Ms\.\s+|^Mr\.\s+/, '')
               .split(' ')
@@ -447,6 +510,7 @@ function AdminOfficialsRoute() {
                           </DialogHeader>
                           <OfficialForm
                             defaultValues={official}
+                            adminScope={adminScope}
                             onSuccess={() => {
                               setEditItem(null)
                               router.invalidate()

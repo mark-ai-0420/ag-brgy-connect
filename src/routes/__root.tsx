@@ -25,6 +25,7 @@ interface MyRouterContext {
 import { AuthProvider } from '#/hooks/useAuth'
 import { clearAuthCache } from '#/server/auth'
 import { useRealtimeNotifications } from '#/hooks/useRealtimeNotifications'
+import { BarangayScopeProvider } from '#/hooks/useBarangayScope'
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   head: () => ({
@@ -93,15 +94,17 @@ function RootComponent() {
 
   return (
     <AuthProvider>
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-primary focus:text-primary-foreground">Skip to main content</a>
-      <NavBar />
-      <main id="main-content" className="flex-1">
-        <Outlet />
-      </main>
-      <Footer />
-      <EmergencySpeedDial />
-      <KaDaineChatbot />
-      <SessionTimeoutModal />
+      <BarangayScopeProvider>
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-primary focus:text-primary-foreground">Skip to main content</a>
+        <NavBar />
+        <main id="main-content" className="flex-1">
+          <Outlet />
+        </main>
+        <Footer />
+        <EmergencySpeedDial />
+        <KaDaineChatbot />
+        <SessionTimeoutModal />
+      </BarangayScopeProvider>
     </AuthProvider>
   )
 }

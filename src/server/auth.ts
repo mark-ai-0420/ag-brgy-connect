@@ -9,15 +9,27 @@ export const getAuthSession = createServerFn({ method: 'GET' })
       error: userError,
     } = await supabase.auth.getUser();
     
-    if (userError || !user) return { session: null, user: null, role: null };
+    if (userError || !user) return { session: null, user: null, role: null, admin_scope: null, barangay: null };
     
     const { data: userRole } = await supabase
       .from('user_roles')
-      .select('role')
+      .select('role, barangay')
       .eq('user_id', user.id)
       .maybeSingle();
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('barangay')
+      .eq('id', user.id)
+      .maybeSingle();
       
-    return { session: { user }, user, role: userRole?.role ?? 'resident' };
+    return { 
+      session: { user }, 
+      user, 
+      role: userRole?.role ?? 'resident',
+      admin_scope: userRole?.barangay ?? 'both',
+      barangay: profile?.barangay ?? 'daine_1'
+    };
   });
 
 // In-memory auth cache for client-side navigation (5 minute TTL)

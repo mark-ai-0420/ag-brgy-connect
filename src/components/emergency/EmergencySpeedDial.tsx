@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { PhoneCall, ShieldAlert, Siren, Flame, HeartPulse, Map, X } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 
+import { useBarangayScope } from '#/hooks/useBarangayScope';
+
 export function EmergencySpeedDial() {
   const [isOpen, setIsOpen] = useState(false);
+  const { scope } = useBarangayScope();
 
   return (
     <div className="fixed bottom-6 left-6 z-40">
@@ -20,15 +23,29 @@ export function EmergencySpeedDial() {
           </div>
           
           <div className="p-2 flex flex-col gap-1 max-h-[60vh] overflow-y-auto">
-            <a href="tel:0917123DAINE" className="flex items-center gap-3 p-3 hover:bg-muted rounded-lg transition-colors group">
-              <div className="bg-primary/10 text-primary p-2 rounded-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                <ShieldAlert className="w-4 h-4" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold">Brgy Daine Ops Desk</p>
-                <p className="text-xs text-muted-foreground">0917-123-DAINE</p>
-              </div>
-            </a>
+            {(scope === 'all' || scope === 'daine1') && (
+              <a href="tel:09171230001" className="flex items-center gap-3 p-3 hover:bg-muted rounded-lg transition-colors group">
+                <div className="bg-primary/10 text-primary p-2 rounded-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                  <ShieldAlert className="w-4 h-4" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold">Brgy Daine 1 Ops Desk</p>
+                  <p className="text-xs text-muted-foreground">0917-123-0001</p>
+                </div>
+              </a>
+            )}
+
+            {(scope === 'all' || scope === 'daine2') && (
+              <a href="tel:09171230002" className="flex items-center gap-3 p-3 hover:bg-muted rounded-lg transition-colors group">
+                <div className="bg-destructive/10 text-destructive p-2 rounded-full group-hover:bg-destructive group-hover:text-primary-foreground transition-colors">
+                  <ShieldAlert className="w-4 h-4" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold">Brgy Daine 2 Ops Desk</p>
+                  <p className="text-xs text-muted-foreground">0917-123-0002</p>
+                </div>
+              </a>
+            )}
             
             <a href="tel:0464150322" className="flex items-center gap-3 p-3 hover:bg-muted rounded-lg transition-colors group">
               <div className="bg-orange-500/10 text-orange-600 p-2 rounded-full group-hover:bg-orange-500 group-hover:text-white transition-colors">

@@ -19,7 +19,8 @@ import { createSupabaseServerClient } from '#/lib/supabase.server'
 const signUpFnSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
-  fullName: z.string().optional()
+  fullName: z.string().optional(),
+  barangay: z.enum(['daine_1', 'daine_2']).optional()
 })
 
 const signUpFn = createServerFn({ method: 'POST' })
@@ -32,6 +33,7 @@ const signUpFn = createServerFn({ method: 'POST' })
       options: {
         data: {
           full_name: data.fullName ?? '',
+          barangay: data.barangay ?? 'daine_1',
         },
       },
     })
@@ -51,6 +53,9 @@ const signUpSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string(),
+  barangay: z.enum(['daine_1', 'daine_2'], {
+    required_error: "Please select your barangay",
+  }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -71,12 +76,13 @@ function SignUp() {
       email: '',
       password: '',
       confirmPassword: '',
+      barangay: undefined as any,
     },
   })
 
   async function onSubmit(data: SignUpFormValues) {
     try {
-      const res = await signUpFn({ data: { email: data.email, password: data.password, fullName: data.fullName } })
+      const res = await signUpFn({ data: { email: data.email, password: data.password, fullName: data.fullName, barangay: data.barangay } })
       
       if (res.autoLoggedIn) {
         clearAuthCache()
@@ -156,6 +162,26 @@ function SignUp() {
                   <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
                     <Input placeholder="••••••••" type="password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="barangay"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Barangay</FormLabel>
+                  <FormControl>
+                    <select
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      {...field}
+                    >
+                      <option value="" disabled>Select a barangay</option>
+                      <option value="daine_1">Barangay Daine 1</option>
+                      <option value="daine_2">Barangay Daine 2</option>
+                    </select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

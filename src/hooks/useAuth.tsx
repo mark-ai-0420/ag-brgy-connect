@@ -8,6 +8,8 @@ type UserRole = 'admin' | 'moderator' | 'business_owner' | 'resident' | null;
 interface AuthContextType {
   user: User | null;
   role: UserRole;
+  barangay: string | null;
+  admin_scope: string | null;
   isLoading: boolean;
   refreshAuth: () => Promise<void>;
   setUserState: (user: User | null, role: UserRole) => void;
@@ -16,6 +18,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   role: null,
+  barangay: null,
+  admin_scope: null,
   isLoading: true,
   refreshAuth: async () => {},
   setUserState: () => {},
@@ -24,6 +28,8 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<UserRole>(null);
+  const [barangay, setBarangay] = useState<string | null>(null);
+  const [adminScope, setAdminScope] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const setUserState = useCallback((newUser: User | null, newRole: UserRole) => {
@@ -37,9 +43,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const auth = await getAuthSession();
       setUser(auth.user ?? null);
       setRole((auth.role as UserRole) ?? null);
+      setBarangay(auth.barangay ?? null);
+      setAdminScope(auth.admin_scope ?? null);
     } catch {
       setUser(null);
       setRole(null);
+      setBarangay(null);
+      setAdminScope(null);
     } finally {
       setIsLoading(false);
     }
@@ -66,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refreshAuth]);
 
   return (
-    <AuthContext.Provider value={{ user, role, isLoading, refreshAuth, setUserState }}>
+    <AuthContext.Provider value={{ user, role, barangay, admin_scope: adminScope, isLoading, refreshAuth, setUserState }}>
       {children}
     </AuthContext.Provider>
   );

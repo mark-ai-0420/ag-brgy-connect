@@ -9,7 +9,7 @@ import { createSupabaseServerClient } from '#/lib/supabase.server'
 export const getEvents = createServerFn({ method: 'GET' }).handler(async () => {
   try {
     const supabase = createSupabaseServerClient()
-    const { data, error } = await supabase.from('events').select('id, title, description, location, starts_at, ends_at, created_at').order('starts_at', { ascending: true })
+    const { data, error } = await supabase.from('events').select('id, title, description, location, starts_at, ends_at, created_at, scope').order('starts_at', { ascending: true })
     if (error) console.error('Error fetching events:', error)
     return data ?? []
   } catch (error) {
@@ -32,8 +32,18 @@ const EVENT_TYPE_COLORS: Record<string, string> = {
   Other: 'bg-slate-100 text-slate-950 border border-slate-300 font-semibold',
 }
 
+import { useBarangayScope } from '#/hooks/useBarangayScope'
+import { useMemo } from 'react'
+
 function EventsRoute() {
-  const events = Route.useLoaderData()
+  const allEvents = Route.useLoaderData()
+  const { scope: activeBarangayScope } = useBarangayScope()
+
+  const events = useMemo(() => {
+    if (activeBarangayScope === 'all') return allEvents
+    const dbScope = activeBarangayScope === 'daine1' ? 'daine_1' : 'daine_2'
+    return allEvents.filter((e: any) => e.scope === 'both' || e.scope === dbScope)
+  }, [allEvents, activeBarangayScope])
   return (
     <div className="container mx-auto py-10 px-4 md:px-6 max-w-5xl">
       {/* Page header */}
@@ -86,13 +96,24 @@ function EventsRoute() {
               >
                 <CardHeader className="pb-3">
                   {/* Type badge */}
-                  {category !== 'Other' && (
-                    <span
-                      className={`inline-flex self-start text-[11px] font-semibold px-2.5 py-0.5 rounded-full border mb-2 ${badgeClass}`}
-                    >
-                      {category}
-                    </span>
-                  )}
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    {category !== 'Other' && (
+                      <span
+                        className={`inline-flex self-start text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${badgeClass}`}
+                      >
+                        {category}
+                      </span>
+                    )}
+                    {event.scope && (
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                        event.scope === 'both' ? 'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200' :
+                        event.scope === 'daine_1' ? 'bg-[#0038A8]/10 text-[#0038A8] dark:bg-[#0038A8]/30 dark:text-[#60a5fa]' :
+                        'bg-[#CE1126]/10 text-[#CE1126] dark:bg-[#CE1126]/30 dark:text-[#f87171]'
+                      }`}>
+                        {event.scope === 'both' ? 'All Daine' : event.scope === 'daine_1' ? 'Daine 1' : 'Daine 2'}
+                      </span>
+                    )}
+                  </div>
                   <CardTitle className="text-base leading-snug">{event.title}</CardTitle>
                 </CardHeader>
 

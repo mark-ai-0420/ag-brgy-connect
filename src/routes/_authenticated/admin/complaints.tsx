@@ -20,13 +20,23 @@ import { ScrollArea } from '#/components/ui/scroll-area'
 
 const getAdminComplaints = createServerFn({ method: 'GET' }).handler(async () => {
   const supabase = createSupabaseServerClient()
-  const { data, error } = await supabase
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+  const { data: profile } = await supabase.from('profiles').select('admin_scope').eq('id', user.id).single()
+  const adminScope = profile?.admin_scope || 'daine_1'
+
+  let query = supabase
     .from('complaints')
     .select('*, profiles(full_name)')
     .order('created_at', { ascending: false })
   
+  if (adminScope !== 'both') {
+    query = query.eq('barangay', adminScope)
+  }
+
+  const { data, error } = await query
   if (error) throw error
-  return data
+  return { complaints: data, adminScope }
 })
 
 const updateComplaintStatus = createServerFn({ method: 'POST' })
@@ -49,8 +59,7 @@ const updateComplaintStatus = createServerFn({ method: 'POST' })
 export const Route = createFileRoute('/_authenticated/admin/complaints')({
   component: AdminComplaintsRoute,
   loader: async () => {
-    const complaints = await getAdminComplaints()
-    return { complaints }
+    return await getAdminComplaints()
   },
 })
 
@@ -70,9 +79,10 @@ const PRIORITY_BADGE_COLORS: Record<string, string> = {
 }
 
 function AdminComplaintsRoute() {
-  const { complaints } = Route.useLoaderData()
+  const { complaints, adminScope } = Route.useLoaderData()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('all')
+  const [barangayFilter, setBarangayFilter] = useState('all')
   const [selectedComplaint, setSelectedComplaint] = useState<any>(null)
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
@@ -118,9 +128,11 @@ function AdminComplaintsRoute() {
     return text.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
   }
 
-  const filteredComplaints = activeTab === 'all' 
-    ? complaints 
-    : complaints.filter((c: any) => c.status === activeTab)
+  const filteredComplaints = complaints.filter((c: any) => {
+    if (activeTab !== 'all' && c.status !== activeTab) return false;
+    if (adminScope === 'both' && barangayFilter !== 'all' && c.barangay !== barangayFilter) return false;
+    return true;
+  })
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
@@ -138,8 +150,8 @@ function AdminComplaintsRoute() {
 
       <Card>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <div className="px-6 pt-4">
-            <TabsList className="grid w-full md:w-auto grid-cols-3 md:grid-cols-6 mb-4 h-auto">
+          <div className="px-6 pt-4 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            <TabsList className="grid w-full lg:w-auto grid-cols-3 lg:grid-cols-6 h-auto">
               <TabsTrigger value="all" className="py-2">All</TabsTrigger>
               <TabsTrigger value="pending" className="py-2">Pending</TabsTrigger>
               <TabsTrigger value="investigating" className="py-2">Investigating</TabsTrigger>
@@ -147,6 +159,24 @@ function AdminComplaintsRoute() {
               <TabsTrigger value="resolved" className="py-2">Resolved</TabsTrigger>
               <TabsTrigger value="dismissed" className="py-2">Dismissed</TabsTrigger>
             </TabsList>
+            
+            {adminScope === 'both' && (
+              <div className="flex bg-muted p-1 rounded-lg shrink-0 w-full sm:w-auto overflow-x-auto">
+                {['all', 'daine_1', 'daine_2'].map(b => (
+                  <button
+                    key={b}
+                    onClick={() => setBarangayFilter(b)}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
+                      barangayFilter === b
+                        ? 'bg-background shadow-sm text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {b === 'all' ? 'All Jurisdictions' : b === 'daine_1' ? 'Daine 1' : 'Daine 2'}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           
           <div className="overflow-x-auto">
@@ -175,6 +205,11 @@ function AdminComplaintsRoute() {
                         <div className="font-medium">{complaint.title}</div>
                         <div className="text-xs text-muted-foreground truncate max-w-[200px]">
                           {formatText(complaint.category)}
+                          {adminScope === 'both' && complaint.barangay && (
+                            <span className="ml-2 px-1.5 py-0.5 rounded-md bg-muted text-[10px] uppercase font-semibold">
+                              {complaint.barangay === 'daine_1' ? 'Daine 1' : 'Daine 2'}
+                            </span>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>

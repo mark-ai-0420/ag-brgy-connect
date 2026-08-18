@@ -5,9 +5,10 @@ import { Button } from '#/components/ui/button'
 import { Badge } from '#/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar'
-import { Search, Phone, Shield, Users, Network, LayoutGrid, Award, Calendar, X, RotateCcw, UserCheck } from 'lucide-react'
-import { useState } from 'react'
+import { Search, Phone, Shield, Users, Network, LayoutGrid, Award, Calendar, X, RotateCcw, UserCheck, MapPin } from 'lucide-react'
+import { useState, useMemo, useEffect } from 'react'
 
+import { useBarangayScope } from '#/hooks/useBarangayScope'
 import { Route as OfficialsRoute, type Official } from './index'
 
 export const Route = createLazyFileRoute('/officials/')({
@@ -133,9 +134,23 @@ function OfficialCard({ official, variant = 'grid' }: { official: Official; vari
 }
 
 function OfficialsDirectoryRoute() {
-  const officials = OfficialsRoute.useLoaderData()
+  const allOfficials = OfficialsRoute.useLoaderData()
   const [search, setSearch] = useState('')
   const [activeCommittee, setActiveCommittee] = useState<string>('All')
+  
+  const { scope } = useBarangayScope()
+  const [activeBarangay, setActiveBarangay] = useState<'daine_1' | 'daine_2'>(
+    scope === 'daine2' ? 'daine_2' : 'daine_1'
+  )
+
+  useEffect(() => {
+    if (scope === 'daine1') setActiveBarangay('daine_1')
+    if (scope === 'daine2') setActiveBarangay('daine_2')
+  }, [scope])
+
+  const officials = useMemo(() => {
+    return allOfficials.filter(o => o.barangay === activeBarangay)
+  }, [allOfficials, activeBarangay])
 
   // Org Chart Categorization
   const captain = officials.find((o) => o.position === 'Punong Barangay') || officials[0]
@@ -178,6 +193,18 @@ function OfficialsDirectoryRoute() {
           </p>
         </div>
       </div>
+
+      {/* Barangay Switcher Tabs */}
+      <Tabs value={activeBarangay} onValueChange={(val) => setActiveBarangay(val as 'daine_1' | 'daine_2')} className="w-full mb-8">
+        <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto mb-2">
+          <TabsTrigger value="daine_1" className="font-semibold text-sm h-10 data-[state=active]:bg-[#0038A8] data-[state=active]:text-white">
+            Barangay Daine 1
+          </TabsTrigger>
+          <TabsTrigger value="daine_2" className="font-semibold text-sm h-10 data-[state=active]:bg-[#CE1126] data-[state=active]:text-white">
+            Barangay Daine 2
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {/* Tabs View Selector */}
       <Tabs defaultValue="org-chart" className="w-full">

@@ -17,7 +17,7 @@ import { createSupabaseServerClient } from '#/lib/supabase.server'
 const getEmergencyContacts = createServerFn({ method: 'GET' }).handler(async () => {
   try {
     const supabase = createSupabaseServerClient()
-    const { data, error } = await supabase.from('emergency_contacts').select('id, name, label, phone, display_order').order('display_order', { ascending: true })
+    const { data, error } = await supabase.from('emergency_contacts').select('id, name, label, phone, display_order, barangay').order('display_order', { ascending: true })
     if (error) console.error('Error fetching emergency contacts:', error)
     return data ?? []
   } catch (error) {
@@ -32,11 +32,17 @@ export const Route = createFileRoute('/emergency')({
 })
 
 const CATEGORY_STYLES: Record<string, any> = {
-  'Barangay Daine Responders': {
+  'Barangay Daine 1 Responders': {
     icon: ShieldAlert,
-    color: 'text-orange-700 dark:text-orange-400',
-    borderColor: 'border-l-orange-500',
-    bgAccent: 'bg-orange-50 dark:bg-orange-950/20',
+    color: 'text-blue-700 dark:text-blue-400',
+    borderColor: 'border-l-blue-500',
+    bgAccent: 'bg-blue-50 dark:bg-blue-950/20',
+  },
+  'Barangay Daine 2 Responders': {
+    icon: ShieldAlert,
+    color: 'text-red-700 dark:text-red-400',
+    borderColor: 'border-l-red-500',
+    bgAccent: 'bg-red-50 dark:bg-red-950/20',
   },
   'Police / Law Enforcement': {
     icon: ShieldCheck,
@@ -65,9 +71,24 @@ const FALLBACK_STYLE = {
   bgAccent: 'bg-slate-50 dark:bg-slate-950/20',
 }
 
+import { useBarangayScope } from '#/hooks/useBarangayScope'
+import { useMemo } from 'react'
+
 function EmergencyRoute() {
-  const contacts = Route.useLoaderData()
+  const allContacts = Route.useLoaderData()
+  const { scope } = useBarangayScope()
   
+  const contacts = useMemo(() => {
+    return allContacts.filter((c: any) => {
+      // If contact is tied to a specific barangay (e.g. ops desk), filter by scope
+      if (c.barangay && c.barangay !== 'both') {
+        const dbScope = scope === 'daine1' ? 'daine_1' : 'daine_2'
+        if (scope !== 'all' && c.barangay !== dbScope) return false
+      }
+      return true
+    })
+  }, [allContacts, scope])
+
   // Group by label
   const groupedContacts = contacts.reduce((acc: any, curr: any) => {
     const label = curr.label || 'Other'

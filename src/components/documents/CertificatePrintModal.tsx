@@ -6,14 +6,22 @@ import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { useEffect, useRef, useState, useCallback } from 'react'
 
-const getOfficialsForPrint = createServerFn({ method: 'GET' }).handler(async () => {
-  const supabase = createSupabaseServerClient()
-  const { data } = await supabase
-    .from('barangay_officials')
-    .select('name, position')
-    .in('position', ['Punong Barangay', 'Barangay Secretary'])
-  return data ?? []
-})
+const getOfficialsForPrint = createServerFn({ method: 'GET' })
+  .validator((data: { barangay?: string }) => data)
+  .handler(async ({ data }) => {
+    const supabase = createSupabaseServerClient()
+    const query = supabase
+      .from('barangay_officials')
+      .select('name, position')
+      .in('position', ['Punong Barangay', 'Barangay Secretary'])
+    
+    if (data.barangay) {
+      query.eq('barangay', data.barangay)
+    }
+
+    const { data: officials } = await query
+    return officials ?? []
+  })
 
 export interface DocumentRequest {
   id: string
@@ -23,6 +31,7 @@ export interface DocumentRequest {
   created_at: string
   status: string
   notes?: string
+  barangay?: string
 }
 
 export interface CertificatePrintModalProps {
@@ -52,9 +61,9 @@ export function CertificatePrintModal({ open, onOpenChange, request }: Certifica
   /* ── Fetch officials when modal opens ─────────────────────────── */
   useEffect(() => {
     if (open) {
-      getOfficialsForPrint().then(setOfficials).catch(console.error)
+      getOfficialsForPrint({ data: { barangay: request?.barangay } }).then(setOfficials).catch(console.error)
     }
-  }, [open])
+  }, [open, request?.barangay])
 
   /* ── Auto-zoom: scale certificate to fit preview container ───── */
   const recalcZoom = useCallback(() => {
@@ -92,8 +101,11 @@ export function CertificatePrintModal({ open, onOpenChange, request }: Certifica
   const captainName =
     officials.find(o => o.position === 'Punong Barangay')?.name || '[ Punong Barangay Name ]'
 
+  const barangayLabel = request.barangay === 'daine_1' ? 'BARANGAY DAINE 1' : request.barangay === 'daine_2' ? 'BARANGAY DAINE 2' : 'BARANGAY DAINE'
+  const prefix = request.barangay === 'daine_1' ? 'BD1-' : request.barangay === 'daine_2' ? 'BD2-' : 'BD-'
+
   const docTitle = DOCUMENT_TITLES[request.document_type] || 'BARANGAY CERTIFICATION'
-  const controlNo = `BD-${request.id.slice(0, 8).toUpperCase()}`
+  const controlNo = `${prefix}${request.id.slice(0, 8).toUpperCase()}`
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(
     'https://ag-brgy-connect.vercel.app/verify/' + request.id,
   )}`
@@ -324,7 +336,7 @@ ${headContent}
                     Province of Cavite • Municipality of Indang
                   </p>
                   <h1 className="text-2xl font-black tracking-wider text-amber-900 uppercase font-sans pt-0.5">
-                    BARANGAY DAINE
+                    {barangayLabel}
                   </h1>
                   <p className="text-xs font-bold tracking-widest text-slate-800 uppercase font-sans border-t border-amber-800/20 pt-0.5 mt-0.5">
                     OFFICE OF THE PUNONG BARANGAY
@@ -407,7 +419,7 @@ ${headContent}
               {/* Footer — Control No. & QR */}
               <footer className="border-t-2 border-amber-900/40 pt-3 flex items-center justify-between text-xs text-slate-600 font-sans">
                 <div className="space-y-0.5">
-                  <p className="font-semibold text-slate-800 tracking-wide">BARANGAY DAINE OFFICIAL CERTIFICATE</p>
+                  <p className="font-semibold text-slate-800 tracking-wide">{barangayLabel} OFFICIAL CERTIFICATE</p>
                   <p className="font-mono text-slate-700">
                     Control No.: <span className="font-bold text-amber-900">{controlNo}</span>
                   </p>

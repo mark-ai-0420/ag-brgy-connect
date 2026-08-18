@@ -36,30 +36,44 @@ const DOC_TYPE_LABELS: Record<string, string> = {
 
 const getDocumentRequests = createServerFn({ method: 'GET' }).handler(async () => {
   const supabase = createSupabaseServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+  const { data: profile } = await supabase.from('profiles').select('admin_scope').eq('id', user.id).single()
+  const adminScope = profile?.admin_scope || 'daine_1'
 
   // Try relational embedding
-  const { data: requests, error } = await supabase
+  let query = supabase
     .from('document_requests')
-    .select('id, requester_id, document_type, purpose, status, notes, created_at, profiles(full_name)')
+    .select('id, requester_id, document_type, purpose, status, notes, created_at, barangay, profiles(full_name)')
     .order('created_at', { ascending: false })
+    
+  if (adminScope !== 'both') {
+    query = query.eq('barangay', adminScope)
+  }
 
+  const { data: requests, error } = await query
+
+  let mappedRequests: any[] = []
   if (!error && requests) {
-    return requests.map(req => ({
+    mappedRequests = requests.map(req => ({
       ...req,
       resident_name: (Array.isArray(req.profiles) ? (req.profiles[0] as any)?.full_name : (req.profiles as any)?.full_name) ?? 'Unknown Resident',
     }))
+  } else {
+    let fallbackQuery = supabase.from('document_requests').select('id, requester_id, document_type, purpose, status, notes, created_at, barangay').order('created_at', { ascending: false })
+    if (adminScope !== 'both') fallbackQuery = fallbackQuery.eq('barangay', adminScope)
+    const [{ data: reqs }, { data: profs }] = await Promise.all([
+      fallbackQuery,
+      supabase.from('profiles').select('id, full_name'),
+    ])
+    const profMap = new Map((profs ?? []).map(p => [p.id, p.full_name]))
+    mappedRequests = (reqs ?? []).map(req => ({
+      ...req,
+      resident_name: profMap.get(req.requester_id) ?? 'Unknown Resident',
+    }))
   }
 
-  // Fallback to parallel fetch if relational embed fails
-  const [{ data: reqs }, { data: profs }] = await Promise.all([
-    supabase.from('document_requests').select('id, requester_id, document_type, purpose, status, notes, created_at').order('created_at', { ascending: false }),
-    supabase.from('profiles').select('id, full_name'),
-  ])
-  const profMap = new Map((profs ?? []).map(p => [p.id, p.full_name]))
-  return (reqs ?? []).map(req => ({
-    ...req,
-    resident_name: profMap.get(req.requester_id) ?? 'Unknown Resident',
-  }))
+  return { requests: mappedRequests, adminScope }
 })
 
 const updateRequestStatus = createServerFn({ method: 'POST' })
@@ -79,7 +93,7 @@ export const Route = createFileRoute('/_authenticated/admin/documents')({
   loader: () => getDocumentRequests(),
 })
 
-type Request = Awaited<ReturnType<typeof getDocumentRequests>>[number]
+type Request = Awaited<ReturnType<typeof getDocumentRequests>>['requests'][number]
 
 function UpdateStatusDialog({ request, onSuccess }: { request: Request; onSuccess: () => void }) {
   const [status, setStatus] = useState(request.status)
@@ -167,18 +181,21 @@ function UpdateStatusDialog({ request, onSuccess }: { request: Request; onSucces
 }
 
 function AdminDocumentsRoute() {
-  const requests = Route.useLoaderData()
+  const { requests, adminScope } = Route.useLoaderData()
   const router = useRouter()
   const [filterStatus, setFilterStatus] = useState<string>('all')
+  const [barangayFilter, setBarangayFilter] = useState<string>('all')
   const [printModalOpen, setPrintModalOpen] = useState(false)
   const [selectedPrintRequest, setSelectedPrintRequest] = useState<Request | null>(null)
 
-  const filtered = filterStatus === 'all'
-    ? requests
-    : requests.filter(r => r.status === filterStatus)
+  const filtered = requests.filter(r => {
+    if (filterStatus !== 'all' && r.status !== filterStatus) return false;
+    if (adminScope === 'both' && barangayFilter !== 'all' && r.barangay !== barangayFilter) return false;
+    return true;
+  })
 
-  const counts: Record<string, number> = { all: requests.length }
-  STATUSES.forEach(s => { counts[s] = requests.filter(r => r.status === s).length })
+  const counts: Record<string, number> = { all: filtered.length }
+  STATUSES.forEach(s => { counts[s] = filtered.filter(r => r.status === s).length })
 
   return (
     <div className="space-y-6">
@@ -199,21 +216,41 @@ function AdminDocumentsRoute() {
       </div>
 
       {/* Status filter tabs */}
-      <div className="flex flex-wrap gap-2 items-center">
-        <Filter className="h-4 w-4 text-muted-foreground" />
-        {['all', ...STATUSES].map(s => (
-          <button
-            key={s}
-            onClick={() => setFilterStatus(s)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize border transition-colors min-h-[32px] ${
-              filterStatus === s
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-background text-muted-foreground border-border hover:border-primary/40 hover:text-foreground'
-            }`}
-          >
-            {s.replace(/_/g, ' ')} {counts[s] !== undefined ? `(${counts[s]})` : ''}
-          </button>
-        ))}
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+        <div className="flex flex-wrap gap-2 items-center">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          {['all', ...STATUSES].map(s => (
+            <button
+              key={s}
+              onClick={() => setFilterStatus(s)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize border transition-colors min-h-[32px] ${
+                filterStatus === s
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-background text-muted-foreground border-border hover:border-primary/40 hover:text-foreground'
+              }`}
+            >
+              {s.replace(/_/g, ' ')} {counts[s] !== undefined ? `(${counts[s]})` : ''}
+            </button>
+          ))}
+        </div>
+        
+        {adminScope === 'both' && (
+          <div className="flex bg-muted p-1 rounded-lg shrink-0">
+            {['all', 'daine_1', 'daine_2'].map(b => (
+              <button
+                key={b}
+                onClick={() => setBarangayFilter(b)}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  barangayFilter === b
+                    ? 'bg-background shadow-sm text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {b === 'all' ? 'All Units' : b === 'daine_1' ? 'Daine 1' : 'Daine 2'}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Table */}
@@ -258,6 +295,11 @@ function AdminDocumentsRoute() {
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
                       {format(new Date(req.created_at), 'MMM d, yyyy')}
+                      {adminScope === 'both' && req.barangay && (
+                        <span className="ml-2 px-1.5 py-0.5 rounded-md bg-muted text-[10px] uppercase font-semibold">
+                          {req.barangay === 'daine_1' ? 'Daine 1' : 'Daine 2'}
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize whitespace-nowrap ${STATUS_COLORS[req.status] ?? 'bg-muted text-muted-foreground'}`}>

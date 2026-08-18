@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { useAuth } from '#/hooks/useAuth'
 import { signOutFn, clearAuthCache } from '#/server/auth'
 import { useRealtimeNotifications } from '#/hooks/useRealtimeNotifications'
+import { useBarangayScope } from '#/hooks/useBarangayScope'
 import { ThemeToggle } from '#/components/common/ThemeToggle'
 import { GlobalSearchDialog } from '#/components/common/GlobalSearchDialog'
 
@@ -16,8 +17,9 @@ export function NavBar() {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
 
-  const { user, role, setUserState, refreshAuth } = useAuth()
+  const { user, role, barangay, setUserState, refreshAuth } = useAuth()
   const { unreadCount, clearUnread } = useRealtimeNotifications(user?.id ?? null)
+  const { scope, setScope } = useBarangayScope()
 
   const links = [
     { to: '/directory', label: 'Directory' },
@@ -79,6 +81,12 @@ export function NavBar() {
     ? user.email.substring(0, 2).toUpperCase()
     : 'U'
 
+  const formatBarangay = (b: string | null) => {
+    if (b === 'daine_1') return 'Daine 1'
+    if (b === 'daine_2') return 'Daine 2'
+    return 'Daine'
+  }
+
   return (
     <nav className="bg-primary text-primary-foreground shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -107,6 +115,30 @@ export function NavBar() {
 
           {/* User actions + mobile toggle */}
           <div className="flex items-center gap-2">
+            {!user || role === 'admin' || role === 'moderator' ? (
+              <div className="hidden md:flex items-center bg-white/10 p-1 rounded-lg mr-2">
+                {(['all', 'daine1', 'daine2'] as const).map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setScope(s)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                      scope === s
+                        ? 'bg-white text-primary shadow-sm'
+                        : 'text-primary-foreground/70 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    {s === 'all' ? 'All Daine' : s === 'daine1' ? 'Daine 1' : 'Daine 2'}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            {user && role === 'resident' && (
+              <div className="hidden md:flex items-center px-2.5 py-1 rounded-full bg-white/15 text-xs font-medium text-white border border-white/20 mr-2 shadow-inner">
+                Resident &bull; {formatBarangay(barangay)}
+              </div>
+            )}
+
             {user ? (
               <div className="hidden sm:flex items-center gap-1.5">
                 <button

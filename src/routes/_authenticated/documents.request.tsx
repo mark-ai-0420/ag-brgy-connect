@@ -30,11 +30,18 @@ const submitDocumentRequest = createServerFn({ method: 'POST' })
       throw new Error('Not authenticated');
     }
 
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('barangay')
+      .eq('id', session.user.id)
+      .single();
+
     const { error } = await supabase.from('document_requests').insert({
       requester_id: session.user.id,
       document_type: data.document_type,
       purpose: data.purpose,
       status: 'pending',
+      barangay: profile?.barangay || 'daine_1',
     });
 
     if (error) {

@@ -11,7 +11,7 @@ import { createSupabaseServerClient } from '#/lib/supabase.server'
 export const getAnnouncements = createServerFn({ method: 'GET' }).handler(async () => {
   try {
     const supabase = createSupabaseServerClient()
-    const { data, error } = await supabase.from('announcements').select('id, title, body, pinned, created_at, author_id, category').order('pinned', { ascending: false }).order('created_at', { ascending: false })
+    const { data, error } = await supabase.from('announcements').select('id, title, body, pinned, created_at, author_id, category, scope').order('pinned', { ascending: false }).order('created_at', { ascending: false })
     if (error) console.error('Error fetching announcements:', error)
     return data ?? []
   } catch (error) {
@@ -54,6 +54,15 @@ function AnnouncementCard({ item, highlighted = false }: { item: any; highlighte
                   {item.category}
                 </span>
               )}
+              {item.scope && (
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                  item.scope === 'both' ? 'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200' :
+                  item.scope === 'daine_1' ? 'bg-[#0038A8]/10 text-[#0038A8] dark:bg-[#0038A8]/30 dark:text-[#60a5fa]' :
+                  'bg-[#CE1126]/10 text-[#CE1126] dark:bg-[#CE1126]/30 dark:text-[#f87171]'
+                }`}>
+                  {item.scope === 'both' ? 'All Daine' : item.scope === 'daine_1' ? 'Daine 1' : 'Daine 2'}
+                </span>
+              )}
             </div>
             <h2 className="text-lg font-semibold leading-snug">{item.title}</h2>
           </div>
@@ -77,16 +86,30 @@ function AnnouncementCard({ item, highlighted = false }: { item: any; highlighte
   )
 }
 
+import { useBarangayScope } from '#/hooks/useBarangayScope'
+
 function AnnouncementsRoute() {
   const announcements = Route.useLoaderData()
   const [selectedCategory, setSelectedCategory] = useState<string>('All')
+  const { scope: activeBarangayScope } = useBarangayScope()
 
   const categories = ['All', 'General', 'Health', 'Infrastructure', 'Emergency', 'Advisory', 'Programs']
 
   const filteredAnnouncements = useMemo(() => {
-    if (selectedCategory === 'All') return announcements
-    return announcements.filter((a: any) => a.category === selectedCategory)
-  }, [announcements, selectedCategory])
+    let filtered = announcements
+    
+    // Filter by barangay scope
+    if (activeBarangayScope !== 'all') {
+      const dbScope = activeBarangayScope === 'daine1' ? 'daine_1' : 'daine_2'
+      filtered = filtered.filter((a: any) => a.scope === 'both' || a.scope === dbScope)
+    }
+
+    if (selectedCategory !== 'All') {
+      filtered = filtered.filter((a: any) => a.category === selectedCategory)
+    }
+    
+    return filtered
+  }, [announcements, selectedCategory, activeBarangayScope])
 
   const pinned = filteredAnnouncements.filter((a: any) => a.pinned)
   const regular = filteredAnnouncements.filter((a: any) => !a.pinned)

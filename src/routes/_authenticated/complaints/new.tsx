@@ -39,6 +39,7 @@ const formSchema = z.object({
   location: z.string().optional(),
   incident_date: z.string().optional(),
   is_anonymous: z.boolean().default(false),
+  barangay: z.string().min(1, 'Jurisdiction is required'),
 })
 
 const createComplaint = createServerFn({ method: 'POST' })
@@ -61,6 +62,7 @@ const createComplaint = createServerFn({ method: 'POST' })
         location: data.location || null,
         incident_date: data.incident_date || null,
         is_anonymous: data.is_anonymous,
+        barangay: data.barangay,
         status: 'pending'
       })
       .select('id')
@@ -89,11 +91,21 @@ const updateComplaintPhoto = createServerFn({ method: 'POST' })
     }
   })
 
+const getResidentBarangay = createServerFn({ method: 'GET' }).handler(async () => {
+  const supabase = createSupabaseServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return 'daine_1'
+  const { data: profile } = await supabase.from('profiles').select('barangay').eq('id', user.id).single()
+  return profile?.barangay || 'daine_1'
+})
+
 export const Route = createFileRoute('/_authenticated/complaints/new')({
   component: NewComplaintRoute,
+  loader: () => getResidentBarangay(),
 })
 
 function NewComplaintRoute() {
+  const defaultBarangay = Route.useLoaderData()
   const navigate = useNavigate()
   
   const [photo, setPhoto] = useState<File | null>(null)
@@ -117,6 +129,7 @@ function NewComplaintRoute() {
       location: '',
       incident_date: '',
       is_anonymous: false,
+      barangay: defaultBarangay,
     },
   })
 
@@ -164,19 +177,43 @@ function NewComplaintRoute() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g. Loud noise at night" className="h-11 text-sm" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Title</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. Loud noise at night" className="h-11 text-sm" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="barangay"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Incident Jurisdiction</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="h-11">
+                            <SelectValue placeholder="Select jurisdiction" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="daine_1" className="min-h-[44px]">Barangay Daine 1</SelectItem>
+                          <SelectItem value="daine_2" className="min-h-[44px]">Barangay Daine 2</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}
