@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
+import { useBarangayScope } from '#/hooks/useBarangayScope'
+import { format, parseISO } from 'date-fns'
+import { useMemo } from 'react'
 import {
   Building2,
   Calendar,
@@ -15,30 +18,52 @@ import {
   ChevronRight,
   Search,
   Bell,
+  Pin,
+  Clock,
+  MapPin,
 } from 'lucide-react'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '#/components/ui/card'
+import { Button } from '#/components/ui/button'
 
-const getHomeStats = createServerFn({ method: 'GET' }).handler(async () => {
+const getHomeData = createServerFn({ method: 'GET' }).handler(async () => {
   try {
     const supabase = createSupabaseServerClient()
-    const { count } = await supabase
-      .from('businesses')
-      .select('*', { count: 'estimated', head: true })
-      .eq('status', 'approved')
+    const [businessesRes, announcementsRes, eventsRes] = await Promise.all([
+      supabase
+        .from('businesses')
+        .select('*', { count: 'estimated', head: true })
+        .eq('status', 'approved'),
+      supabase
+        .from('announcements')
+        .select('id, title, body, pinned, created_at, category, scope, image_url')
+        .order('pinned', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(3),
+      supabase
+        .from('events')
+        .select('id, title, description, location, starts_at, ends_at, scope, image_url')
+        .order('starts_at', { ascending: true })
+        .limit(3),
+    ])
 
     return {
-      businessesCount: count && count > 0 ? `${count}+` : '8+',
+      businessesCount: businessesRes.count && businessesRes.count > 0 ? `${businessesRes.count}+` : '8+',
+      recentAnnouncements: announcementsRes.data ?? [],
+      upcomingEvents: eventsRes.data ?? [],
     }
   } catch (error) {
-    console.error('Error in getHomeStats:', error)
+    console.error('Error in getHomeData:', error)
     return {
       businessesCount: '8+',
+      recentAnnouncements: [],
+      upcomingEvents: [],
     }
   }
 })
 
 export const Route = createFileRoute('/')({
   component: Home,
-  loader: () => getHomeStats(),
+  loader: () => getHomeData(),
 })
 
 /* ── Types ────────────────────────────────────────────────────────────────── */
@@ -133,7 +158,23 @@ const steps: Step[] = [
 
 /* ── Component ────────────────────────────────────────────────────────────── */
 export default function Home() {
-  const { businessesCount } = Route.useLoaderData()
+  const loaderData = Route.useLoaderData()
+  const businessesCount = loaderData?.businessesCount ?? '8+'
+  const recentAnnouncements = loaderData?.recentAnnouncements ?? []
+  const upcomingEvents = loaderData?.upcomingEvents ?? []
+  const { scope: activeBarangayScope } = useBarangayScope()
+
+  const filteredAnnouncements = useMemo(() => {
+    if (activeBarangayScope === 'all') return recentAnnouncements
+    const dbScope = activeBarangayScope === 'daine1' ? 'daine_1' : 'daine_2'
+    return recentAnnouncements.filter((a: any) => !a.scope || a.scope === 'both' || a.scope === dbScope)
+  }, [recentAnnouncements, activeBarangayScope])
+
+  const filteredEvents = useMemo(() => {
+    if (activeBarangayScope === 'all') return upcomingEvents
+    const dbScope = activeBarangayScope === 'daine1' ? 'daine_1' : 'daine_2'
+    return upcomingEvents.filter((e: any) => !e.scope || e.scope === 'both' || e.scope === dbScope)
+  }, [upcomingEvents, activeBarangayScope])
 
   const stats = [
     { label: 'Residents Served', value: '5,000+', icon: <Users className="h-5 w-5" /> },
@@ -289,6 +330,186 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ── Featured Updates & Community Media ───────────────────────────── */}
+      {(filteredAnnouncements.length > 0 || filteredEvents.length > 0) && (
+        <section className="py-16 md:py-24 bg-muted/20 border-y border-border/60" id="community-highlights">
+          <div className="page-container">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+              <div>
+                <p className="text-sm font-bold tracking-widest uppercase text-[#0038A8] dark:text-[#60a5fa] mb-2">
+                  Community Highlights
+                </p>
+                <h2 className="section-title">Latest News & Upcoming Events</h2>
+                <p className="text-muted-foreground text-base mt-1">
+                  Stay updated with the newest barangay bulletins, programs, and gatherings.
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button variant="outline" asChild className="rounded-xl min-h-[44px] font-semibold text-xs sm:text-sm">
+                  <Link to="/announcements">View Announcements</Link>
+                </Button>
+                <Button variant="outline" asChild className="rounded-xl min-h-[44px] font-semibold text-xs sm:text-sm">
+                  <Link to="/events">View Events</Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Latest Announcements Column */}
+              {filteredAnnouncements.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b">
+                    <div className="flex items-center gap-2">
+                      <Megaphone className="h-5 w-5 text-[#b91c1c]" />
+                      <h3 className="font-bold text-lg text-foreground">Recent Announcements</h3>
+                    </div>
+                    <Link to="/announcements" className="text-xs font-semibold text-primary hover:underline flex items-center gap-0.5 min-h-[36px]">
+                      <span>See all</span>
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
+                    {filteredAnnouncements.slice(0, 2).map((item: any) => (
+                      <Card key={item.id} className="group flex flex-col overflow-hidden border hover:border-primary/50 hover:shadow-md transition-all duration-300 bg-card">
+                        <div className="relative w-full h-36 overflow-hidden bg-muted/60">
+                          {item.image_url ? (
+                            <img
+                              src={item.image_url}
+                              alt={item.title}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 text-primary/40 group-hover:text-primary/60 transition-colors">
+                              <Megaphone className="h-6 w-6 text-primary/70 mb-1" />
+                              <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground/70">Barangay Notice</span>
+                            </div>
+                          )}
+                          <div className="absolute top-2 left-2 flex items-center gap-1">
+                            {item.pinned && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 shadow-xs flex items-center gap-0.5">
+                                <Pin className="h-2.5 w-2.5 fill-slate-950" /> Pinned
+                              </span>
+                            )}
+                            {item.category && (
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-background/90 text-foreground shadow-xs border">
+                                {item.category}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <CardHeader className="p-4 pb-1">
+                          <span className="text-[11px] text-muted-foreground">
+                            {format(parseISO(item.created_at), 'MMMM d, yyyy')}
+                          </span>
+                          <CardTitle className="text-sm font-bold line-clamp-1 group-hover:text-primary transition-colors">
+                            {item.title}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-1 flex-1">
+                          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                            {item.body}
+                          </p>
+                        </CardContent>
+                        <CardFooter className="p-3 pt-0 border-t bg-muted/5">
+                          <Button variant="ghost" size="sm" asChild className="w-full text-xs font-semibold text-primary justify-between min-h-[36px] px-2">
+                            <Link to={`/announcements/${item.id}` as any}>
+                              <span>Read Bulletin</span>
+                              <ChevronRight className="h-3.5 w-3.5" />
+                            </Link>
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Upcoming Events Column */}
+              {filteredEvents.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-amber-700 dark:text-amber-400" />
+                      <h3 className="font-bold text-lg text-foreground">Upcoming Activities</h3>
+                    </div>
+                    <Link to="/events" className="text-xs font-semibold text-primary hover:underline flex items-center gap-0.5 min-h-[36px]">
+                      <span>See all</span>
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
+                    {filteredEvents.slice(0, 2).map((event: any) => {
+                      const dateObj = event.starts_at ? new Date(event.starts_at) : new Date()
+                      return (
+                        <Card key={event.id} className="group flex flex-col overflow-hidden border hover:border-primary/50 hover:shadow-md transition-all duration-300 bg-card">
+                          <div className="relative w-full h-36 overflow-hidden bg-muted/60">
+                            {event.image_url ? (
+                              <img
+                                src={event.image_url}
+                                alt={event.title}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-amber-500/5 via-amber-500/10 to-amber-500/5 text-amber-600/40 group-hover:text-amber-600/60 transition-colors">
+                                <Calendar className="h-6 w-6 text-amber-600/70 mb-1" />
+                                <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground/70">Community Event</span>
+                              </div>
+                            )}
+
+                            {/* Floating Date Badge */}
+                            <div className="absolute bottom-2 left-2 bg-background/95 backdrop-blur-md rounded-lg px-2 py-1 shadow-sm border text-center pointer-events-none">
+                              <span className="block text-[9px] font-extrabold uppercase text-primary tracking-wider leading-none">{format(dateObj, 'MMM')}</span>
+                              <span className="block text-sm font-black text-foreground leading-none mt-0.5">{format(dateObj, 'd')}</span>
+                            </div>
+
+                            <div className="absolute top-2 right-2">
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-background/90 text-foreground shadow-xs border">
+                                {event.category || 'Event'}
+                              </span>
+                            </div>
+                          </div>
+
+                          <CardHeader className="p-4 pb-1">
+                            <CardTitle className="text-sm font-bold line-clamp-1 group-hover:text-primary transition-colors">
+                              {event.title}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-4 pt-1 space-y-1 text-xs text-muted-foreground flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="h-3 w-3 text-primary/70 shrink-0" />
+                              <span>{format(dateObj, 'h:mm a')}</span>
+                            </div>
+                            {event.location && (
+                              <div className="flex items-start gap-1.5">
+                                <MapPin className="h-3 w-3 text-primary/70 shrink-0 mt-0.5" />
+                                <span className="line-clamp-1">{event.location}</span>
+                              </div>
+                            )}
+                          </CardContent>
+                          <CardFooter className="p-3 pt-0 border-t bg-muted/5">
+                            <Button variant="ghost" size="sm" asChild className="w-full text-xs font-semibold text-primary justify-between min-h-[36px] px-2">
+                              <Link to="/events/$eventId" params={{ eventId: event.id }}>
+                                <span>Event Details</span>
+                                <ChevronRight className="h-3.5 w-3.5" />
+                              </Link>
+                            </Button>
+                          </CardFooter>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── How It Works ─────────────────────────────────────────────────── */}
       <section className="py-20 md:py-28 bg-muted/40" id="how-it-works">

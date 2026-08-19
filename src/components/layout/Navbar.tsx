@@ -141,7 +141,7 @@ export function NavBar() {
           {/* Center: Streamlined Navigation Links */}
           <div className="hidden lg:flex items-center gap-1.5">
             
-            {/* Services Dropdown */}
+            {/* Services / Staff Desk Dropdown */}
             <div className="relative" ref={servicesRef}>
               <button
                 type="button"
@@ -154,53 +154,115 @@ export function NavBar() {
                   servicesOpen ? 'bg-white/15 text-white' : 'text-primary-foreground/90'
                 }`}
               >
-                Services
+                {isAdmin ? 'Staff Desk' : 'Services'}
                 <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${servicesOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {servicesOpen && (
-                <div className="absolute left-0 mt-2 w-64 bg-card text-card-foreground border border-border rounded-xl shadow-xl p-1.5 z-50 animate-in fade-in-0 zoom-in-95 duration-150">
-                  <Link
-                    to="/documents"
-                    onClick={() => setServicesOpen(false)}
-                    className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors group"
-                  >
-                    <div className="p-2 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors">
-                      <FileText className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold leading-tight">Request Documents</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">Clearances & Certificates</p>
-                    </div>
-                  </Link>
+                <div className="absolute left-0 mt-2 w-72 bg-card text-card-foreground border border-border rounded-xl shadow-xl p-1.5 z-50 animate-in fade-in-0 zoom-in-95 duration-150">
+                  {isAdmin ? (
+                    <>
+                      <Link
+                        to="/admin/documents"
+                        onClick={() => setServicesOpen(false)}
+                        className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors group"
+                      >
+                        <div className="p-2 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                          <FileText className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold leading-tight">Document Issuance & Approvals</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">Certificates, clearances & permits</p>
+                        </div>
+                      </Link>
 
-                  <Link
-                    to="/complaints"
-                    onClick={() => setServicesOpen(false)}
-                    className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors group"
-                  >
-                    <div className="p-2 rounded-md bg-orange-500/10 text-orange-600 dark:text-orange-400 group-hover:bg-orange-500 group-hover:text-white transition-colors">
-                      <ShieldAlert className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold leading-tight">Incident & Blotter Report</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">File & track disputes</p>
-                    </div>
-                  </Link>
+                      <Link
+                        to="/admin/complaints"
+                        onClick={() => setServicesOpen(false)}
+                        className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors group"
+                      >
+                        <div className="p-2 rounded-md bg-orange-500/10 text-orange-600 dark:text-orange-400 group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                          <ShieldAlert className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold leading-tight">Blotter & Incident Triage</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">Disputes, mediation & reports</p>
+                        </div>
+                      </Link>
 
-                  <Link
-                    to="/directory"
-                    onClick={() => setServicesOpen(false)}
-                    className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors group"
-                  >
-                    <div className="p-2 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
-                      <Store className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold leading-tight">Business Directory</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">Local shops & services</p>
-                    </div>
-                  </Link>
+                      <Link
+                        to="/admin/businesses"
+                        onClick={() => setServicesOpen(false)}
+                        className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors group"
+                      >
+                        <div className="p-2 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                          <Store className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold leading-tight">Business Directory Triage</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">Merchant listings & permits</p>
+                        </div>
+                      </Link>
+
+                      <Link
+                        to="/admin/users"
+                        onClick={() => setServicesOpen(false)}
+                        className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors group"
+                      >
+                        <div className="p-2 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                          <Users className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold leading-tight">User Directory & Roles</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">Resident accounts & permissions</p>
+                        </div>
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        to="/documents"
+                        onClick={() => setServicesOpen(false)}
+                        className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors group"
+                      >
+                        <div className="p-2 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                          <FileText className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold leading-tight">Request Documents</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">Clearances & Certificates</p>
+                        </div>
+                      </Link>
+
+                      <Link
+                        to="/complaints"
+                        onClick={() => setServicesOpen(false)}
+                        className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors group"
+                      >
+                        <div className="p-2 rounded-md bg-orange-500/10 text-orange-600 dark:text-orange-400 group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                          <ShieldAlert className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold leading-tight">Incident & Blotter Report</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">File & track disputes</p>
+                        </div>
+                      </Link>
+
+                      <Link
+                        to="/directory"
+                        onClick={() => setServicesOpen(false)}
+                        className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors group"
+                      >
+                        <div className="p-2 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                          <Store className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold leading-tight">Business Directory</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">Local shops & services</p>
+                        </div>
+                      </Link>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -412,7 +474,7 @@ export function NavBar() {
                           className="flex items-center gap-2.5 px-3.5 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors font-medium"
                         >
                           <LayoutDashboard className="h-4 w-4 text-amber-500" />
-                          Admin Panel
+                          Admin Console
                         </Link>
                       ) : (
                         <Link
@@ -434,14 +496,16 @@ export function NavBar() {
                         Profile Settings
                       </Link>
 
-                      <Link
-                        to="/complaints"
-                        onClick={() => setUserMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3.5 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
-                      >
-                        <ShieldAlert className="h-4 w-4 text-orange-500" />
-                        My Incident Reports
-                      </Link>
+                      {!isAdmin && (
+                        <Link
+                          to="/complaints"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-3.5 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                        >
+                          <ShieldAlert className="h-4 w-4 text-orange-500" />
+                          My Incident Reports
+                        </Link>
+                      )}
                     </div>
 
                     <div className="border-t border-border/50 pt-1">
@@ -508,38 +572,104 @@ export function NavBar() {
               </div>
             )}
 
-            {/* Group 1: Services */}
-            <div>
-              <p className="text-[10px] font-bold text-primary-foreground/75 uppercase tracking-wider mb-1 px-2">
-                Services
-              </p>
-              <div className="space-y-0.5">
-                <Link
-                  to="/documents"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-white/10 transition-colors"
-                >
-                  <FileText className="h-4 w-4 text-blue-200" />
-                  Request Documents
-                </Link>
-                <Link
-                  to="/complaints"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-white/10 transition-colors"
-                >
-                  <ShieldAlert className="h-4 w-4 text-orange-200" />
-                  Incident & Blotter Report
-                </Link>
-                <Link
-                  to="/directory"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-white/10 transition-colors"
-                >
-                  <Store className="h-4 w-4 text-emerald-200" />
-                  Business Directory
-                </Link>
+            {/* Group 1: Navigation / Services / Admin Quick Links */}
+            {isAdmin ? (
+              <div>
+                <p className="text-[10px] font-bold text-primary-foreground/75 uppercase tracking-wider mb-1 px-2">
+                  Staff Desk & Administration
+                </p>
+                <div className="space-y-0.5">
+                  <Link
+                    to="/admin/documents"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-white/10 transition-colors"
+                  >
+                    <FileText className="h-4 w-4 text-blue-200" />
+                    Document Issuance & Approvals
+                  </Link>
+                  <Link
+                    to="/admin/complaints"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-white/10 transition-colors"
+                  >
+                    <ShieldAlert className="h-4 w-4 text-orange-200" />
+                    Blotter & Incident Triage
+                  </Link>
+                  <Link
+                    to="/admin/businesses"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-white/10 transition-colors"
+                  >
+                    <Store className="h-4 w-4 text-emerald-200" />
+                    Business Directory Triage
+                  </Link>
+                  <Link
+                    to="/admin/users"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-white/10 transition-colors"
+                  >
+                    <Users className="h-4 w-4 text-purple-200" />
+                    User Directory & Roles
+                  </Link>
+                  <Link
+                    to="/admin/officials"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-white/10 transition-colors"
+                  >
+                    <Users className="h-4 w-4 text-blue-200" />
+                    Barangay Officials
+                  </Link>
+                  <Link
+                    to="/admin/announcements"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-white/10 transition-colors"
+                  >
+                    <Megaphone className="h-4 w-4 text-purple-200" />
+                    Announcements Manager
+                  </Link>
+                  <Link
+                    to="/admin/events"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-white/10 transition-colors"
+                  >
+                    <Calendar className="h-4 w-4 text-pink-200" />
+                    Events Manager
+                  </Link>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div>
+                <p className="text-[10px] font-bold text-primary-foreground/75 uppercase tracking-wider mb-1 px-2">
+                  Services
+                </p>
+                <div className="space-y-0.5">
+                  <Link
+                    to="/documents"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-white/10 transition-colors"
+                  >
+                    <FileText className="h-4 w-4 text-blue-200" />
+                    Request Documents
+                  </Link>
+                  <Link
+                    to="/complaints"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-white/10 transition-colors"
+                  >
+                    <ShieldAlert className="h-4 w-4 text-orange-200" />
+                    Incident & Blotter Report
+                  </Link>
+                  <Link
+                    to="/directory"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-white/10 transition-colors"
+                  >
+                    <Store className="h-4 w-4 text-emerald-200" />
+                    Business Directory
+                  </Link>
+                </div>
+              </div>
+            )}
 
             {/* Group 2: Community */}
             <div>
@@ -601,7 +731,7 @@ export function NavBar() {
                       className="flex items-center gap-2 min-h-[44px] px-3.5 py-2.5 rounded-lg text-sm font-semibold bg-amber-400 text-amber-950 hover:bg-amber-300 transition-colors"
                     >
                       <LayoutDashboard className="h-4 w-4" />
-                      Admin Panel
+                      Admin Console
                     </Link>
                   ) : (
                     <Link
@@ -610,7 +740,7 @@ export function NavBar() {
                       className="flex items-center gap-2 min-h-[44px] px-3.5 py-2.5 rounded-lg text-sm font-medium hover:bg-white/10 transition-colors"
                     >
                       <UserIcon className="h-4 w-4" />
-                      Dashboard
+                      Resident Dashboard
                     </Link>
                   )}
                   <Link

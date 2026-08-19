@@ -5,7 +5,6 @@ import { getAuthSession } from '#/server/auth'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { useState } from 'react'
-import { uploadBusinessPhoto } from '#/lib/upload'
 import { BusinessForm, businessFormSchema, type BusinessFormValues } from '#/components/businesses/BusinessForm'
 
 const getBusiness = createServerFn({ method: 'GET' })
@@ -28,7 +27,6 @@ const getBusiness = createServerFn({ method: 'GET' })
 
 const updateBusinessSchema = businessFormSchema.extend({
   id: z.string(),
-  photo_url: z.string().optional()
 })
 
 const updateBusiness = createServerFn({ method: 'POST' })
@@ -41,7 +39,19 @@ const updateBusiness = createServerFn({ method: 'POST' })
     const { id, ...fields } = data
     const { error } = await supabase
       .from('businesses')
-      .update({ ...fields, updated_at: new Date().toISOString() })
+      .update({
+        name: fields.name,
+        category: fields.category,
+        address: fields.address,
+        phone: fields.phone,
+        hours: fields.hours || '',
+        description: fields.description || '',
+        map_url: fields.map_url || '',
+        photo_url: fields.photo_url ?? null,
+        menu_image_url: fields.menu_image_url ?? null,
+        misc_image_url: fields.misc_image_url ?? null,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', id)
       .eq('owner_id', session.user.id)
 
@@ -57,28 +67,18 @@ export const Route = createFileRoute('/_authenticated/businesses/$businessId/edi
 function EditBusinessRoute() {
   const business = Route.useLoaderData()
   const navigate = useNavigate()
-  const [isUploading, setIsUploading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  async function handleSubmit(values: BusinessFormValues, photo: File | null) {
+  async function handleSubmit(values: BusinessFormValues) {
     try {
-      setIsUploading(true)
-      let photoUrl = business.photo_url
-
-      if (photo) {
-        toast.info('Uploading photo...')
-        const uploadedUrl = await uploadBusinessPhoto(photo, business.id)
-        if (uploadedUrl) {
-          photoUrl = uploadedUrl
-        }
-      }
-
-      await updateBusiness({ data: { id: business.id, photo_url: photoUrl, ...values } })
+      setIsSubmitting(true)
+      await updateBusiness({ data: { id: business.id, ...values } })
       toast.success('Business listing updated!')
       navigate({ to: '/dashboard' })
-    } catch {
-      toast.error('Failed to update listing. Please try again.')
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to update listing. Please try again.')
     } finally {
-      setIsUploading(false)
+      setIsSubmitting(false)
     }
   }
 
@@ -97,11 +97,14 @@ function EditBusinessRoute() {
         hours: business.hours,
         description: business.description,
         map_url: business.map_url,
+        photo_url: business.photo_url,
+        menu_image_url: business.menu_image_url,
+        misc_image_url: business.misc_image_url,
       }}
-      initialPhotoUrl={business.photo_url}
       onSubmit={handleSubmit}
       onCancel={handleCancel}
-      isSubmitting={isUploading}
+      isSubmitting={isSubmitting}
     />
   )
 }
+

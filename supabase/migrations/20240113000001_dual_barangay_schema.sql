@@ -14,6 +14,8 @@ END $$;
 -- profiles
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS barangay public.barangay_unit NOT NULL DEFAULT 'daine_1';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS purok TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email TEXT;
 
 -- user_roles
 ALTER TABLE public.user_roles ADD COLUMN IF NOT EXISTS barangay public.content_scope DEFAULT 'both';
@@ -58,20 +60,13 @@ BEGIN
 
   RETURN new;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Seed Daine 1 officials
-INSERT INTO public.barangay_officials (id, full_name, role, active, barangay)
-VALUES 
-  (gen_random_uuid(), 'Hon. Rolando E. Daine', 'Punong Barangay', true, 'daine_1'),
-  (gen_random_uuid(), 'Ms. Clarissa Villar', 'Secretary', true, 'daine_1')
-ON CONFLICT DO NOTHING;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 -- Seed Daine 2 officials
-INSERT INTO public.barangay_officials (id, full_name, role, active, barangay)
+INSERT INTO public.barangay_officials (id, name, position, committee, display_order, barangay)
 VALUES 
-  (gen_random_uuid(), 'Hon. Danilo M. Mendoza', 'Punong Barangay', true, 'daine_2'),
-  (gen_random_uuid(), 'Mr. Arnold P. Cruz', 'Secretary', true, 'daine_2')
+  (gen_random_uuid(), 'Hon. Danilo M. Mendoza', 'Punong Barangay', 'Executive / Overall Governance', 1, 'daine_2'),
+  (gen_random_uuid(), 'Mr. Arnold P. Cruz', 'Barangay Secretary', 'Administrative Operations & Records', 2, 'daine_2')
 ON CONFLICT DO NOTHING;
 
 -- Seed Admin Roles

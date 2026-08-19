@@ -66,3 +66,42 @@ export async function uploadOfficialPhoto(file: File, officialId?: string): Prom
   return publicUrl
 }
 
+export async function uploadAnnouncementPhoto(file: File, id?: string): Promise<string | null> {
+  const ext = file.name.split('.').pop()
+  const fileName = `${id || 'announcement'}-${Date.now()}.${ext}`
+
+  const { error } = await supabase.storage
+    .from('announcement-photos')
+    .upload(fileName, file, { cacheControl: '3600', upsert: true })
+
+  if (error) {
+    console.error('Upload error:', error)
+    return null
+  }
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('announcement-photos')
+    .getPublicUrl(fileName)
+
+  return publicUrl
+}
+
+export async function uploadEventPhoto(file: File, id?: string): Promise<string | null> {
+  const ext = file.name.split('.').pop()
+  const fileName = `${id || 'event'}-${Date.now()}.${ext}`
+
+  const { error } = await supabase.storage
+    .from('event-photos')
+    .upload(fileName, file, { cacheControl: '3600', upsert: true })
+
+  if (error) {
+    console.error('Upload error:', error)
+    return null
+  }
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('event-photos')
+    .getPublicUrl(fileName)
+
+  return publicUrl
+}

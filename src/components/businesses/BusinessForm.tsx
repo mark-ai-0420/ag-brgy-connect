@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -8,8 +7,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '#/components/ui/input'
 import { Textarea } from '#/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select'
-import { Store } from 'lucide-react'
-import { ImageUpload } from '#/components/common/ImageUpload'
+import { Store, Image as ImageIcon, Utensils, Sparkles } from 'lucide-react'
+import { ImageUploader } from '#/components/common/ImageUploader'
 
 export const CATEGORIES = [
   'Sari-Sari Store',
@@ -32,14 +31,16 @@ export const businessFormSchema = z.object({
   hours: z.string().optional(),
   description: z.string().optional(),
   map_url: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  photo_url: z.string().nullable().optional(),
+  menu_image_url: z.string().nullable().optional(),
+  misc_image_url: z.string().nullable().optional(),
 })
 
 export type BusinessFormValues = z.infer<typeof businessFormSchema>
 
 interface BusinessFormProps {
   initialValues?: Partial<BusinessFormValues>
-  initialPhotoUrl?: string | null
-  onSubmit: (values: BusinessFormValues, photo: File | null) => Promise<void>
+  onSubmit: (values: BusinessFormValues) => Promise<void>
   onCancel: () => void
   isSubmitting?: boolean
   mode: 'create' | 'edit'
@@ -47,17 +48,13 @@ interface BusinessFormProps {
 
 export function BusinessForm({
   initialValues,
-  initialPhotoUrl,
   onSubmit,
   onCancel,
   isSubmitting = false,
   mode
 }: BusinessFormProps) {
-  const [photo, setPhoto] = useState<File | null>(null)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(initialPhotoUrl || null)
-
   const form = useForm<BusinessFormValues>({
-    resolver: zodResolver(businessFormSchema),
+    resolver: zodResolver(businessFormSchema) as any,
     defaultValues: {
       name: initialValues?.name ?? '',
       category: initialValues?.category ?? '',
@@ -66,29 +63,18 @@ export function BusinessForm({
       hours: initialValues?.hours ?? '',
       description: initialValues?.description ?? '',
       map_url: initialValues?.map_url ?? '',
+      photo_url: initialValues?.photo_url ?? null,
+      menu_image_url: initialValues?.menu_image_url ?? null,
+      misc_image_url: initialValues?.misc_image_url ?? null,
     },
   })
 
-  const handlePhotoChange = (file: File | null) => {
-    setPhoto(file)
-    if (file) {
-      setPhotoPreview(URL.createObjectURL(file))
-    } else {
-      setPhotoPreview(null)
-    }
-  }
-
-  const handlePhotoRemove = () => {
-    setPhoto(null)
-    setPhotoPreview(null)
-  }
-
   const handleSubmit = (values: BusinessFormValues) => {
-    return onSubmit(values, photo)
+    return onSubmit(values)
   }
 
   return (
-    <div className="container mx-auto py-10 px-4 md:px-6 max-w-2xl">
+    <div className="container mx-auto py-10 px-4 md:px-6 max-w-3xl">
       <div className="flex items-center gap-3 mb-8">
         <div className="bg-primary/10 p-3 rounded-full">
           <Store className="h-6 w-6 text-primary" />
@@ -99,32 +85,104 @@ export function BusinessForm({
           </h1>
           <p className="text-muted-foreground mt-1">
             {mode === 'create' 
-              ? 'List your business in the barangay directory.' 
-              : 'Update your listing in the barangay directory.'}
+              ? 'List your business in the Barangay Daine community directory.' 
+              : 'Update your listing in the Barangay Daine community directory.'}
           </p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Business Information</CardTitle>
+          <CardTitle>Business Information & Showcase</CardTitle>
           <CardDescription>
             {mode === 'create'
-              ? 'Provide details about your business to help residents find you.'
-              : 'Keep your details accurate so residents can find you.'}
+              ? 'Provide details and photos about your business to help residents find you.'
+              : 'Keep your details and photos accurate so residents can find you easily.'}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-              <div className="space-y-2">
-                <FormLabel>Business Photo (Optional)</FormLabel>
-                <ImageUpload
-                  value={photoPreview || undefined}
-                  onChange={handlePhotoChange}
-                  onRemove={handlePhotoRemove}
-                  disabled={isSubmitting}
+              {/* Photo Uploads Section */}
+              <div className="space-y-4 rounded-xl border p-4 bg-muted/20">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-bold tracking-tight">Business Photos & Showcase</h3>
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="photo_url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Main Storefront / Banner Photo (Optional)</FormLabel>
+                      <FormControl>
+                        <ImageUploader
+                          bucket="business-photos"
+                          value={field.value}
+                          onChange={field.onChange}
+                          label=""
+                          helperText="Primary storefront, facade, or company banner (JPEG, PNG, WebP up to 5MB)"
+                          aspectRatio="video"
+                          disabled={isSubmitting}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <FormField
+                    control={form.control}
+                    name="menu_image_url"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-1.5">
+                          <Utensils className="h-3.5 w-3.5 text-primary" />
+                          Menu / Price Rates (Optional)
+                        </FormLabel>
+                        <FormControl>
+                          <ImageUploader
+                            bucket="business-photos"
+                            value={field.value}
+                            onChange={field.onChange}
+                            label=""
+                            helperText="Menu card, pricelist, or service offerings"
+                            aspectRatio="square"
+                            disabled={isSubmitting}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="misc_image_url"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-1.5">
+                          <Sparkles className="h-3.5 w-3.5 text-primary" />
+                          Products / Interior (Optional)
+                        </FormLabel>
+                        <FormControl>
+                          <ImageUploader
+                            bucket="business-photos"
+                            value={field.value}
+                            onChange={field.onChange}
+                            label=""
+                            helperText="Product showcase, facilities, or dining area"
+                            aspectRatio="square"
+                            disabled={isSubmitting}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
               <FormField
@@ -202,8 +260,8 @@ export function BusinessForm({
                 name="map_url"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>OpenStreetMap Link (Optional)</FormLabel>
-                    <FormControl><Input placeholder="https://www.openstreetmap.org/..." className="h-11 text-sm" {...field} /></FormControl>
+                    <FormLabel>Map Link (Google Maps or OpenStreetMap - Optional)</FormLabel>
+                    <FormControl><Input placeholder="https://maps.google.com/..." className="h-11 text-sm" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -242,3 +300,4 @@ export function BusinessForm({
     </div>
   )
 }
+

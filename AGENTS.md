@@ -1,3 +1,86 @@
+# AGENTS.md — Development Guidelines & Collaboration Protocol
+
+Welcome to **BrgyConnect** (`ag-brgy-connect`). This document defines the operational protocol, architectural standards, and workflow rules for AI agents and subagents working in this codebase.
+
+---
+
+## 🤝 1. Collaboration & User Pairing Philosophy
+
+1. **Explicit User Approval for Git (MANDATORY)**:
+   - **NEVER** run `git commit` or `git push` automatically or silently.
+   - Always complete the code changes, run full build verification (`pnpm run build`), verify visually with screenshots, and ask the user for explicit confirmation before committing or pushing.
+   - Format approved commits using **Conventional Commits** (e.g. `feat(admin): scope user list by barangay unit and add role-aware navbar`).
+2. **Hybrid Execution & Subagent Workflow**:
+   - **Architectural Features & Audits**: Use planning mode + subagent fan-out (parallel builders) followed by a QA Critic verification subagent.
+   - **Targeted Fixes & Quick Tweaks**: Execute directly with verification and zero regressions.
+3. **High-Signal Communication & QA Proof**:
+   - Present verification via concise markdown with clickable file links (e.g. [`src/routes/__root.tsx`](file:///Users/markhuelgas/Documents/antigravity/ag-brgy-connect/src/routes/__root.tsx)), structured **Pass/Fail tables**, and **high-resolution screenshot carousels**.
+4. **Proactive & Solution-Oriented**:
+   - Diagnose root causes directly instead of asking the user to troubleshoot.
+   - When encountering ambiguities or high-impact trade-offs, proactively propose the cleanest architectural solution with rationale and utilize `/grill-me`.
+
+---
+
+## 🏗️ 2. Tech Stack & Architectural Conventions
+
+* **Framework**: [TanStack Start](https://tanstack.com/start) (Full-stack SSR with Vite + Nitro engine)
+* **Routing**: [TanStack Router](https://tanstack.com/router) (Strictly typed file-based routes in `src/routes/`)
+* **Data Fetching & Server Functions**: TanStack Query + `createServerFn` with Zod input validation
+* **Database & Auth**: [Supabase](https://supabase.com) PostgreSQL, Row-Level Security (RLS), and Session Cookie SSR
+* **UI & Styling**: Tailwind CSS, Radix UI primitives, Lucide React icons, Sonner toast notifications
+* **AI Resident Assistant**: Google GenAI (`@google/genai` Gemini SDK) in `src/server/aiChat.ts` with sliding-window rate limiting
+
+### Critical Code & SSR Rules:
+- **Type-Only React Imports**: Always use `import type { ReactNode } from 'react'` to avoid CJS/ESM module runtime errors in Vite SSR.
+- **Defensive Data Handling**: Guard against nullable loader data (e.g., `const list = Route.useLoaderData() ?? []`) to prevent hydration crashes.
+- **Server vs Client Boundaries**: Isolate database access and secret keys (`process.env.GEMINI_API_KEY`, `process.env.SUPABASE_SERVICE_ROLE_KEY`) inside server functions (`src/server/`).
+
+---
+
+## 🔄 3. Mandatory TDD & Subagent Workflow
+
+Every task MUST follow the systematic Quality-Driven process defined in [`.agents/rules/tdd-workflow.md`](file:///Users/markhuelgas/Documents/antigravity/ag-brgy-connect/.agents/rules/tdd-workflow.md):
+
+```mermaid
+graph TD
+    A[Task Ingestion & Plan] --> B[Subagent Fan-Out: Parallel Builders (3.7 Flash)]
+    B --> C[Unified Build: pnpm run build]
+    C --> D[Primary Thread Critic (3.7 Flash High): Automated Tests & Visual Audit]
+    D -->|FAIL| B
+    D -->|PASS| E[Walkthrough & Report Artifacts]
+    E --> F[Prompt User for Git Commit/Push Approval]
+```
+
+1. **Fan-Out Parallel Builders**:
+   - Decompose multi-file features across dedicated builder subagents (`Model: 'flash'`).
+   - Each subagent verifies its changes independently before reporting completion.
+2. **High-Reasoning Orchestrator & Critic (Primary Thread)**:
+   - The primary conversation runs on **Gemini 3.7 Flash (High)** set by the user.
+   - The Orchestrator consolidates code from builders, runs unified build checks, and directly executes automated test scripts and visual verification with High reasoning effort.
+   - Issues a formal `PASS` / `FAIL` verdict before presenting work.
+3. **Zero Build Regressions**:
+   - `npx --yes pnpm run build` must succeed with **0 TypeScript, Vite SSR, and Nitro compilation errors**.
+4. **High-Signal Visual Artifacts**:
+   - Save high-resolution verification screenshots to the artifact directory.
+   - Update `walkthrough.md` and present structured Pass/Fail tables and screenshot carousels.
+
+---
+
+## 🎨 4. Design & Aesthetics Standards
+
+1. **Function-Driven Design**:
+   - High visual excellence with clean typography, balanced whitespace, and purposeful micro-interactions.
+   - Avoid generic cliché tropes (no unstyled raw borders, no crowded icon bento boxes, no purple-on-dark glow).
+2. **Fluid Responsiveness**:
+   - All interactive controls (buttons, links, select triggers) must meet minimum 44x44px touch targets.
+   - Every layout must be fully responsive and tested against desktop (1440px) and mobile (375px).
+3. **Dual-Barangay Scoping & Context**:
+   - Support multi-tenant scoping for **Barangay Daine 1** and **Barangay Daine 2** across public feeds, official rosters, certificates, and admin consoles.
+
+---
+
+## ⚡ 5. TanStack Intent Guidance
+
 <!-- intent-skills:start -->
 # TanStack Intent - before editing files, run the matching guidance command.
 tanstackIntent:
@@ -95,13 +178,3 @@ tanstackIntent:
     run: "pnpm dlx @tanstack/intent@latest load @tanstack/virtual-file-routes#virtual-file-routes"
     for: "Programmatic route tree building as an alternative to filesystem conventions: rootRoute, index, route, layout, physical, defineVirtualSubtreeConfig. Use with TanStack Router plugin's virtualRouteConfig option."
 <!-- intent-skills:end -->
-
-<!-- tdd-workflow:start -->
-# Mandatory Development Workflow
-
-## Always follow the TDD workflow defined in `.agents/rules/tdd-workflow.md`:
-1. **Fan-out builds** — parallelize work across subagents, each must build-verify independently
-2. **Critic/Orchestrator** — always spawn critic subagents to review output, take screenshots for visual work, and give PASS/FAIL verdicts
-3. **Nothing breaks** — run `pnpm run build` after every batch, push migrations automatically, never leave manual steps for the user
-4. **Regression check** — verify existing features still work after changes
-<!-- tdd-workflow:end -->

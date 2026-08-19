@@ -19,21 +19,36 @@ import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { syncLGUIndangAnnouncements, getLGUSyncStatus, toggleLGUSync } from '#/server/lguScraper'
 
+import { ImageUploader } from '#/components/common/ImageUploader'
+
 const announcementSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
   body: z.string().min(10, 'Body must be at least 10 characters'),
   pinned: z.boolean().default(false),
   category: z.enum(['General', 'Health', 'Infrastructure', 'Emergency', 'Advisory', 'Programs']).default('General'),
+  scope: z.enum(['daine_1', 'daine_2', 'both']).default('both'),
+  image_url: z.string().nullable().optional(),
 })
 
 const getAnnouncements = createServerFn({ method: 'GET' }).handler(async () => {
   const supabase = createSupabaseServerClient()
-  const { data } = await supabase
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+  const { data: profile } = await supabase.from('user_roles').select('barangay').eq('user_id', user.id).single()
+  const adminScope = profile?.barangay || 'daine_1'
+
+  let query = supabase
     .from('announcements')
-    .select('id, title, body, pinned, author_id, created_at, category')
+    .select('id, title, body, pinned, author_id, created_at, category, scope, image_url')
     .order('pinned', { ascending: false })
     .order('created_at', { ascending: false })
-  return data ?? []
+
+  if (adminScope !== 'both') {
+    query = query.in('scope', [adminScope, 'both'])
+  }
+
+  const { data } = await query
+  return { announcements: data ?? [], adminScope }
 })
 
 const upsertAnnouncement = createServerFn({ method: 'POST' })
@@ -45,12 +60,28 @@ const upsertAnnouncement = createServerFn({ method: 'POST' })
 
     if (data.id) {
       const { error } = await supabase.from('announcements')
-        .update({ title: data.title, body: data.body, pinned: data.pinned, category: data.category, updated_at: new Date().toISOString() })
+        .update({
+          title: data.title,
+          body: data.body,
+          pinned: data.pinned,
+          category: data.category,
+          scope: data.scope,
+          image_url: data.image_url ?? null,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', data.id)
       if (error) throw new Error(error.message)
     } else {
       const { error } = await supabase.from('announcements')
-        .insert({ title: data.title, body: data.body, pinned: data.pinned, category: data.category, author_id: session.user.id })
+        .insert({
+          title: data.title,
+          body: data.body,
+          pinned: data.pinned,
+          category: data.category,
+          scope: data.scope,
+          image_url: data.image_url ?? null,
+          author_id: session.user.id
+        })
       if (error) throw new Error(error.message)
     }
     return { success: true }
@@ -79,21 +110,23 @@ const togglePin = createServerFn({ method: 'POST' })
 export const Route = createFileRoute('/_authenticated/admin/announcements')({
   component: AdminAnnouncementsRoute,
   loader: async () => {
-    const [announcements, syncData] = await Promise.all([
+    const [announcementsData, syncData] = await Promise.all([
       getAnnouncements(),
       getLGUSyncStatus().catch(() => ({ settings: { enabled: true, last_synced_at: null }, recentPosts: [] }))
     ])
-    return { announcements, syncData }
+    return { announcements: announcementsData.announcements, adminScope: announcementsData.adminScope, syncData }
   },
 })
 
-type Announcement = Awaited<ReturnType<typeof getAnnouncements>>[number]
+type Announcement = Awaited<ReturnType<typeof getAnnouncements>>['announcements'][number]
 
 function AnnouncementForm({
   defaultValues,
+  adminScope,
   onSuccess,
 }: {
   defaultValues?: Partial<Announcement>
+  adminScope: string
   onSuccess: () => void
 }) {
   const form = useForm<z.infer<typeof announcementSchema>>({
@@ -103,6 +136,8 @@ function AnnouncementForm({
       body: defaultValues?.body ?? '',
       pinned: defaultValues?.pinned ?? false,
       category: (defaultValues?.category as any) ?? 'General',
+      scope: (defaultValues?.scope as any) ?? (adminScope === 'both' ? 'both' : adminScope),
+      image_url: defaultValues?.image_url ?? null,
     },
   })
 
@@ -119,6 +154,23 @@ function AnnouncementForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField control={form.control} name="image_url" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Banner / Featured Photo (Optional)</FormLabel>
+            <FormControl>
+              <ImageUploader
+                bucket="announcement-photos"
+                value={field.value}
+                onChange={field.onChange}
+                label=""
+                helperText="Upload an official banner or advisory poster (JPEG, PNG, WebP up to 5MB)"
+                aspectRatio="video"
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+
         <FormField control={form.control} name="title" render={({ field }) => (
           <FormItem>
             <FormLabel>Title</FormLabel>
@@ -161,7 +213,27 @@ function AnnouncementForm({
             <FormLabel htmlFor="pinned" className="!mt-0 cursor-pointer">Pin to top</FormLabel>
           </FormItem>
         )} />
-        <div className="flex justify-end gap-2 pt-2">
+        {adminScope === 'both' && (
+          <FormField control={form.control} name="scope" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Jurisdiction (Scope)</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select scope" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="both">Both (All Daine)</SelectItem>
+                  <SelectItem value="daine_1">Barangay Daine 1</SelectItem>
+                  <SelectItem value="daine_2">Barangay Daine 2</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )} />
+        )}
+        <div className="flex justify-end gap-2 pt-2 border-t">
           <Button type="submit" disabled={form.formState.isSubmitting} className="min-h-[44px]">
             {form.formState.isSubmitting ? 'Saving...' : defaultValues?.id ? 'Update' : 'Create'}
           </Button>
@@ -172,7 +244,7 @@ function AnnouncementForm({
 }
 
 function AdminAnnouncementsRoute() {
-  const { announcements, syncData } = Route.useLoaderData()
+  const { announcements, adminScope, syncData } = Route.useLoaderData()
   const router = useRouter()
   const [editItem, setEditItem] = useState<Announcement | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
@@ -236,9 +308,9 @@ function AdminAnnouncementsRoute() {
           <DialogTrigger asChild>
             <Button className="min-h-[44px] px-4 font-semibold"><Plus className="h-4 w-4 mr-2" />New Announcement</Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>New Announcement</DialogTitle></DialogHeader>
-            <AnnouncementForm onSuccess={() => { setCreateOpen(false); router.invalidate() }} />
+            <AnnouncementForm adminScope={adminScope} onSuccess={() => { setCreateOpen(false); router.invalidate() }} />
           </DialogContent>
         </Dialog>
       </div>
@@ -306,14 +378,32 @@ function AdminAnnouncementsRoute() {
           <Card key={ann.id} className={ann.pinned ? 'border-primary/40 bg-primary/5' : ''}>
             <CardHeader className="py-4">
               <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    {ann.pinned && <Badge variant="secondary" className="text-xs">Pinned</Badge>}
-                    {ann.category && <Badge variant="outline" className="text-xs">{ann.category}</Badge>}
-                    <span className="text-xs text-muted-foreground">{format(new Date(ann.created_at), 'MMM d, yyyy')}</span>
+                <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                  {ann.image_url && (
+                    <img
+                      src={ann.image_url}
+                      alt={ann.title}
+                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg object-cover border shrink-0 mt-0.5"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      {ann.pinned && <Badge variant="secondary" className="text-xs">Pinned</Badge>}
+                      {ann.category && <Badge variant="outline" className="text-xs">{ann.category}</Badge>}
+                      {ann.scope && (
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider ${
+                          ann.scope === 'both' ? 'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200' :
+                          ann.scope === 'daine_1' ? 'bg-[#0038A8]/10 text-[#0038A8]' :
+                          'bg-[#CE1126]/10 text-[#CE1126]'
+                        }`}>
+                          {ann.scope === 'both' ? 'All Daine' : ann.scope === 'daine_1' ? 'Daine 1' : 'Daine 2'}
+                        </span>
+                      )}
+                      <span className="text-xs text-muted-foreground">{format(new Date(ann.created_at), 'MMM d, yyyy')}</span>
+                    </div>
+                    <CardTitle className="text-base truncate">{ann.title}</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{ann.body}</p>
                   </div>
-                  <CardTitle className="text-base truncate">{ann.title}</CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{ann.body}</p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={() => handlePin(ann.id, ann.pinned)} title={ann.pinned ? 'Unpin' : 'Pin'}>
@@ -323,7 +413,7 @@ function AdminAnnouncementsRoute() {
                     <DialogTrigger asChild>
                       <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]"><Pencil className="h-4 w-4" /></Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                       <DialogHeader><DialogTitle>Edit Announcement</DialogTitle></DialogHeader>
                       <AnnouncementForm defaultValues={ann} onSuccess={() => { setEditItem(null); router.invalidate() }} />
                     </DialogContent>

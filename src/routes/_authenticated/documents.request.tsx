@@ -1,7 +1,8 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { getAuthSession } from '#/server/auth'
+import { useAuth } from '#/hooks/useAuth'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -11,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select'
 import { Textarea } from '#/components/ui/textarea'
 import { toast } from 'sonner'
-import { FileText, Loader2 } from 'lucide-react'
+import { FileText, Loader2, ShieldAlert } from 'lucide-react'
 
 const formSchema = z.object({
   document_type: z.enum(['barangay_clearance', 'barangay_id', 'certificate_of_residency', 'certificate_of_indigency', 'business_permit', 'other'], {
@@ -57,6 +58,7 @@ export const Route = createFileRoute('/_authenticated/documents/request')({
 
 function DocumentRequestRoute() {
   const navigate = useNavigate();
+  const { role } = useAuth();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -88,6 +90,19 @@ function DocumentRequestRoute() {
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">Submit a new request for barangay certificates.</p>
         </div>
       </div>
+
+      {(role === 'admin' || role === 'moderator') && (
+        <div className="mb-6 p-4 rounded-xl border border-blue-200 bg-blue-50/90 text-blue-950 flex items-start gap-3 shadow-sm">
+          <ShieldAlert className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+          <div className="text-sm leading-relaxed">
+            <span className="font-semibold">Staff Account Notice:</span> You are viewing the resident document request portal. To review, manage, and issue certificates, proceed to the{' '}
+            <Link to="/admin/documents" className="font-semibold underline underline-offset-2 hover:text-blue-700">
+              Admin Documents Console
+            </Link>
+            .
+          </div>
+        </div>
+      )}
 
       <Card>
         <CardHeader>

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { getAuthSession } from '#/server/auth'
@@ -61,8 +61,14 @@ const getMyComplaints = createServerFn({ method: 'GET' })
   })
 
 export const Route = createFileRoute('/_authenticated/dashboard')({
+  beforeLoad: async () => {
+    const session = await getAuthSession()
+    if (session.role === 'admin' || session.role === 'moderator') {
+      throw redirect({ to: '/admin' })
+    }
+  },
   component: DashboardRoute,
-  loader: async ({ context }) => {
+  loader: async () => {
     const [documents, businesses, complaints] = await Promise.all([
       getMyDocumentRequests(),
       getMyBusinesses(),

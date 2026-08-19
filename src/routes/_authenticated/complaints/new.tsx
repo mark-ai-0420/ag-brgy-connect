@@ -1,6 +1,7 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
+import { useAuth } from '#/hooks/useAuth'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -28,7 +29,7 @@ import {
   SelectValue,
 } from '#/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#/components/ui/card'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, ShieldAlert } from 'lucide-react'
 
 // ... standard form setup
 
@@ -107,6 +108,7 @@ export const Route = createFileRoute('/_authenticated/complaints/new')({
 function NewComplaintRoute() {
   const defaultBarangay = Route.useLoaderData()
   const navigate = useNavigate()
+  const { role } = useAuth()
   
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
@@ -167,6 +169,19 @@ function NewComplaintRoute() {
           <p className="text-muted-foreground mt-1">Submit a complaint or report an issue to the barangay.</p>
         </div>
       </div>
+
+      {(role === 'admin' || role === 'moderator') && (
+        <div className="mb-6 p-4 rounded-xl border border-blue-200 bg-blue-50/90 text-blue-950 flex items-start gap-3 shadow-sm">
+          <ShieldAlert className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+          <div className="text-sm leading-relaxed">
+            <span className="font-semibold">Staff Account Notice:</span> You are viewing the resident incident filing form. To review and manage blotter cases, proceed to the{' '}
+            <Link to="/admin/complaints" className="font-semibold underline underline-offset-2 hover:text-blue-700">
+              Admin Blotter Management
+            </Link>
+            .
+          </div>
+        </div>
+      )}
 
       <Card>
         <CardHeader>

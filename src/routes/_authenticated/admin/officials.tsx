@@ -69,8 +69,8 @@ const getAdminOfficials = createServerFn({ method: 'GET' }).handler(async () => 
   const supabase = createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
-  const { data: profile } = await supabase.from('profiles').select('admin_scope').eq('id', user.id).single()
-  const adminScope = profile?.admin_scope || 'daine_1'
+  const { data: profile } = await supabase.from('user_roles').select('barangay').eq('user_id', user.id).single()
+  const adminScope = profile?.barangay || 'daine_1'
 
   let query = supabase
     .from('barangay_officials')

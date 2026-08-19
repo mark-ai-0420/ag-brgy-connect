@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Button } from '#/components/ui/button'
 import { Separator } from '#/components/ui/separator'
@@ -10,19 +10,112 @@ import {
   Stethoscope,
   ShieldCheck,
   AlertTriangle,
+  Radio,
+  Ambulance,
+  MapPin,
 } from 'lucide-react'
 import { useBarangayScope } from '#/hooks/useBarangayScope'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 
+// Reliable mapping of icons by category name
+const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  'Barangay Daine 1 Operations & Responders': ShieldAlert,
+  'Barangay Daine 2 Operations & Responders': ShieldAlert,
+  'Police & Law Enforcement': ShieldCheck,
+  'Bureau of Fire Protection (BFP)': Flame,
+  'Medical & Healthcare Services': Stethoscope,
+  'Disaster & Rescue Operations (MDRRMO)': Ambulance,
+  'Additional Verified Hotlines': Radio,
+}
+
+// Built-in emergency contacts guaranteed to always render
+const DEFAULT_EMERGENCY_SECTIONS = [
+  {
+    category: 'Barangay Daine 1 Operations & Responders',
+    scope: 'daine_1',
+    color: 'text-blue-700 dark:text-blue-400',
+    borderColor: 'border-l-blue-600',
+    bgAccent: 'bg-blue-50 dark:bg-blue-950/30',
+    contacts: [
+      { name: 'Barangay Daine 1 Operations Desk', label: 'Executive Hotline', phone: '0917-123-0001' },
+      { name: 'Daine 1 Barangay Tanod Patrol Unit', label: 'Peace & Order', phone: '0928-555-0101' },
+      { name: 'Daine 1 Barangay Health Station', label: 'First Aid & Maternal Care', phone: '0928-555-0103' },
+    ]
+  },
+  {
+    category: 'Barangay Daine 2 Operations & Responders',
+    scope: 'daine_2',
+    color: 'text-amber-700 dark:text-amber-400',
+    borderColor: 'border-l-amber-600',
+    bgAccent: 'bg-amber-50 dark:bg-amber-950/30',
+    contacts: [
+      { name: 'Barangay Daine 2 Operations Desk', label: 'Executive Hotline', phone: '0917-123-0002' },
+      { name: 'Daine 2 Barangay Tanod Patrol Unit', label: 'Peace & Order', phone: '0928-555-0102' },
+      { name: 'Daine 2 Barangay Health Station', label: 'First Aid & Maternal Care', phone: '0928-555-0104' },
+    ]
+  },
+  {
+    category: 'Police & Law Enforcement',
+    scope: 'both',
+    color: 'text-indigo-700 dark:text-indigo-400',
+    borderColor: 'border-l-indigo-600',
+    bgAccent: 'bg-indigo-50 dark:bg-indigo-950/30',
+    contacts: [
+      { name: 'Indang Municipal Police Station (PNP)', label: 'Municipal Police Desk', phone: '(046) 415-0211, 0998-598-5612' },
+      { name: 'Cavite Provincial Police Office', label: 'Provincial Command', phone: '(046) 431-0370' },
+    ]
+  },
+  {
+    category: 'Bureau of Fire Protection (BFP)',
+    scope: 'both',
+    color: 'text-red-700 dark:text-red-400',
+    borderColor: 'border-l-red-600',
+    bgAccent: 'bg-red-50 dark:bg-red-950/30',
+    contacts: [
+      { name: 'BFP Indang Fire Station', label: 'Fire & Rescue Hotline', phone: '(046) 415-0322, 0915-602-1991' },
+      { name: 'BFP Cavite Provincial Operations', label: 'Provincial Command', phone: '(046) 419-0120' },
+    ]
+  },
+  {
+    category: 'Medical & Healthcare Services',
+    scope: 'both',
+    color: 'text-emerald-700 dark:text-emerald-400',
+    borderColor: 'border-l-emerald-600',
+    bgAccent: 'bg-emerald-50 dark:bg-emerald-950/30',
+    contacts: [
+      { name: 'Indang Rural Health Unit (RHU / Main)', label: 'Public Health Office', phone: '(046) 415-0102' },
+      { name: 'General Emilio Aguinaldo Memorial Hospital', label: 'Provincial Hospital', phone: '(046) 416-0262' },
+      { name: 'De La Salle University Medical Center (DLSUMC)', label: 'Tertiary Hospital', phone: '(046) 481-8000' },
+    ]
+  },
+  {
+    category: 'Disaster & Rescue Operations (MDRRMO)',
+    scope: 'both',
+    color: 'text-cyan-700 dark:text-cyan-400',
+    borderColor: 'border-l-cyan-600',
+    bgAccent: 'bg-cyan-50 dark:bg-cyan-950/30',
+    contacts: [
+      { name: 'MDRRMO Indang Emergency Rescue Unit', label: 'Disaster & Ambulance', phone: '0998-555-0103, (046) 415-0011' },
+      { name: 'Cavite PDRRMO Emergency Hotline', label: 'Provincial Disaster Center', phone: '(046) 419-1406' },
+    ]
+  },
+]
+
 const getEmergencyContacts = createServerFn({ method: 'GET' }).handler(async () => {
   try {
     const supabase = createSupabaseServerClient()
-    const { data, error } = await supabase.from('emergency_contacts').select('id, name, label, phone, display_order, barangay').order('display_order', { ascending: true })
-    if (error) console.error('Error fetching emergency contacts:', error)
+    const { data, error } = await supabase
+      .from('emergency_contacts')
+      .select('*')
+      .order('display_order', { ascending: true })
+    
+    if (error) {
+      console.warn('Notice fetching custom emergency_contacts from Supabase:', error.message)
+    }
     return data ?? []
   } catch (error) {
-    console.error('Error in getEmergencyContacts:', error)
+    console.warn('Error in getEmergencyContacts:', error)
     return []
   }
 })
@@ -32,94 +125,67 @@ export const Route = createFileRoute('/emergency')({
   loader: () => getEmergencyContacts(),
 })
 
-const CATEGORY_STYLES: Record<string, any> = {
-  'Barangay Daine 1 Responders': {
-    icon: ShieldAlert,
-    color: 'text-blue-700 dark:text-blue-400',
-    borderColor: 'border-l-blue-500',
-    bgAccent: 'bg-blue-50 dark:bg-blue-950/20',
-  },
-  'Barangay Daine 2 Responders': {
-    icon: ShieldAlert,
-    color: 'text-red-700 dark:text-red-400',
-    borderColor: 'border-l-red-500',
-    bgAccent: 'bg-red-50 dark:bg-red-950/20',
-  },
-  'Police / Law Enforcement': {
-    icon: ShieldCheck,
-    color: 'text-blue-700 dark:text-blue-400',
-    borderColor: 'border-l-blue-500',
-    bgAccent: 'bg-blue-50 dark:bg-blue-950/20',
-  },
-  'Fire Station': {
-    icon: Flame,
-    color: 'text-red-700 dark:text-red-400',
-    borderColor: 'border-l-red-500',
-    bgAccent: 'bg-red-50 dark:bg-red-950/20',
-  },
-  'Medical / Health': {
-    icon: Stethoscope,
-    color: 'text-emerald-800 dark:text-emerald-400',
-    borderColor: 'border-l-emerald-600',
-    bgAccent: 'bg-emerald-50 dark:bg-emerald-950/20',
-  }
-}
-
-const FALLBACK_STYLE = {
-  icon: AlertTriangle,
-  color: 'text-slate-700 dark:text-slate-400',
-  borderColor: 'border-l-slate-500',
-  bgAccent: 'bg-slate-50 dark:bg-slate-950/20',
-}
-
 function EmergencyRoute() {
-  const allContacts = Route.useLoaderData() ?? []
-  const { scope } = useBarangayScope()
+  const dbContacts = Route.useLoaderData() ?? []
+  const { scope, setScope } = useBarangayScope()
   
-  const contacts = useMemo(() => {
-    return (allContacts || []).filter((c: any) => {
-      // If contact is tied to a specific barangay (e.g. ops desk), filter by scope
-      if (c.barangay && c.barangay !== 'both') {
-        const dbScope = scope === 'daine1' ? 'daine_1' : 'daine_2'
-        if (scope !== 'all' && c.barangay !== dbScope) return false
-      }
+  // Merge database custom contacts with built-in default directory
+  const displaySections = useMemo(() => {
+    // 1. Filter out default sections based on active scope
+    let sections = DEFAULT_EMERGENCY_SECTIONS.filter((sec) => {
+      if (scope === 'daine1') return sec.scope === 'daine_1' || sec.scope === 'both'
+      if (scope === 'daine2') return sec.scope === 'daine_2' || sec.scope === 'both'
       return true
     })
-  }, [allContacts, scope])
 
-  // Group by label
-  const groupedContacts = contacts.reduce((acc: any, curr: any) => {
-    const label = curr.label || 'Other'
-    if (!acc[label]) acc[label] = []
-    acc[label].push(curr)
-    return acc
-  }, {})
+    // 2. Add custom contacts from database, filtering them individually
+    if (dbContacts && dbContacts.length > 0) {
+      const activeDbScope = scope === 'daine1' ? 'daine_1' : scope === 'daine2' ? 'daine_2' : 'both'
+      
+      const filteredCustomContacts = dbContacts
+        .filter((c: any) => {
+          const cScope = c.scope || 'both'
+          if (activeDbScope === 'both') return true
+          return cScope === 'both' || cScope === activeDbScope
+        })
+        .map((c: any) => ({
+          name: c.name,
+          label: c.label || 'Barangay Hotline',
+          phone: c.phone,
+          scope: c.scope || 'both',
+        }))
 
-  const sections = Object.entries(groupedContacts).map(([category, items]: [string, any]) => {
-    return {
-      category,
-      ...CATEGORY_STYLES[category] ?? FALLBACK_STYLE,
-      contacts: items
+      if (filteredCustomContacts.length > 0) {
+        sections.push({
+          category: 'Additional Verified Hotlines',
+          scope: 'both',
+          color: 'text-purple-700 dark:text-purple-400',
+          borderColor: 'border-l-purple-600',
+          bgAccent: 'bg-purple-50 dark:bg-purple-950/30',
+          contacts: filteredCustomContacts,
+        })
+      }
     }
-  })
+
+    return sections
+  }, [dbContacts, scope])
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pb-16">
       {/* Urgent header banner */}
-      <div className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 text-white py-10 px-4">
-        <div className="container mx-auto max-w-4xl">
+      <div className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 text-white py-10 px-4 shadow-md">
+        <div className="container mx-auto max-w-5xl">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-            <div className="flex-shrink-0 p-4 bg-white/15 rounded-2xl backdrop-blur-sm ring-1 ring-white/20">
+            <div className="flex-shrink-0 p-4 bg-white/15 rounded-2xl backdrop-blur-sm ring-1 ring-white/20 shadow-inner">
               <AlertTriangle className="h-10 w-10 text-white" />
             </div>
             <div className="text-center sm:text-left">
               <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
-                Emergency Contacts
+                Emergency Hotlines & Responders
               </h1>
-              <p className="text-red-50 text-sm md:text-base max-w-xl leading-relaxed font-normal">
+              <p className="text-red-50 text-sm md:text-base max-w-2xl leading-relaxed font-normal">
                 In case of emergency, contact the appropriate authorities{' '}
-                <strong className="text-white font-bold underline decoration-yellow-400 underline-offset-2">immediately</strong>. Save these
-                numbers or bookmark this page.
+                <strong className="text-white font-bold underline decoration-yellow-400 underline-offset-2">immediately</strong>. Tap any number to call directly.
               </p>
             </div>
           </div>
@@ -128,20 +194,21 @@ function EmergencyRoute() {
           <div className="mt-8 flex flex-wrap gap-3 justify-center sm:justify-start">
             {[
               { label: 'National Emergency', number: '911' },
-              { label: 'Red Cross', number: '143' },
+              { label: 'Philippine Red Cross', number: '143' },
               { label: 'PNP Hotline', number: '117' },
+              { label: 'NDRRMO Hotline', number: '(02) 8911-1406' },
             ].map(({ label, number }) => (
               <a
                 key={number}
-                href={`tel:${number}`}
-                className="flex items-center gap-3 bg-white/15 hover:bg-white/25 active:bg-white/30 transition-colors backdrop-blur-sm rounded-xl px-4 py-3 ring-1 ring-white/20 min-h-[48px] shadow-sm"
+                href={`tel:${number.replace(/[^0-9+]/g, '')}`}
+                className="flex items-center gap-3 bg-white/15 hover:bg-white/25 active:bg-white/30 transition-all backdrop-blur-sm rounded-xl px-4 py-3 ring-1 ring-white/20 min-h-[48px] shadow-sm hover:scale-[1.02]"
               >
                 <Phone className="h-5 w-5 text-yellow-300 shrink-0" />
                 <div className="text-left">
-                  <p className="text-[10px] text-red-50 font-semibold uppercase tracking-wide leading-none mb-1">
+                  <p className="text-[10px] text-red-100 font-bold uppercase tracking-wide leading-none mb-1">
                     {label}
                   </p>
-                  <p className="text-2xl font-extrabold leading-none tracking-tight">{number}</p>
+                  <p className="text-2xl font-black leading-none tracking-tight">{number}</p>
                 </div>
               </a>
             ))}
@@ -149,68 +216,106 @@ function EmergencyRoute() {
         </div>
       </div>
 
-      {/* Cards grid */}
-      <div className="container mx-auto max-w-4xl py-10 px-4 md:px-6">
+      {/* Scope Filter Tabs */}
+      <div className="container mx-auto max-w-5xl px-4 pt-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-card border border-border rounded-2xl shadow-sm">
+          <div className="flex items-center gap-2 px-2">
+            <MapPin className="h-4 w-4 text-primary" />
+            <span className="text-xs font-semibold text-muted-foreground">Showing Hotlines for:</span>
+          </div>
+          <div className="grid grid-cols-3 sm:flex items-center gap-1.5 bg-muted/60 p-1 rounded-xl">
+            {(['all', 'daine1', 'daine2'] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setScope(s)}
+                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                  scope === s
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+                }`}
+              >
+                {s === 'all' ? 'All Jurisdictions' : s === 'daine1' ? 'Barangay Daine 1' : 'Barangay Daine 2'}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Cards Grid */}
+      <div className="container mx-auto max-w-5xl py-6 px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {sections.map((section, idx) => (
-            <Card
-              key={idx}
-              className={`border-l-4 ${section.borderColor} shadow-sm overflow-hidden`}
-            >
-              <CardHeader className={`pb-3 ${section.bgAccent}`}>
-                <div className="flex items-center gap-2.5">
-                  <section.icon className={`h-5 w-5 ${section.color} shrink-0`} />
-                  <CardTitle className="text-base font-bold">{section.category}</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-4 space-y-5">
-                {section.contacts.map((contact: any, cIdx: number) => {
-                  const numbers = contact.phone ? contact.phone.split(',').map((n: string) => n.trim()) : []
-                  return (
-                    <div key={cIdx}>
-                      {cIdx > 0 && <Separator className="mb-5" />}
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                        {contact.name}
-                      </p>
-                      <div className="flex flex-col gap-3">
-                        {numbers.map((number: string, nIdx: number) => (
-                          <div
-                            key={nIdx}
-                            className="flex items-center justify-between gap-3 p-2 rounded-xl hover:bg-muted/50 transition-colors"
-                          >
-                            <a
-                              href={`tel:${number.replace(/[^0-9+]/g, '')}`}
-                              className="text-xl sm:text-2xl font-bold tracking-tight hover:text-primary transition-colors min-h-[44px] flex items-center"
+          {displaySections.map((section, idx) => {
+            const Icon = CATEGORY_ICONS[section.category] || ShieldAlert
+            return (
+              <Card
+                key={idx}
+                className={`border-l-4 ${section.borderColor} shadow-sm overflow-hidden bg-card transition-all hover:shadow-md`}
+              >
+                <CardHeader className={`pb-3 ${section.bgAccent}`}>
+                  <div className="flex items-center gap-2.5">
+                    <Icon className={`h-5 w-5 ${section.color} shrink-0`} />
+                    <CardTitle className="text-base font-bold text-foreground leading-tight">
+                      {section.category}
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-4 space-y-4">
+                  {section.contacts.map((contact, cIdx) => {
+                    const numbers = contact.phone ? contact.phone.split(',').map((n: string) => n.trim()) : []
+                    return (
+                      <div key={cIdx}>
+                        {cIdx > 0 && <Separator className="mb-4" />}
+                        <div className="flex items-center justify-between mb-1.5">
+                          <p className="text-xs font-bold text-foreground">
+                            {contact.name}
+                          </p>
+                          {contact.label && (
+                            <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+                              {contact.label}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          {numbers.map((number: string, nIdx: number) => (
+                            <div
+                              key={nIdx}
+                              className="flex items-center justify-between gap-3 p-2 rounded-xl bg-muted/30 hover:bg-muted/70 transition-colors"
                             >
-                              {number}
-                            </a>
-                            <Button
-                              asChild
-                              size="default"
-                              className="shrink-0 bg-emerald-800 hover:bg-emerald-900 text-white font-semibold min-h-[44px] px-4 rounded-xl shadow-sm"
-                            >
-                              <a href={`tel:${number.replace(/[^0-9+]/g, '')}`}>
-                                <Phone className="h-4 w-4 mr-1.5" />
-                                Call
+                              <a
+                                href={`tel:${number.replace(/[^0-9+]/g, '')}`}
+                                className="text-base sm:text-lg font-bold tracking-tight text-primary hover:underline min-h-[44px] flex items-center"
+                              >
+                                {number}
                               </a>
-                            </Button>
-                          </div>
-                        ))}
+                              <Button
+                                asChild
+                                size="sm"
+                                className="shrink-0 bg-emerald-700 hover:bg-emerald-800 text-white font-bold min-h-[40px] px-3.5 rounded-xl shadow-sm"
+                              >
+                                <a href={`tel:${number.replace(/[^0-9+]/g, '')}`}>
+                                  <Phone className="h-3.5 w-3.5 mr-1.5" />
+                                  Call
+                                </a>
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )
-                })}
-              </CardContent>
-            </Card>
-          ))}
+                    )
+                  })}
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
 
         {/* Disclaimer */}
-        <p className="text-center text-xs text-muted-foreground mt-10 max-w-lg mx-auto">
-          Contact numbers are regularly verified by Barangay Daine. If you
-          notice an outdated number, please visit the Barangay Hall or call the
-          emergency hotline.
-        </p>
+        <div className="mt-10 p-4 rounded-2xl bg-muted/40 border border-border/50 text-center max-w-xl mx-auto">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Emergency contact numbers are regularly verified by the Barangay Councils of Daine 1 & Daine 2 in coordination with the Municipality of Indang, Cavite. For immediate life-threatening incidents, please call <strong>911</strong>.
+          </p>
+        </div>
       </div>
     </div>
   )

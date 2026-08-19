@@ -15,7 +15,10 @@ const getEvent = createServerFn({ method: 'GET' })
   .handler(async ({ data: id }) => {
     const supabase = createSupabaseServerClient()
     const { data, error } = await supabase
-      .from('events').select('id, title, description, location, starts_at, ends_at, created_at').eq('id', id).single()
+      .from('events')
+      .select('id, title, description, location, starts_at, ends_at, created_at, scope, image_url')
+      .eq('id', id)
+      .single()
     if (error || !data) return null
     return data
   })
@@ -29,7 +32,10 @@ const CATEGORY_STYLES: Record<string, { dot: string; badge: string }> = {
   Meeting:    { dot: 'bg-blue-500',   badge: 'bg-blue-100 text-blue-950 dark:bg-blue-900/30 dark:text-blue-200 border border-blue-300 font-semibold' },
   Sports:     { dot: 'bg-amber-500', badge: 'bg-amber-100 text-amber-950 dark:bg-amber-900/30 dark:text-amber-200 border border-amber-300 font-semibold' },
   Environment:{ dot: 'bg-emerald-500',  badge: 'bg-emerald-100 text-emerald-950 dark:bg-emerald-900/30 dark:text-emerald-200 border border-emerald-300 font-semibold' },
-  Community:  { dot: 'bg-purple-500', badge: 'bg-purple-100 text-purple-950 dark:bg-purple-900/30 dark:text-purple-200 border border-purple-300 font-semibold' },
+  Health:     { dot: 'bg-green-500',  badge: 'bg-green-100 text-green-950 dark:bg-green-900/30 dark:text-green-200 border border-green-300 font-semibold' },
+  Cultural:   { dot: 'bg-purple-500', badge: 'bg-purple-100 text-purple-950 dark:bg-purple-900/30 dark:text-purple-200 border border-purple-300 font-semibold' },
+  Community:  { dot: 'bg-indigo-500', badge: 'bg-indigo-100 text-indigo-950 dark:bg-indigo-900/30 dark:text-indigo-200 border border-indigo-300 font-semibold' },
+  Other:      { dot: 'bg-slate-500',  badge: 'bg-slate-100 text-slate-950 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 font-semibold' },
 }
 
 // Coordinates for Barangay Daine, Indang, Cavite, Philippines
@@ -116,20 +122,42 @@ function EventDetail() {
         {/* Main content */}
         <div className="lg:col-span-2 space-y-6">
           <div>
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${catStyle.badge}`}>
-              {category}
-            </span>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight mt-3 mb-2">
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <span className={`text-xs font-semibold px-3 py-1 rounded-full ${catStyle.badge}`}>
+                {category}
+              </span>
+              {event.scope && (
+                <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
+                  event.scope === 'both' ? 'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200' :
+                  event.scope === 'daine_1' ? 'bg-[#0038A8]/10 text-[#0038A8] dark:bg-[#0038A8]/30 dark:text-[#60a5fa]' :
+                  'bg-[#CE1126]/10 text-[#CE1126] dark:bg-[#CE1126]/30 dark:text-[#f87171]'
+                }`}>
+                  {event.scope === 'both' ? 'All Daine' : event.scope === 'daine_1' ? 'Barangay Daine 1' : 'Barangay Daine 2'}
+                </span>
+              )}
+            </div>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight mb-2 text-foreground">
               {event.title}
             </h1>
-            {event.organizer && <p className="text-muted-foreground text-sm">Organized by {event.organizer}</p>}
+            {event.organizer && <p className="text-muted-foreground text-sm font-medium">Organized by {event.organizer}</p>}
           </div>
+
+          {/* Full Hero Image (if present) */}
+          {event.image_url && (
+            <div className="rounded-2xl overflow-hidden border border-border/80 shadow-md bg-muted/40 my-6">
+              <img
+                src={event.image_url}
+                alt={event.title}
+                className="w-full h-auto max-h-[500px] object-cover"
+              />
+            </div>
+          )}
 
           {/* Description */}
           <div className="space-y-4 pt-2">
-            <h2 className="text-lg font-semibold">About this Event</h2>
+            <h2 className="text-lg font-bold">About this Event</h2>
             {event.description?.split('\n\n').map((para: string, idx: number) => (
-              <p key={idx} className="text-sm leading-relaxed text-foreground/85 whitespace-pre-wrap">
+              <p key={idx} className="text-base leading-relaxed text-foreground/90 whitespace-pre-wrap">
                 {para}
               </p>
             ))}

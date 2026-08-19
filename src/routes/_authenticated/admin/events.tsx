@@ -12,9 +12,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form'
 import { Input } from '#/components/ui/input'
 import { Textarea } from '#/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select'
 import { Pencil, Trash2, Plus, Calendar, MapPin } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
+import { ImageUploader } from '#/components/common/ImageUploader'
 
 const eventSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
@@ -22,15 +24,28 @@ const eventSchema = z.object({
   location: z.string().optional(),
   starts_at: z.string().min(1, 'Start date/time is required'),
   ends_at: z.string().optional(),
+  scope: z.enum(['daine_1', 'daine_2', 'both']).default('both'),
+  image_url: z.string().nullable().optional(),
 })
 
 const getEvents = createServerFn({ method: 'GET' }).handler(async () => {
   const supabase = createSupabaseServerClient()
-  const { data } = await supabase
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+  const { data: profile } = await supabase.from('user_roles').select('barangay').eq('user_id', user.id).single()
+  const adminScope = profile?.barangay || 'daine_1'
+
+  let query = supabase
     .from('events')
-    .select('id, title, description, location, starts_at, ends_at, created_at')
+    .select('id, title, description, location, starts_at, ends_at, created_at, scope, image_url')
     .order('starts_at', { ascending: true })
-  return data ?? []
+
+  if (adminScope !== 'both') {
+    query = query.in('scope', [adminScope, 'both'])
+  }
+
+  const { data } = await query
+  return { events: data ?? [], adminScope }
 })
 
 const upsertEvent = createServerFn({ method: 'POST' })
@@ -42,12 +57,29 @@ const upsertEvent = createServerFn({ method: 'POST' })
 
     if (data.id) {
       const { error } = await supabase.from('events')
-        .update({ title: data.title, description: data.description, location: data.location, starts_at: data.starts_at, ends_at: data.ends_at || null, updated_at: new Date().toISOString() })
+        .update({
+          title: data.title,
+          description: data.description,
+          location: data.location,
+          starts_at: data.starts_at,
+          ends_at: data.ends_at || null,
+          scope: data.scope,
+          image_url: data.image_url ?? null,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', data.id)
       if (error) throw new Error(error.message)
     } else {
       const { error } = await supabase.from('events')
-        .insert({ title: data.title, description: data.description, location: data.location, starts_at: data.starts_at, ends_at: data.ends_at || null })
+        .insert({
+          title: data.title,
+          description: data.description,
+          location: data.location,
+          starts_at: data.starts_at,
+          ends_at: data.ends_at || null,
+          scope: data.scope,
+          image_url: data.image_url ?? null,
+        })
       if (error) throw new Error(error.message)
     }
     return { success: true }
@@ -67,9 +99,9 @@ export const Route = createFileRoute('/_authenticated/admin/events')({
   loader: () => getEvents(),
 })
 
-type Event = Awaited<ReturnType<typeof getEvents>>[number]
+type Event = Awaited<ReturnType<typeof getEvents>>['events'][number]
 
-function EventForm({ defaultValues, onSuccess }: { defaultValues?: Partial<Event>; onSuccess: () => void }) {
+function EventForm({ defaultValues, adminScope, onSuccess }: { defaultValues?: Partial<Event>; adminScope: string; onSuccess: () => void }) {
   const form = useForm<z.infer<typeof eventSchema>>({
     resolver: zodResolver(eventSchema) as any,
     defaultValues: {
@@ -78,6 +110,8 @@ function EventForm({ defaultValues, onSuccess }: { defaultValues?: Partial<Event
       location: defaultValues?.location ?? '',
       starts_at: defaultValues?.starts_at ? new Date(defaultValues.starts_at).toISOString().slice(0, 16) : '',
       ends_at: defaultValues?.ends_at ? new Date(defaultValues.ends_at).toISOString().slice(0, 16) : '',
+      scope: (defaultValues?.scope as any) ?? (adminScope === 'both' ? 'both' : adminScope),
+      image_url: defaultValues?.image_url ?? null,
     },
   })
 
@@ -94,6 +128,23 @@ function EventForm({ defaultValues, onSuccess }: { defaultValues?: Partial<Event
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField control={form.control} name="image_url" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Event Cover Photo (Optional)</FormLabel>
+            <FormControl>
+              <ImageUploader
+                bucket="event-photos"
+                value={field.value}
+                onChange={field.onChange}
+                label=""
+                helperText="Upload event promotional poster or photo (JPEG, PNG, WebP up to 5MB)"
+                aspectRatio="video"
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+
         <FormField control={form.control} name="title" render={({ field }) => (
           <FormItem>
             <FormLabel>Event Title</FormLabel>
@@ -101,7 +152,7 @@ function EventForm({ defaultValues, onSuccess }: { defaultValues?: Partial<Event
             <FormMessage />
           </FormItem>
         )} />
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField control={form.control} name="starts_at" render={({ field }) => (
             <FormItem>
               <FormLabel>Starts At</FormLabel>
@@ -133,8 +184,28 @@ function EventForm({ defaultValues, onSuccess }: { defaultValues?: Partial<Event
             <FormMessage />
           </FormItem>
         )} />
-        <div className="flex justify-end gap-2 pt-2">
-          <Button type="submit" disabled={form.formState.isSubmitting}>
+        {adminScope === 'both' && (
+          <FormField control={form.control} name="scope" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Jurisdiction (Scope)</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select scope" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="both">Both (All Daine)</SelectItem>
+                  <SelectItem value="daine_1">Barangay Daine 1</SelectItem>
+                  <SelectItem value="daine_2">Barangay Daine 2</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )} />
+        )}
+        <div className="flex justify-end gap-2 pt-2 border-t">
+          <Button type="submit" disabled={form.formState.isSubmitting} className="min-h-[44px]">
             {form.formState.isSubmitting ? 'Saving...' : defaultValues?.id ? 'Update' : 'Create'}
           </Button>
         </div>
@@ -144,7 +215,7 @@ function EventForm({ defaultValues, onSuccess }: { defaultValues?: Partial<Event
 }
 
 function AdminEventsRoute() {
-  const events = Route.useLoaderData()
+  const { events, adminScope } = Route.useLoaderData()
   const router = useRouter()
   const [editItem, setEditItem] = useState<Event | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
@@ -170,9 +241,9 @@ function AdminEventsRoute() {
           <DialogTrigger asChild>
             <Button className="min-h-[44px] px-4 font-semibold"><Plus className="h-4 w-4 mr-2" />New Event</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>New Event</DialogTitle></DialogHeader>
-            <EventForm onSuccess={() => { setCreateOpen(false); router.invalidate() }} />
+            <EventForm adminScope={adminScope} onSuccess={() => { setCreateOpen(false); router.invalidate() }} />
           </DialogContent>
         </Dialog>
       </div>
@@ -186,19 +257,37 @@ function AdminEventsRoute() {
           <Card key={ev.id}>
             <CardHeader className="py-4">
               <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <CardTitle className="text-base truncate">{ev.title}</CardTitle>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3.5 w-3.5 text-primary" />
-                      {format(new Date(ev.starts_at), 'MMM d, yyyy • h:mm a')}
-                    </span>
-                    {ev.location && (
+                <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                  {ev.image_url && (
+                    <img
+                      src={ev.image_url}
+                      alt={ev.title}
+                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg object-cover border shrink-0 mt-0.5"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-base truncate">{ev.title}</CardTitle>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1">
-                        <MapPin className="h-3.5 w-3.5 text-primary" />
-                        {ev.location}
+                        <Calendar className="h-3.5 w-3.5 text-primary" />
+                        {format(new Date(ev.starts_at), 'MMM d, yyyy • h:mm a')}
                       </span>
-                    )}
+                      {ev.location && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3.5 w-3.5 text-primary" />
+                          {ev.location}
+                        </span>
+                      )}
+                      {ev.scope && (
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider self-center ${
+                          ev.scope === 'both' ? 'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200' :
+                          ev.scope === 'daine_1' ? 'bg-[#0038A8]/10 text-[#0038A8]' :
+                          'bg-[#CE1126]/10 text-[#CE1126]'
+                        }`}>
+                          {ev.scope === 'both' ? 'All Daine' : ev.scope === 'daine_1' ? 'Daine 1' : 'Daine 2'}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
@@ -206,9 +295,9 @@ function AdminEventsRoute() {
                     <DialogTrigger asChild>
                       <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]"><Pencil className="h-4 w-4" /></Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-lg">
+                    <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                       <DialogHeader><DialogTitle>Edit Event</DialogTitle></DialogHeader>
-                      <EventForm defaultValues={ev} onSuccess={() => { setEditItem(null); router.invalidate() }} />
+                      <EventForm adminScope={adminScope} defaultValues={ev} onSuccess={() => { setEditItem(null); router.invalidate() }} />
                     </DialogContent>
                   </Dialog>
                   <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px] text-destructive hover:text-destructive"
@@ -239,3 +328,4 @@ function AdminEventsRoute() {
     </div>
   )
 }
+

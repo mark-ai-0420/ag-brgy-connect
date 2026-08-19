@@ -1,10 +1,10 @@
-import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { createFileRoute, useRouter, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#/components/ui/table'
-import { CheckCircle, XCircle, Clock } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, ExternalLink, Store } from 'lucide-react'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -12,7 +12,7 @@ const getBusinesses = createServerFn({ method: 'GET' }).handler(async () => {
   const supabase = createSupabaseServerClient()
   const { data } = await supabase
     .from('businesses')
-    .select('id, name, category, owner_id, status, created_at, notes')
+    .select('id, name, category, owner_id, status, created_at, notes, photo_url, menu_image_url, misc_image_url')
     .order('created_at', { ascending: false })
   return data ?? []
 })
@@ -39,10 +39,10 @@ export const Route = createFileRoute('/_authenticated/admin/businesses')({
 })
 
 const STATUS_BADGE: Record<string, string> = {
-  pending: 'bg-amber-100 text-amber-950 border border-amber-300 font-semibold',
-  approved: 'bg-emerald-100 text-emerald-950 border border-emerald-300 font-semibold',
-  rejected: 'bg-red-100 text-red-950 border border-red-300 font-semibold',
-  archived: 'bg-slate-100 text-slate-950 border border-slate-300 font-semibold',
+  pending: 'bg-amber-100 text-amber-950 dark:bg-amber-900/50 dark:text-amber-200 border border-amber-300 font-semibold',
+  approved: 'bg-emerald-100 text-emerald-950 dark:bg-emerald-900/50 dark:text-emerald-200 border border-emerald-300 font-semibold',
+  rejected: 'bg-red-100 text-red-950 dark:bg-red-900/50 dark:text-red-200 border border-red-300 font-semibold',
+  archived: 'bg-slate-100 text-slate-950 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 font-semibold',
 }
 
 function AdminBusinessesRoute() {
@@ -85,7 +85,7 @@ function AdminBusinessesRoute() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Business Name</TableHead>
+                  <TableHead>Business</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Owner ID</TableHead>
                   <TableHead>Status</TableHead>
@@ -101,7 +101,44 @@ function AdminBusinessesRoute() {
                   </TableRow>
                 ) : businesses.map(biz => (
                   <TableRow key={biz.id}>
-                    <TableCell className="font-medium">{biz.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-3">
+                        {biz.photo_url ? (
+                          <img
+                            src={biz.photo_url}
+                            alt={biz.name}
+                            className="w-10 h-10 rounded-lg object-cover border shrink-0"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center border shrink-0 text-muted-foreground">
+                            <Store className="h-5 w-5" />
+                          </div>
+                        )}
+                        <div>
+                          <div className="font-semibold text-foreground flex items-center gap-1.5">
+                            {biz.name}
+                            <Link
+                              to="/directory/$businessId"
+                              params={{ businessId: biz.id }}
+                              className="text-muted-foreground hover:text-primary transition-colors"
+                              title="View listing page"
+                              target="_blank"
+                            >
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </Link>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {[
+                              biz.photo_url ? 'Storefront' : null,
+                              biz.menu_image_url ? 'Menu' : null,
+                              biz.misc_image_url ? 'Showcase' : null,
+                            ]
+                              .filter(Boolean)
+                              .join(' • ') || 'No photos'}
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
                     <TableCell className="text-muted-foreground text-sm">{biz.category}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{biz.owner_id?.slice(0, 8) ?? '—'}</TableCell>
                     <TableCell>
@@ -115,19 +152,19 @@ function AdminBusinessesRoute() {
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         {biz.status !== 'approved' && (
-                          <Button size="sm" variant="outline" className="min-h-[44px] px-3.5 text-emerald-900 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 font-semibold"
+                          <Button size="sm" variant="outline" className="min-h-[44px] px-3.5 text-emerald-900 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-700 font-semibold"
                             onClick={() => handleStatus(biz.id, 'approved')}>
                             Approve
                           </Button>
                         )}
                         {biz.status !== 'rejected' && (
-                          <Button size="sm" variant="outline" className="min-h-[44px] px-3.5 text-red-900 border-red-300 bg-red-50 hover:bg-red-100 font-semibold"
+                          <Button size="sm" variant="outline" className="min-h-[44px] px-3.5 text-red-900 border-red-300 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-200 dark:border-red-700 font-semibold"
                             onClick={() => handleStatus(biz.id, 'rejected')}>
                             Reject
                           </Button>
                         )}
                         {biz.status !== 'archived' && (
-                          <Button size="sm" variant="ghost" className="min-h-[44px] px-3 text-slate-800 hover:bg-slate-100 font-semibold"
+                          <Button size="sm" variant="ghost" className="min-h-[44px] px-3 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold"
                             onClick={() => handleStatus(biz.id, 'archived')}>
                             Archive
                           </Button>
