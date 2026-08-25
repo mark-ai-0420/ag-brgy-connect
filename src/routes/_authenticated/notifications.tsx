@@ -23,40 +23,7 @@ import {
   type AppNotification,
 } from '#/server/notifications'
 
-const DEFAULT_DEMO_NOTIFICATIONS: AppNotification[] = [
-  {
-    id: '11111111-1111-4000-8000-000000000001',
-    user_id: '00000000-0000-0000-0000-000000000001',
-    title: 'Document Update: Ready for Pickup',
-    message: 'Your Barangay Clearance (BD1-8F3A29D1) has been approved by the Barangay Captain and is ready for claiming at Barangay Hall Desk.',
-    type: 'document',
-    link: '/track?code=BD1-8F3A29D1',
-    is_read: false,
-    created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '22222222-2222-4000-8000-000000000002',
-    user_id: '00000000-0000-0000-0000-000000000001',
-    title: 'Blotter Update: Mediation Hearing Scheduled',
-    message: 'A mediation hearing has been scheduled regarding your blotter report "Noise Disturbance". Please visit the Lupon Office on Friday, 9:00 AM.',
-    type: 'complaint',
-    link: '/complaints',
-    is_read: false,
-    created_at: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
-  },
-  {
-    id: '33333333-3333-4000-8000-000000000003',
-    user_id: '00000000-0000-0000-0000-000000000001',
-    title: 'Official Advisory: General Community Assembly',
-    message: 'Barangay Daine Annual General Assembly and Free Medical Mission will take place this Sunday at the Covered Court.',
-    type: 'announcement',
-    link: '/announcements',
-    is_read: true,
-    created_at: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
-  },
-]
-
-export const Route = createFileRoute('/notifications')({
+export const Route = createFileRoute('/_authenticated/notifications')({
   loader: () => getUserNotifications(),
   component: NotificationsPage,
 })
@@ -64,9 +31,7 @@ export const Route = createFileRoute('/notifications')({
 export function NotificationsPage() {
   const initialData = Route.useLoaderData()
   const [notifications, setNotifications] = useState<AppNotification[]>(
-    initialData?.notifications && initialData.notifications.length > 0
-      ? initialData.notifications
-      : DEFAULT_DEMO_NOTIFICATIONS
+    initialData?.notifications ?? []
   )
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
   const router = useRouter()

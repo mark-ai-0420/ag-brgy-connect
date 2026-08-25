@@ -22,43 +22,10 @@ export const getUserNotifications = createServerFn({ method: 'GET' })
         error: userError,
       } = await supabase.auth.getUser();
 
-      const DEFAULT_NOTIFICATIONS: AppNotification[] = [
-        {
-          id: '11111111-1111-4000-8000-000000000001',
-          user_id: '00000000-0000-0000-0000-000000000001',
-          title: 'Document Update: Ready for Pickup',
-          message: 'Your Barangay Clearance (BD1-8F3A29D1) has been approved by the Barangay Captain and is ready for claiming at Barangay Hall Desk.',
-          type: 'document',
-          link: '/track?code=BD1-8F3A29D1',
-          is_read: false,
-          created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
-        },
-        {
-          id: '22222222-2222-4000-8000-000000000002',
-          user_id: '00000000-0000-0000-0000-000000000001',
-          title: 'Blotter Update: Mediation Hearing Scheduled',
-          message: 'A mediation hearing has been scheduled regarding your blotter report "Noise Disturbance". Please visit the Lupon Office on Friday, 9:00 AM.',
-          type: 'complaint',
-          link: '/complaints',
-          is_read: false,
-          created_at: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
-        },
-        {
-          id: '33333333-3333-4000-8000-000000000003',
-          user_id: '00000000-0000-0000-0000-000000000001',
-          title: 'Official Advisory: General Community Assembly',
-          message: 'Barangay Daine Annual General Assembly and Free Medical Mission will take place this Sunday at the Covered Court.',
-          type: 'announcement',
-          link: '/announcements',
-          is_read: true,
-          created_at: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
-        },
-      ];
-
       if (userError || !user) {
         return {
-          notifications: DEFAULT_NOTIFICATIONS,
-          unreadCount: DEFAULT_NOTIFICATIONS.filter((n) => !n.is_read).length,
+          notifications: [],
+          unreadCount: 0,
         };
       }
 
@@ -69,10 +36,10 @@ export const getUserNotifications = createServerFn({ method: 'GET' })
         .order('created_at', { ascending: false })
         .limit(20);
 
-      if (error || !data || data.length === 0) {
+      if (error || !data) {
         return {
-          notifications: DEFAULT_NOTIFICATIONS,
-          unreadCount: DEFAULT_NOTIFICATIONS.filter((n) => !n.is_read).length,
+          notifications: [],
+          unreadCount: 0,
         };
       }
 
