@@ -105,3 +105,32 @@ export async function uploadEventPhoto(file: File, id?: string): Promise<string 
 
   return publicUrl
 }
+
+export async function uploadAvatarPhoto(file: File, userId: string): Promise<string | null> {
+  const ext = file.name.split('.').pop() || 'jpg'
+  const fileName = `avatar-${userId}-${Date.now()}.${ext}`
+
+  // Try 'avatars' bucket first, fallback to 'business-photos'
+  const buckets = ['avatars', 'business-photos']
+
+  for (const bucket of buckets) {
+    try {
+      const { error } = await supabase.storage
+        .from(bucket)
+        .upload(fileName, file, { cacheControl: '3600', upsert: true })
+
+      if (!error) {
+        const { data: { publicUrl } } = supabase.storage
+          .from(bucket)
+          .getPublicUrl(fileName)
+        return publicUrl
+      }
+    } catch (e) {
+      console.warn(`Upload to ${bucket} failed:`, e)
+    }
+  }
+
+  console.error('Failed to upload avatar photo to storage')
+  return null
+}
+

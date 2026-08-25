@@ -1,8 +1,8 @@
-import { createFileRoute, Link, redirect } from '@tanstack/react-router'
+import { createFileRoute, Link, redirect, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { getAuthSession } from '#/server/auth'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '#/components/ui/card'
 import { Button } from '#/components/ui/button'
 import { PlusCircle, FileText, Store, Clock, CheckCircle, XCircle, AlertCircle, Info, ShieldAlert, Search, Gavel, Ban, EyeOff, Printer, ExternalLink, MapPin, Building2, Phone, MessageCircle, Sparkles, Edit } from 'lucide-react'
@@ -203,8 +203,19 @@ function BusinessStatusBadge({ status }: { status: string }) {
 
 function DashboardRoute() {
   const { documents, businesses, complaints, profile } = Route.useLoaderData();
+  const router = useRouter();
+  const [currentProfile, setCurrentProfile] = useState(profile);
   const [printModalOpen, setPrintModalOpen] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<any>(null);
+
+  useEffect(() => {
+    setCurrentProfile(profile);
+  }, [profile]);
+
+  const handlePhotoUpdated = (newUrl: string) => {
+    setCurrentProfile((prev: any) => (prev ? { ...prev, avatar_url: newUrl } : prev));
+    router.invalidate();
+  };
 
   return (
     <div className="container mx-auto py-10 px-4 md:px-6 space-y-8 max-w-6xl">
@@ -228,9 +239,12 @@ function DashboardRoute() {
       </div>
 
       {/* Prominent Digital Resident ID Card */}
-      {profile && (
+      {currentProfile && (
         <section className="space-y-3">
-          <DigitalResidentID profile={profile} />
+          <DigitalResidentID
+            profile={currentProfile}
+            onPhotoUpdated={handlePhotoUpdated}
+          />
         </section>
       )}
 
