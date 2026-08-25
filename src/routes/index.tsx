@@ -21,6 +21,7 @@ import {
   Pin,
   Clock,
   MapPin,
+  QrCode,
 } from 'lucide-react'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '#/components/ui/card'
 import { Button } from '#/components/ui/button'
@@ -116,6 +117,14 @@ const services: ServiceCard[] = [
     description: 'Request barangay clearance, indigency certificates, and more — online, anytime.',
     color: 'text-emerald-800',
     bgColor: 'bg-emerald-500/10 group-hover:bg-emerald-500/18',
+  },
+  {
+    to: '/track',
+    icon: <QrCode className="h-7 w-7" />,
+    title: 'Track Document',
+    description: 'Track the real-time processing status of your clearance, certificate, or permit.',
+    color: 'text-indigo-800',
+    bgColor: 'bg-indigo-500/10 group-hover:bg-indigo-500/18',
   },
   {
     to: '/emergency',
@@ -276,6 +285,39 @@ export default function Home() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Quick Action: Track Document ─────────────────────────────────── */}
+      <section className="py-6 bg-primary/5 border-b border-border" id="quick-track-section">
+        <div className="page-container">
+          <div className="bg-gradient-to-r from-[#0038A8] via-[#002878] to-[#1E3A8A] rounded-2xl p-6 sm:p-8 text-white shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+            <div className="flex items-start sm:items-center gap-4">
+              <div className="w-13 h-13 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center text-[#FCD116] shrink-0 shadow-inner">
+                <QrCode className="h-7 w-7" />
+              </div>
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-white/90 text-xs font-semibold">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#FCD116]" />
+                  Public Self-Service Tracker
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white">Track Document</h3>
+                <p className="text-sm text-blue-100 max-w-xl">
+                  Have a tracking reference number? Track clearance, ID, and certificate lifecycles in real time.
+                </p>
+              </div>
+            </div>
+            <Button
+              asChild
+              className="w-full sm:w-auto px-6 py-3.5 h-auto text-sm sm:text-base font-extrabold bg-[#FCD116] text-[#0038A8] hover:bg-[#FFE033] shadow-md rounded-xl shrink-0 hover:scale-[1.02] transition-transform"
+              id="home-track-document-btn"
+            >
+              <Link to="/track">
+                <span>Track Document</span>
+                <ArrowRight className="h-4 w-4 ml-1" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>

@@ -14,11 +14,12 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as EmergencyRouteImport } from './routes/emergency'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as TrackRouteImport } from './routes/track'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AnnouncementsIndexRouteImport } from './routes/announcements/index'
 import { Route as AnnouncementsAnnouncementIdRouteImport } from './routes/announcements/$announcementId'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
@@ -75,6 +76,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -83,6 +89,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackRoute = TrackRouteImport.update({
+  id: '/track',
+  path: '/track',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -95,12 +106,6 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedNotificationsRoute =
-  AuthenticatedNotificationsRouteImport.update({
-    id: '/notifications',
-    path: '/notifications',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AnnouncementsIndexRoute = AnnouncementsIndexRouteImport.update({
   id: '/announcements/',
   path: '/announcements/',
@@ -281,11 +286,12 @@ export interface FileRoutesByFullPath {
   '/documents': typeof DocumentsRoute
   '/emergency': typeof EmergencyRoute
   '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
+  '/track': typeof TrackRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/notifications': typeof AuthenticatedNotificationsRoute
   '/announcements/$announcementId': typeof AnnouncementsAnnouncementIdRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/login': typeof AuthLoginRoute
@@ -323,10 +329,11 @@ export interface FileRoutesByTo {
   '/documents': typeof DocumentsRoute
   '/emergency': typeof EmergencyRoute
   '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
+  '/track': typeof TrackRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/notifications': typeof AuthenticatedNotificationsRoute
   '/announcements/$announcementId': typeof AnnouncementsAnnouncementIdRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/login': typeof AuthLoginRoute
@@ -366,11 +373,12 @@ export interface FileRoutesById {
   '/documents': typeof DocumentsRoute
   '/emergency': typeof EmergencyRoute
   '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
+  '/track': typeof TrackRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/announcements/$announcementId': typeof AnnouncementsAnnouncementIdRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/login': typeof AuthLoginRoute
@@ -410,11 +418,12 @@ export interface FileRouteTypes {
     | '/documents'
     | '/emergency'
     | '/login'
+    | '/notifications'
     | '/privacy'
     | '/terms'
+    | '/track'
     | '/admin'
     | '/dashboard'
-    | '/notifications'
     | '/announcements/$announcementId'
     | '/auth/callback'
     | '/auth/login'
@@ -452,10 +461,11 @@ export interface FileRouteTypes {
     | '/documents'
     | '/emergency'
     | '/login'
+    | '/notifications'
     | '/privacy'
     | '/terms'
+    | '/track'
     | '/dashboard'
-    | '/notifications'
     | '/announcements/$announcementId'
     | '/auth/callback'
     | '/auth/login'
@@ -494,11 +504,12 @@ export interface FileRouteTypes {
     | '/documents'
     | '/emergency'
     | '/login'
+    | '/notifications'
     | '/privacy'
     | '/terms'
+    | '/track'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
-    | '/_authenticated/notifications'
     | '/announcements/$announcementId'
     | '/auth/callback'
     | '/auth/login'
@@ -538,8 +549,10 @@ export interface RootRouteChildren {
   DocumentsRoute: typeof DocumentsRoute
   EmergencyRoute: typeof EmergencyRoute
   LoginRoute: typeof LoginRoute
+  NotificationsRoute: typeof NotificationsRoute
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
+  TrackRoute: typeof TrackRoute
   AnnouncementsAnnouncementIdRoute: typeof AnnouncementsAnnouncementIdRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   AuthLoginRoute: typeof AuthLoginRoute
@@ -594,6 +607,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -608,6 +628,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/track': {
+      id: '/track'
+      path: '/track'
+      fullPath: '/track'
+      preLoaderRoute: typeof TrackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
@@ -620,13 +647,6 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/notifications': {
-      id: '/_authenticated/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/announcements/': {
@@ -879,7 +899,6 @@ const AuthenticatedAdminRouteWithChildren =
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedBusinessesNewRoute: typeof AuthenticatedBusinessesNewRoute
   AuthenticatedComplaintsComplaintIdRoute: typeof AuthenticatedComplaintsComplaintIdRoute
   AuthenticatedComplaintsNewRoute: typeof AuthenticatedComplaintsNewRoute
@@ -892,7 +911,6 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedBusinessesNewRoute: AuthenticatedBusinessesNewRoute,
   AuthenticatedComplaintsComplaintIdRoute:
     AuthenticatedComplaintsComplaintIdRoute,
@@ -914,8 +932,10 @@ const rootRouteChildren: RootRouteChildren = {
   DocumentsRoute: DocumentsRoute,
   EmergencyRoute: EmergencyRoute,
   LoginRoute: LoginRoute,
+  NotificationsRoute: NotificationsRoute,
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,
+  TrackRoute: TrackRoute,
   AnnouncementsAnnouncementIdRoute: AnnouncementsAnnouncementIdRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   AuthLoginRoute: AuthLoginRoute,

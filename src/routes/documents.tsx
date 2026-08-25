@@ -86,18 +86,25 @@ function DocumentsRoute() {
           <AlertCircle className="h-5 w-5 text-primary mt-0.5 shrink-0" />
           <div>
             <h3 className="font-semibold text-foreground">
-              Online Request Available
+              Online Request & Tracking Available
             </h3>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Submit your document request online and track its status in real-time.
+              Submit your document request online and track its issuance status in real-time with your reference code.
             </p>
           </div>
         </div>
-        <Button asChild className="shrink-0 min-h-[44px] px-5 font-semibold">
-          <Link to="/documents/request" params={{}}>
-            Submit Request Online
-          </Link>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full sm:w-auto">
+          <Button variant="outline" asChild className="min-h-[44px] px-4 font-semibold flex-1 sm:flex-initial">
+            <Link to="/track">
+              Track Request
+            </Link>
+          </Button>
+          <Button asChild className="min-h-[44px] px-5 font-semibold flex-1 sm:flex-initial">
+            <Link to="/documents/request" params={{}}>
+              Submit Request Online
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Document cards grid */}
