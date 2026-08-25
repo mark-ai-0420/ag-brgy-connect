@@ -50,6 +50,7 @@ import { Route as AuthenticatedComplaintsComplaintIdRouteImport } from './routes
 import { Route as AuthenticatedComplaintsNewRouteImport } from './routes/_authenticated/complaints/new'
 import { Route as AuthenticatedDocumentsRequestRouteImport } from './routes/_authenticated/documents.request'
 import { Route as AuthenticatedSettingsProfileRouteImport } from './routes/_authenticated/settings/profile'
+import { Route as VerifyResidentResidentIdRouteImport } from './routes/verify/resident/$residentId'
 import { Route as AuthenticatedBusinessesBusinessIdEditRouteImport } from './routes/_authenticated/businesses/$businessId/edit'
 
 const IndexRoute = IndexRouteImport.update({
@@ -274,6 +275,12 @@ const AuthenticatedSettingsProfileRoute =
     path: '/settings/profile',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const VerifyResidentResidentIdRoute =
+  VerifyResidentResidentIdRouteImport.update({
+    id: '/verify/resident/$residentId',
+    path: '/verify/resident/$residentId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedBusinessesBusinessIdEditRoute =
   AuthenticatedBusinessesBusinessIdEditRouteImport.update({
     id: '/businesses/$businessId/edit',
@@ -320,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/complaints/new': typeof AuthenticatedComplaintsNewRoute
   '/documents/request': typeof AuthenticatedDocumentsRequestRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
+  '/verify/resident/$residentId': typeof VerifyResidentResidentIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/complaints/': typeof AuthenticatedComplaintsIndexRoute
   '/businesses/$businessId/edit': typeof AuthenticatedBusinessesBusinessIdEditRoute
@@ -362,6 +370,7 @@ export interface FileRoutesByTo {
   '/complaints/new': typeof AuthenticatedComplaintsNewRoute
   '/documents/request': typeof AuthenticatedDocumentsRequestRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
+  '/verify/resident/$residentId': typeof VerifyResidentResidentIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/complaints': typeof AuthenticatedComplaintsIndexRoute
   '/businesses/$businessId/edit': typeof AuthenticatedBusinessesBusinessIdEditRoute
@@ -407,6 +416,7 @@ export interface FileRoutesById {
   '/_authenticated/complaints/new': typeof AuthenticatedComplaintsNewRoute
   '/_authenticated/documents/request': typeof AuthenticatedDocumentsRequestRoute
   '/_authenticated/settings/profile': typeof AuthenticatedSettingsProfileRoute
+  '/verify/resident/$residentId': typeof VerifyResidentResidentIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/complaints/': typeof AuthenticatedComplaintsIndexRoute
   '/_authenticated/businesses/$businessId/edit': typeof AuthenticatedBusinessesBusinessIdEditRoute
@@ -452,6 +462,7 @@ export interface FileRouteTypes {
     | '/complaints/new'
     | '/documents/request'
     | '/settings/profile'
+    | '/verify/resident/$residentId'
     | '/admin/'
     | '/complaints/'
     | '/businesses/$businessId/edit'
@@ -494,6 +505,7 @@ export interface FileRouteTypes {
     | '/complaints/new'
     | '/documents/request'
     | '/settings/profile'
+    | '/verify/resident/$residentId'
     | '/admin'
     | '/complaints'
     | '/businesses/$businessId/edit'
@@ -538,6 +550,7 @@ export interface FileRouteTypes {
     | '/_authenticated/complaints/new'
     | '/_authenticated/documents/request'
     | '/_authenticated/settings/profile'
+    | '/verify/resident/$residentId'
     | '/_authenticated/admin/'
     | '/_authenticated/complaints/'
     | '/_authenticated/businesses/$businessId/edit'
@@ -568,6 +581,7 @@ export interface RootRouteChildren {
   EventsIndexRoute: typeof EventsIndexRoute
   MapIndexRoute: typeof MapIndexRoute
   OfficialsIndexRoute: typeof OfficialsIndexRoute
+  VerifyResidentResidentIdRoute: typeof VerifyResidentResidentIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -859,6 +873,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsProfileRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/verify/resident/$residentId': {
+      id: '/verify/resident/$residentId'
+      path: '/verify/resident/$residentId'
+      fullPath: '/verify/resident/$residentId'
+      preLoaderRoute: typeof VerifyResidentResidentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/businesses/$businessId/edit': {
       id: '/_authenticated/businesses/$businessId/edit'
       path: '/businesses/$businessId/edit'
@@ -951,6 +972,7 @@ const rootRouteChildren: RootRouteChildren = {
   EventsIndexRoute: EventsIndexRoute,
   MapIndexRoute: MapIndexRoute,
   OfficialsIndexRoute: OfficialsIndexRoute,
+  VerifyResidentResidentIdRoute: VerifyResidentResidentIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

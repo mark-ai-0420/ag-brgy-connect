@@ -5,9 +5,10 @@ import { getAuthSession } from '#/server/auth'
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '#/components/ui/card'
 import { Button } from '#/components/ui/button'
-import { PlusCircle, FileText, Store, Clock, CheckCircle, XCircle, AlertCircle, Info, ShieldAlert, Search, Gavel, Ban, EyeOff, Printer } from 'lucide-react'
+import { PlusCircle, FileText, Store, Clock, CheckCircle, XCircle, AlertCircle, Info, ShieldAlert, Search, Gavel, Ban, EyeOff, Printer, ExternalLink, MapPin, Building2, Phone, MessageCircle, Sparkles, Edit } from 'lucide-react'
 import { format } from 'date-fns'
 import { CertificatePrintModal } from '#/components/documents/CertificatePrintModal'
+import { DigitalResidentID } from '#/components/resident/DigitalResidentID'
 
 const DOC_TYPE_LABELS: Record<string, string> = {
   barangay_clearance: 'Barangay Clearance',
@@ -17,6 +18,30 @@ const DOC_TYPE_LABELS: Record<string, string> = {
   business_permit: 'Business Permit',
   other: 'Other Document',
 }
+
+const getMyResidentProfile = createServerFn({ method: 'GET' })
+  .handler(async () => {
+    const { user } = await getAuthSession()
+    if (!user) return null
+    const supabase = createSupabaseServerClient()
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id, full_name, purok, barangay, avatar_url, phone, address, created_at, email')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    return profile || {
+      id: user.id,
+      full_name: (user.user_metadata as any)?.full_name || 'Resident',
+      barangay: 'daine_1',
+      purok: null,
+      avatar_url: null,
+      phone: null,
+      address: null,
+      created_at: new Date().toISOString(),
+      email: user.email,
+    }
+  })
 
 const getMyDocumentRequests = createServerFn({ method: 'GET' })
   .handler(async () => {
@@ -41,7 +66,7 @@ const getMyBusinesses = createServerFn({ method: 'GET' })
   const supabase = createSupabaseServerClient()
   const { data } = await supabase
     .from('businesses')
-    .select('id, name, category, address, status, created_at, notes')
+    .select('id, name, category, address, barangay, purok, phone, messenger_link, photo_url, status, created_at, notes')
     .eq('owner_id', user.id)
     .order('created_at', { ascending: false })
   return data ?? []
@@ -69,12 +94,13 @@ export const Route = createFileRoute('/_authenticated/dashboard')({
   },
   component: DashboardRoute,
   loader: async () => {
-    const [documents, businesses, complaints] = await Promise.all([
+    const [documents, businesses, complaints, profile] = await Promise.all([
       getMyDocumentRequests(),
       getMyBusinesses(),
-      getMyComplaints()
+      getMyComplaints(),
+      getMyResidentProfile(),
     ])
-    return { documents, businesses, complaints }
+    return { documents, businesses, complaints, profile }
   },
 })
 
@@ -149,43 +175,64 @@ function BusinessStatusBadge({ status }: { status: string }) {
   const s = status?.toLowerCase() || 'pending'
   if (s === 'approved') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 whitespace-nowrap">
-        <CheckCircle className="h-3.5 w-3.5" /> Approved
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 whitespace-nowrap shadow-2xs">
+        <CheckCircle className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> Approved
       </span>
     )
   }
   if (s === 'rejected') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 border border-rose-300 whitespace-nowrap">
-        <XCircle className="h-3.5 w-3.5" /> Rejected
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-300 dark:border-rose-800 whitespace-nowrap shadow-2xs">
+        <XCircle className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" /> Rejected
       </span>
     )
   }
   if (s === 'archived') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-300 whitespace-nowrap">
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border border-slate-300 dark:border-slate-700 whitespace-nowrap">
         <Info className="h-3.5 w-3.5" /> Archived
       </span>
     )
   }
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300 whitespace-nowrap">
-      <Clock className="h-3.5 w-3.5" /> Pending Review
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800 whitespace-nowrap shadow-2xs">
+      <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" /> Pending Review
     </span>
   )
 }
 
 function DashboardRoute() {
-  const { documents, businesses, complaints } = Route.useLoaderData();
+  const { documents, businesses, complaints, profile } = Route.useLoaderData();
   const [printModalOpen, setPrintModalOpen] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<any>(null);
 
   return (
     <div className="container mx-auto py-10 px-4 md:px-6 space-y-8 max-w-6xl">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Resident Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Manage your document requests and business listings.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Resident Dashboard</h1>
+          <p className="text-muted-foreground mt-1">
+            Official citizen ID, document requests, business listings, and barangay services.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm" className="min-h-[38px] text-xs font-semibold">
+            <Link to="/settings/profile">Edit Profile & Address</Link>
+          </Button>
+          <Button asChild size="sm" className="min-h-[38px] text-xs font-bold bg-primary">
+            <Link to="/documents/request">
+              <PlusCircle className="mr-1.5 h-3.5 w-3.5" /> Request Document
+            </Link>
+          </Button>
+        </div>
       </div>
+
+      {/* Prominent Digital Resident ID Card */}
+      {profile && (
+        <section className="space-y-3">
+          <DigitalResidentID profile={profile} />
+        </section>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Document Requests */}
@@ -260,57 +307,150 @@ function DashboardRoute() {
           </div>
         </section>
 
-        {/* Business Listings */}
+        {/* My Registered Businesses (MSME Growth Hub) */}
         <section className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-bold flex items-center gap-2">
-              <Store className="h-5 w-5 text-primary" /> My Businesses
+              <Store className="h-5 w-5 text-primary" /> My Registered Businesses
             </h2>
-            <Button asChild size="default" variant="outline" className="min-h-[44px] px-4 font-semibold">
+            <Button asChild size="default" className="min-h-[44px] px-4 font-semibold shadow-xs gap-1.5">
               <Link to="/businesses/new">
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Business
+                <PlusCircle className="h-4 w-4" /> Register New Business
               </Link>
             </Button>
           </div>
           
-          <div className="space-y-3">
+          <div className="space-y-4">
             {businesses.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center text-muted-foreground space-y-3">
-                  <Store className="h-10 w-10 mx-auto text-muted-foreground/50" />
-                  <p className="text-sm">No business listings added under your account.</p>
-                  <Button variant="outline" size="sm" asChild className="min-h-[40px]">
-                    <Link to="/businesses/new">List Your Business</Link>
+              <Card className="border-dashed border-2">
+                <CardContent className="py-10 px-6 text-center space-y-4">
+                  <div className="p-4 bg-primary/10 rounded-2xl w-14 h-14 mx-auto flex items-center justify-center text-primary">
+                    <Store className="h-7 w-7" />
+                  </div>
+                  <div className="max-w-md mx-auto">
+                    <h3 className="font-bold text-base text-foreground">No Registered Businesses Yet</h3>
+                    <p className="text-muted-foreground text-xs sm:text-sm mt-1 leading-relaxed">
+                      Promote your sari-sari store, carinderia, water station, or local service across Barangay Daine 1 & 2 for free. Get verified and discovered by your neighbors!
+                    </p>
+                  </div>
+                  <Button asChild className="min-h-[44px] px-5 font-semibold">
+                    <Link to="/businesses/new">
+                      <Sparkles className="mr-2 h-4 w-4 text-amber-300" /> Register / List Your Business Free
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>
             ) : (
-              businesses.map(biz => (
-                <Card key={biz.id} className="hover:border-primary/40 transition-colors">
-                  <CardHeader className="py-4 px-5 pb-3">
-                    <div className="flex justify-between items-start gap-4">
-                      <div>
-                        <CardTitle className="text-base font-bold">{biz.name}</CardTitle>
-                        <CardDescription className="text-xs mt-1">{biz.category} • {biz.address}</CardDescription>
+              businesses.map(biz => {
+                const isDaine2 = biz.barangay === 'daine_2'
+                return (
+                  <Card key={biz.id} className="hover:border-primary/40 transition-all shadow-xs overflow-hidden">
+                    <CardHeader className="py-4 px-5 pb-3">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                        <div className="flex items-start gap-3 min-w-0">
+                          {biz.photo_url ? (
+                            <img
+                              src={biz.photo_url}
+                              alt={biz.name}
+                              className="w-14 h-14 rounded-xl object-cover border shrink-0"
+                            />
+                          ) : (
+                            <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center shrink-0 border text-muted-foreground">
+                              <Store className="h-6 w-6" />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <CardTitle className="text-base font-bold truncate leading-tight">
+                              {biz.name}
+                            </CardTitle>
+                            <div className="flex flex-wrap items-center gap-1.5 mt-1 text-xs text-muted-foreground">
+                              <span className="font-semibold text-foreground">{biz.category}</span>
+                              <span>•</span>
+                              <span className={`inline-flex items-center gap-0.5 font-semibold text-[10px] px-2 py-0.2 rounded-full ${
+                                isDaine2 
+                                  ? 'bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-300' 
+                                  : 'bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-300'
+                              }`}>
+                                <Building2 className="h-2.5 w-2.5" />
+                                {isDaine2 ? 'Daine 2' : 'Daine 1'}
+                              </span>
+                              {biz.purok && (
+                                <>
+                                  <span>•</span>
+                                  <span>{biz.purok}</span>
+                                </>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground/70 mt-1 truncate max-w-sm">
+                              {biz.address}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0">
+                          <BusinessStatusBadge status={biz.status} />
+                          <span className="text-[10px] text-muted-foreground">
+                            {format(new Date(biz.created_at), 'MMM d, yyyy')}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <BusinessStatusBadge status={biz.status} />
-                        <Button variant="outline" size="sm" asChild className="min-h-[32px] px-3 text-xs font-medium">
-                          <Link to={`/businesses/${biz.id}/edit` as any}>Edit Listing</Link>
+                    </CardHeader>
+
+                    {/* Status Notice / Feedback Banner */}
+                    {biz.status === 'approved' && (
+                      <CardContent className="pt-0 pb-3 px-5">
+                        <div className="flex items-center justify-between p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs text-emerald-900 dark:text-emerald-200">
+                          <span className="flex items-center gap-1.5 font-medium">
+                            <CheckCircle className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                            Live on Barangay Daine Directory
+                          </span>
+                          <Link
+                            to="/directory/$businessId"
+                            params={{ businessId: biz.id }}
+                            className="text-emerald-700 dark:text-emerald-300 hover:underline font-bold inline-flex items-center gap-0.5"
+                          >
+                            View Listing <ExternalLink className="h-3 w-3" />
+                          </Link>
+                        </div>
+                      </CardContent>
+                    )}
+
+                    {biz.status === 'pending' && (
+                      <CardContent className="pt-0 pb-3 px-5">
+                        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200">
+                          <Clock className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                          <span>Under barangay review. Once verified by officials, your listing will become publicly visible.</span>
+                        </div>
+                      </CardContent>
+                    )}
+
+                    {biz.status === 'rejected' && biz.notes && (
+                      <CardContent className="pt-0 pb-3 px-5">
+                        <div className="flex items-start gap-2 p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-xs text-rose-900 dark:text-rose-200">
+                          <AlertCircle className="h-3.5 w-3.5 mt-0.5 shrink-0 text-rose-600" />
+                          <span><span className="font-semibold">Review Notes:</span> {biz.notes}</span>
+                        </div>
+                      </CardContent>
+                    )}
+
+                    {/* Footer Actions */}
+                    <CardFooter className="pt-2 pb-4 px-5 flex items-center justify-end gap-2.5 border-t bg-muted/10">
+                      {biz.status === 'approved' && (
+                        <Button variant="ghost" size="sm" asChild className="min-h-[36px] px-3 text-xs font-semibold text-primary">
+                          <Link to="/directory/$businessId" params={{ businessId: biz.id }}>
+                            <ExternalLink className="h-3.5 w-3.5 mr-1" /> View Public Card
+                          </Link>
                         </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  {biz.status === 'rejected' && biz.notes && (
-                    <CardContent className="pt-0 pb-4 px-5">
-                      <div className="flex items-start gap-2 p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-900">
-                        <AlertCircle className="h-3.5 w-3.5 mt-0.5 shrink-0 text-rose-600" />
-                        <span><span className="font-semibold">Review Notes:</span> {biz.notes}</span>
-                      </div>
-                    </CardContent>
-                  )}
-                </Card>
-              ))
+                      )}
+                      <Button variant="outline" size="sm" asChild className="min-h-[36px] px-3.5 text-xs font-semibold gap-1">
+                        <Link to={`/businesses/${biz.id}/edit` as any}>
+                          <Edit className="h-3.5 w-3.5" /> Edit Business
+                        </Link>
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                )
+              })
             )}
           </div>
         </section>

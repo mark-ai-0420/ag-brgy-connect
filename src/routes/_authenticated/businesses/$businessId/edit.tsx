@@ -42,8 +42,12 @@ const updateBusiness = createServerFn({ method: 'POST' })
       .update({
         name: fields.name,
         category: fields.category,
+        barangay: fields.barangay,
+        purok: fields.purok || null,
         address: fields.address,
         phone: fields.phone,
+        messenger_link: fields.messenger_link || null,
+        payment_methods: fields.payment_methods?.length ? fields.payment_methods : ['Cash', 'GCash'],
         hours: fields.hours || '',
         description: fields.description || '',
         map_url: fields.map_url || '',
@@ -92,8 +96,12 @@ function EditBusinessRoute() {
       initialValues={{
         name: business.name,
         category: business.category,
+        barangay: business.barangay || 'daine_1',
+        purok: business.purok || '',
         address: business.address,
         phone: business.phone,
+        messenger_link: business.messenger_link || '',
+        payment_methods: business.payment_methods || ['Cash', 'GCash'],
         hours: business.hours,
         description: business.description,
         map_url: business.map_url,
@@ -107,4 +115,3 @@ function EditBusinessRoute() {
     />
   )
 }
-

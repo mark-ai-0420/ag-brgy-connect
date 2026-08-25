@@ -24,6 +24,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Navigation,
+  MessageCircle,
+  Building2,
+  CreditCard,
+  CheckCircle2,
+  UserCheck,
 } from 'lucide-react'
 
 const getBusiness = createServerFn({ method: 'GET' })
@@ -32,11 +37,24 @@ const getBusiness = createServerFn({ method: 'GET' })
     const supabase = createSupabaseServerClient()
     const { data, error } = await supabase
       .from('businesses')
-      .select('id, name, category, description, address, phone, hours, status, photo_url, menu_image_url, misc_image_url, map_url, owner_id, created_at')
+      .select('id, name, category, description, address, phone, hours, status, photo_url, menu_image_url, misc_image_url, map_url, owner_id, barangay, purok, messenger_link, payment_methods, created_at')
       .eq('id', id)
       .single()
     if (error || !data) return null
-    return data
+
+    let ownerBadge = null
+    if (data.owner_id) {
+      try {
+        const { data: ownerData } = await supabase.rpc('get_verified_resident', { resident_id: data.owner_id })
+        if (ownerData && ownerData.length > 0) {
+          ownerBadge = ownerData[0]
+        }
+      } catch (e) {
+        console.error('Error fetching owner badge:', e)
+      }
+    }
+
+    return { ...data, ownerBadge }
   })
 
 export const Route = createFileRoute('/directory/$businessId')({
@@ -55,6 +73,20 @@ const CATEGORY_COLORS: Record<string, string> = {
   Pharmacy: 'bg-teal-100 text-teal-950 dark:bg-teal-900/50 dark:text-teal-200 border border-teal-300 font-semibold',
   Tailoring: 'bg-purple-100 text-purple-950 dark:bg-purple-900/50 dark:text-purple-200 border border-purple-300 font-semibold',
   Others: 'bg-gray-100 text-gray-950 dark:bg-slate-800 dark:text-slate-200 border border-gray-300 font-semibold',
+}
+
+function getMessengerUrl(link?: string | null) {
+  if (!link) return null
+  const trimmed = link.trim()
+  if (!trimmed) return null
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed
+  }
+  if (trimmed.startsWith('m.me/')) {
+    return `https://${trimmed}`
+  }
+  const clean = trimmed.replace(/^@/, '')
+  return `https://m.me/${clean}`
 }
 
 function InfoRow({
@@ -107,6 +139,9 @@ function BusinessDetail() {
     CATEGORY_COLORS[business.category as string] ??
     'bg-gray-100 text-gray-700 border-gray-200'
 
+  const isDaine2 = business.barangay === 'daine_2'
+  const messengerUrl = getMessengerUrl(business.messenger_link)
+
   // Construct gallery items
   const galleryImages = [
     business.photo_url ? { key: 'photo', label: 'Storefront', url: business.photo_url, description: 'Storefront & Main View' } : null,
@@ -117,13 +152,13 @@ function BusinessDetail() {
   const currentImage = galleryImages[activeImageIndex] || galleryImages[0]
 
   // Try extracting lat/lng from map_url (if it exists)
-  let lat: number | null = null;
-  let lng: number | null = null;
+  let lat: number | null = null
+  let lng: number | null = null
   if (business.map_url) {
-    const coordsMatch = business.map_url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || business.map_url.match(/mlat=(-?\d+\.\d+)&mlon=(-?\d+\.\d+)/);
+    const coordsMatch = business.map_url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || business.map_url.match(/mlat=(-?\d+\.\d+)&mlon=(-?\d+\.\d+)/)
     if (coordsMatch) {
-      lat = parseFloat(coordsMatch[1]);
-      lng = parseFloat(coordsMatch[2]);
+      lat = parseFloat(coordsMatch[1])
+      lng = parseFloat(coordsMatch[2])
     }
   }
 
@@ -137,7 +172,7 @@ function BusinessDetail() {
 
   return (
     <div className="container mx-auto py-8 md:py-10 px-4 md:px-6 max-w-6xl pb-24 md:pb-10">
-      {/* Back */}
+      {/* Back button */}
       <Button variant="ghost" asChild className="mb-6 -ml-2 text-muted-foreground hover:text-foreground min-h-[44px] px-3">
         <Link to="/directory">
           <ArrowLeft className="mr-1.5 h-4 w-4" />
@@ -207,10 +242,30 @@ function BusinessDetail() {
                 >
                   {business.category}
                 </span>
-                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 px-2.5 py-0.5 rounded-full">
-                  Verified Local Business
+
+                <span
+                  className={`inline-flex items-center gap-1 text-[11px] font-bold px-3 py-0.5 rounded-full ${
+                    isDaine2
+                      ? 'bg-purple-100 text-purple-900 dark:bg-purple-950/80 dark:text-purple-200 border border-purple-300 dark:border-purple-800'
+                      : 'bg-blue-100 text-blue-900 dark:bg-blue-950/80 dark:text-blue-200 border border-blue-300 dark:border-blue-800'
+                  }`}
+                >
+                  <Building2 className="h-3.5 w-3.5" />
+                  {isDaine2 ? 'Barangay Daine II' : 'Barangay Daine I'}
+                </span>
+
+                {business.purok && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700">
+                    <MapPin className="h-3 w-3 text-primary" />
+                    {business.purok}
+                  </span>
+                )}
+
+                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-300 dark:border-emerald-800 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                  <CheckCircle2 className="h-3 w-3" /> Verified Local Business
                 </span>
               </div>
+
               <h1 className="text-2xl md:text-3xl font-extrabold leading-tight text-foreground">
                 {business.name}
               </h1>
@@ -226,6 +281,43 @@ function BusinessDetail() {
                   {business.description || 'No detailed description provided for this business listing.'}
                 </p>
               </div>
+
+              {/* Accepted Payments */}
+              {business.payment_methods && business.payment_methods.length > 0 && (
+                <div className="pt-2">
+                  <h2 className="font-bold mb-2 text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <CreditCard className="h-3.5 w-3.5 text-primary" /> Accepted Payment Methods
+                  </h2>
+                  <div className="flex flex-wrap gap-2">
+                    {business.payment_methods.map((method: string) => (
+                      <span
+                        key={method}
+                        className="text-xs font-semibold px-3 py-1 rounded-lg bg-muted text-foreground border shadow-2xs"
+                      >
+                        {method}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Owner Verified Resident Badge */}
+              {business.ownerBadge && (
+                <div className="pt-2">
+                  <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-primary/5 border border-primary/20 text-xs">
+                    <UserCheck className="h-5 w-5 text-primary shrink-0" />
+                    <div>
+                      <p className="font-bold text-foreground">
+                        Registered Daine Resident Owner: {business.ownerBadge.full_name || 'Verified Resident'}
+                      </p>
+                      <p className="text-muted-foreground text-[11px] mt-0.5">
+                        {business.ownerBadge.barangay === 'daine_2' ? 'Barangay Daine II' : 'Barangay Daine I'}
+                        {business.ownerBadge.purok ? ` • ${business.ownerBadge.purok}` : ''}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -272,7 +364,7 @@ function BusinessDetail() {
 
         {/* Sidebar */}
         <div className="space-y-5">
-          {/* Contact Info */}
+          {/* Contact & Action CTA Box */}
           <Card className="border shadow-sm">
             <CardHeader className="pb-3">
               <h2 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">
@@ -281,8 +373,9 @@ function BusinessDetail() {
             </CardHeader>
             <CardContent className="space-y-4">
               <InfoRow icon={MapPin} label="Address">
-                {business.address}
+                {business.purok ? `${business.purok}, ` : ''}{business.address}
               </InfoRow>
+
               {business.phone && (
                 <InfoRow icon={Phone} label="Phone Number">
                   <a
@@ -293,11 +386,27 @@ function BusinessDetail() {
                   </a>
                 </InfoRow>
               )}
+
+              {messengerUrl && (
+                <InfoRow icon={MessageCircle} label="Facebook Messenger">
+                  <a
+                    href={messengerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sky-600 hover:underline font-semibold inline-flex items-center gap-1 min-h-[44px]"
+                  >
+                    <span>Chat on Messenger</span>
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </InfoRow>
+              )}
+
               {business.hours && (
                 <InfoRow icon={Clock} label="Operating Hours">
                   {business.hours}
                 </InfoRow>
               )}
+
               {business.map_url && (
                 <InfoRow icon={Navigation} label="Map Link">
                   <a
@@ -314,27 +423,48 @@ function BusinessDetail() {
             </CardContent>
           </Card>
 
-          {/* Call Now CTA Desktop */}
-          {business.phone && (
-            <Button asChild className="hidden md:inline-flex w-full min-h-[48px] text-base font-bold shadow-md gap-2" size="lg">
-              <a href={`tel:${business.phone.replace(/[^0-9+]/g, '')}`}>
-                <Phone className="h-5 w-5" />
-                Call Now ({business.phone})
-              </a>
-            </Button>
-          )}
+          {/* Desktop Instant Actions */}
+          <div className="space-y-3 hidden md:block">
+            {business.phone && (
+              <Button asChild className="w-full min-h-[48px] text-base font-bold shadow-md gap-2 bg-emerald-600 hover:bg-emerald-700 text-white" size="lg">
+                <a href={`tel:${business.phone.replace(/[^0-9+]/g, '')}`}>
+                  <Phone className="h-5 w-5" />
+                  Call Now ({business.phone})
+                </a>
+              </Button>
+            )}
+
+            {messengerUrl && (
+              <Button asChild variant="outline" className="w-full min-h-[48px] text-base font-bold shadow-sm gap-2 border-sky-500 text-sky-700 dark:text-sky-300 hover:bg-sky-50 dark:hover:bg-sky-950/40" size="lg">
+                <a href={messengerUrl} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="h-5 w-5 text-sky-600" />
+                  Chat on Messenger
+                </a>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Mobile Floating Sticky CTA */}
-      {business.phone && (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t z-40 shadow-2xl">
-          <Button asChild className="w-full min-h-[48px] text-base font-bold shadow-lg gap-2" size="lg">
-            <a href={`tel:${business.phone.replace(/[^0-9+]/g, '')}`}>
-              <Phone className="h-5 w-5" />
-              Call {business.phone}
-            </a>
-          </Button>
+      {(business.phone || messengerUrl) && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 p-3.5 bg-background/95 backdrop-blur-md border-t z-40 shadow-2xl flex gap-2">
+          {business.phone && (
+            <Button asChild className="flex-1 min-h-[48px] text-sm font-bold shadow-lg gap-2 bg-emerald-600 hover:bg-emerald-700 text-white" size="lg">
+              <a href={`tel:${business.phone.replace(/[^0-9+]/g, '')}`}>
+                <Phone className="h-4 w-4" />
+                Call
+              </a>
+            </Button>
+          )}
+          {messengerUrl && (
+            <Button asChild className="flex-1 min-h-[48px] text-sm font-bold shadow-lg gap-2 bg-sky-600 hover:bg-sky-700 text-white" size="lg">
+              <a href={messengerUrl} target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="h-4 w-4" />
+                Messenger
+              </a>
+            </Button>
+          )}
         </div>
       )}
 
