@@ -21,6 +21,8 @@ import {
   HelpCircle,
   Sparkles,
   SearchCheck,
+  WifiOff,
+  History,
 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { toast } from 'sonner'
@@ -32,6 +34,13 @@ import { Input } from '#/components/ui/input'
 import { Badge } from '#/components/ui/badge'
 import { Separator } from '#/components/ui/separator'
 import { trackDocumentRequest, type DocumentTrackingResult, type TrackingStage } from '#/server/documents'
+import { useNetworkStatus } from '#/hooks/useNetworkStatus'
+
+export interface CachedTrackingRecord {
+  code: string
+  savedAt: string
+  result: DocumentTrackingResult
+}
 
 const searchSchema = z.object({
   code: z.string().optional(),
@@ -78,6 +87,7 @@ function getStageIcon(step: number, state: TrackingStage['state']) {
 function TrackDocumentRoute() {
   const searchParams = Route.useSearch()
   const navigate = useNavigate({ from: '/track' })
+  const { isOffline } = useNetworkStatus()
 
   const [inputCode, setInputCode] = useState(searchParams.code || '')
   const [activeCode, setActiveCode] = useState(searchParams.code || '')
@@ -85,9 +95,28 @@ function TrackDocumentRoute() {
   const [result, setResult] = useState<DocumentTrackingResult | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [isFromOfflineCache, setIsFromOfflineCache] = useState(false)
+  const [cachedRecords, setCachedRecords] = useState<CachedTrackingRecord[]>([])
   const lastSearchedCodeRef = useRef<string>('')
 
-  // Handle auto-track when URL contains search param
+  // Load cached tracking records on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('cached_tracking_records')
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          if (Array.isArray(parsed)) {
+            setCachedRecords(parsed)
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load cached tracking records:', e)
+      }
+    }
+  }, [])
+
+  // Auto-track when URL parameter changes
   useEffect(() => {
     const code = (searchParams.code || '').trim().toUpperCase()
     if (code) {
@@ -99,9 +128,41 @@ function TrackDocumentRoute() {
     } else {
       setResult(null)
       setHasSearched(false)
+      setIsFromOfflineCache(false)
       lastSearchedCodeRef.current = ''
     }
   }, [searchParams.code])
+
+  function saveToOfflineCache(trimmedCode: string, trackingRes: DocumentTrackingResult) {
+    if (!trackingRes.found || !trackingRes.request) return
+    if (typeof window === 'undefined') return
+
+    try {
+      const existingRaw = localStorage.getItem('cached_tracking_records')
+      const existingList: CachedTrackingRecord[] = existingRaw ? JSON.parse(existingRaw) : []
+      
+      const filtered = existingList.filter(
+        (item) =>
+          item.code.toUpperCase() !== trimmedCode.toUpperCase() &&
+          item.result.request?.id !== trackingRes.request?.id &&
+          item.result.request?.control_number !== trackingRes.request?.control_number
+      )
+
+      const updated: CachedTrackingRecord[] = [
+        {
+          code: trimmedCode,
+          savedAt: new Date().toISOString(),
+          result: trackingRes,
+        },
+        ...filtered,
+      ].slice(0, 3)
+
+      localStorage.setItem('cached_tracking_records', JSON.stringify(updated))
+      setCachedRecords(updated)
+    } catch (e) {
+      console.warn('Failed to save tracking record to localStorage:', e)
+    }
+  }
 
   async function performTrack(codeToSearch: string) {
     const trimmed = codeToSearch.trim().toUpperCase()
@@ -114,29 +175,78 @@ function TrackDocumentRoute() {
     setIsLoading(true)
     setHasSearched(true)
 
+    // Check offline status
+    const isCurrentlyOffline = (typeof navigator !== 'undefined' && !navigator.onLine) || isOffline
+
+    if (isCurrentlyOffline) {
+      const cachedMatch = cachedRecords.find(
+        (c) =>
+          c.code.toUpperCase() === trimmed ||
+          c.result.request?.control_number.toUpperCase() === trimmed ||
+          c.result.request?.id.toUpperCase() === trimmed
+      )
+
+      if (cachedMatch) {
+        setResult(cachedMatch.result)
+        setIsFromOfflineCache(true)
+        setIsLoading(false)
+        toast.info(`Viewing offline cached record for ${trimmed}`, { id: 'track-status-toast' })
+        return
+      } else {
+        setIsFromOfflineCache(false)
+        setResult({
+          found: false,
+          error: `Offline Mode: No cached tracking record found for "${trimmed}". Connect to internet to search live registry.`,
+        })
+        setIsLoading(false)
+        return
+      }
+    }
+
     try {
       const res = await trackDocumentRequest({
         data: { referenceCode: trimmed },
       })
       setResult(res)
+      setIsFromOfflineCache(false)
+
       if (!res.found) {
         toast.error(res.error || 'No document request found for that reference code.', {
           id: 'track-status-toast',
         })
       } else {
+        saveToOfflineCache(trimmed, res)
         toast.success(`Found document request: ${res.request?.control_number}`, {
           id: 'track-status-toast',
         })
       }
     } catch (err) {
       console.error('Error tracking document:', err)
-      setResult({
-        found: false,
-        error: (err as Error).message || 'Failed to connect to barangay registry.',
-      })
-      toast.error('Unable to retrieve tracking details. Please try again.', {
-        id: 'track-status-toast',
-      })
+      
+      // Fallback to offline cache on network error
+      const cachedMatch = cachedRecords.find(
+        (c) =>
+          c.code.toUpperCase() === trimmed ||
+          c.result.request?.control_number.toUpperCase() === trimmed ||
+          c.result.request?.id.toUpperCase() === trimmed
+      )
+
+      if (cachedMatch) {
+        setResult(cachedMatch.result)
+        setIsFromOfflineCache(true)
+        toast.info(`Network unavailable. Showing offline cached record for ${trimmed}.`, {
+          id: 'track-status-toast',
+        })
+      } else {
+        setIsFromOfflineCache(false)
+        setResult({
+          found: false,
+          error: (err as Error).message || 'Failed to connect to barangay registry. Check your connection.',
+        })
+        toast.error('Unable to retrieve tracking details. Please check your network connection.', {
+          id: 'track-status-toast',
+        })
+      }
     } finally {
       setIsLoading(false)
     }
@@ -248,6 +358,44 @@ function TrackDocumentRoute() {
               </button>
             ))}
           </div>
+
+          {/* Recent Offline Cached Records Quick Selector */}
+          {cachedRecords.length > 0 && (
+            <div className="mt-5 pt-4 border-t border-white/15 max-w-2xl mx-auto text-left">
+              <div className="flex items-center justify-between mb-2 px-1">
+                <span className="text-xs font-bold text-white/90 flex items-center gap-1.5">
+                  <History className="h-3.5 w-3.5 text-[#FCD116]" />
+                  Recent Cached Searches ({cachedRecords.length}/3 saved offline)
+                </span>
+                <span className="text-[10px] text-white/70">Available without internet</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {cachedRecords.map((item) => (
+                  <button
+                    key={item.code}
+                    type="button"
+                    onClick={() => {
+                      setInputCode(item.code)
+                      setActiveCode(item.code)
+                      setResult(item.result)
+                      setIsFromOfflineCache(true)
+                      setHasSearched(true)
+                      lastSearchedCodeRef.current = item.code
+                      navigate({ search: { code: item.code }, replace: true })
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-mono text-white transition-all flex items-center gap-2 cursor-pointer"
+                    title={`View cached record: ${item.result.request?.document_title}`}
+                  >
+                    <WifiOff className="h-3 w-3 text-amber-300 shrink-0" />
+                    <span className="font-bold text-[#FCD116]">{item.result.request?.control_number || item.code}</span>
+                    <span className="text-[10px] opacity-80 truncate max-w-[120px]">
+                      {item.result.request?.document_title}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -285,7 +433,7 @@ function TrackDocumentRoute() {
               <CardHeader className="p-6 sm:p-8 bg-gradient-to-b from-muted/40 to-transparent border-b">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                   <div className="space-y-2">
-                    {/* Issuing Barangay Badge */}
+                    {/* Issuing Barangay & Offline Indicator Badges */}
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge
                         className={`text-xs font-extrabold px-3 py-1 uppercase tracking-wider ${
@@ -302,6 +450,13 @@ function TrackDocumentRoute() {
                         Control #{' '}
                         <span className="font-bold text-foreground ml-1">{req.control_number}</span>
                       </Badge>
+
+                      {isFromOfflineCache && (
+                        <Badge className="bg-amber-600 hover:bg-amber-600 text-white text-xs font-bold px-2.5 py-1 uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                          <WifiOff className="h-3.5 w-3.5" />
+                          Offline Cached Record
+                        </Badge>
+                      )}
 
                       <button
                         onClick={() => handleCopyControlNumber(req.control_number)}
@@ -509,7 +664,7 @@ function TrackDocumentRoute() {
 
                     <Button
                       asChild
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-md font-bold px-5 min-h-[44px] shrink-0"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-md font-bold px-5 min-h-[44px] shrink-0 cursor-pointer"
                     >
                       <Link to="/verify/$requestId" params={{ requestId: req.control_number || req.id }}>
                         <QrCode className="h-4 w-4 mr-2" />
@@ -613,6 +768,7 @@ function TrackDocumentRoute() {
                     setInputCode('')
                     setResult(null)
                     setHasSearched(false)
+                    setIsFromOfflineCache(false)
                     navigate({ search: {}, replace: true })
                   }}
                   className="text-xs cursor-pointer"
@@ -661,6 +817,7 @@ function TrackDocumentRoute() {
                     setInputCode('')
                     setResult(null)
                     setHasSearched(false)
+                    setIsFromOfflineCache(false)
                     navigate({ search: {}, replace: true })
                   }}
                   className="min-h-[44px] font-semibold cursor-pointer"
@@ -669,7 +826,7 @@ function TrackDocumentRoute() {
                 </Button>
                 <Button
                   asChild
-                  className="bg-[#0038A8] hover:bg-[#002b80] text-white min-h-[44px] font-semibold"
+                  className="bg-[#0038A8] hover:bg-[#002b80] text-white min-h-[44px] font-semibold cursor-pointer"
                 >
                   <Link to="/documents">
                     <FileText className="h-4 w-4 mr-2" />
@@ -738,7 +895,7 @@ function TrackDocumentRoute() {
                 </div>
                 <Button
                   asChild
-                  className="bg-[#FCD116] hover:bg-[#ffe033] text-[#0038A8] font-black px-6 min-h-[44px] shadow-lg shrink-0"
+                  className="bg-[#FCD116] hover:bg-[#ffe033] text-[#0038A8] font-black px-6 min-h-[44px] shadow-lg shrink-0 cursor-pointer"
                 >
                   <Link to="/documents">
                     <span>Browse Document Catalog</span>

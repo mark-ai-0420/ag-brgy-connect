@@ -46,6 +46,22 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
           "BrgyConnect — Official digital portal of Barangay Daine, Indang, Cavite for community services, document requests, announcements, and local business directory.",
       },
       {
+        name: 'theme-color',
+        content: '#0038A8',
+      },
+      {
+        name: 'apple-mobile-web-app-capable',
+        content: 'yes',
+      },
+      {
+        name: 'apple-mobile-web-app-status-bar-style',
+        content: 'black-translucent',
+      },
+      {
+        name: 'apple-mobile-web-app-title',
+        content: 'BrgyConnect',
+      },
+      {
         property: 'og:title',
         content: 'BrgyConnect | Barangay Daine, Indang, Cavite',
       },
@@ -69,6 +85,10 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         href: '/logo.jpg',
       },
       {
+        rel: 'apple-touch-icon',
+        href: '/logo.jpg',
+      },
+      {
         rel: 'manifest',
         href: '/manifest.json',
       },
@@ -77,11 +97,14 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   shellComponent: RootDocument,
   component: RootComponent,
 })
+
 import { NavBar } from '#/components/layout/Navbar'
 import { Footer } from '#/components/layout/Footer'
 import { EmergencySpeedDial } from '#/components/emergency/EmergencySpeedDial'
 import { KaDaineChatbot } from '#/components/chat/KaDaineChatbot'
 import { SessionTimeoutModal } from '#/components/auth/SessionTimeoutModal'
+import { OfflineIndicator } from '#/components/common/OfflineIndicator'
+import { PWAInstallBanner } from '#/components/common/PWAInstallBanner'
 
 function RootComponent() {
   useEffect(() => {
@@ -96,11 +119,13 @@ function RootComponent() {
     <AuthProvider>
       <BarangayScopeProvider>
         <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-primary focus:text-primary-foreground">Skip to main content</a>
+        <OfflineIndicator />
         <NavBar />
         <main id="main-content" className="flex-1 pb-28 md:pb-0">
           <Outlet />
         </main>
         <Footer />
+        <PWAInstallBanner />
         <EmergencySpeedDial />
         <KaDaineChatbot />
         <SessionTimeoutModal />

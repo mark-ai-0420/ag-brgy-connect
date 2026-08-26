@@ -14,6 +14,7 @@ import {
   Check,
   Camera,
   Loader2,
+  WifiOff,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
@@ -35,7 +36,7 @@ export interface ResidentProfile {
 }
 
 export interface DigitalResidentIDProps {
-  profile: ResidentProfile
+  profile?: ResidentProfile | null
   className?: string
   onPhotoUpdated?: (newUrl: string) => void
 }
@@ -74,27 +75,91 @@ export function DigitalResidentID({
   const [isDownloading, setIsDownloading] = useState(false)
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(profile.avatar_url || null)
+  const [activeProfile, setActiveProfile] = useState<ResidentProfile | null>(() => {
+    if (profile && profile.id) return profile
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('cached_resident_id_profile')
+        if (cached) return JSON.parse(cached)
+      } catch (e) {
+        console.warn('Failed to parse cached resident ID profile:', e)
+      }
+    }
+    return null
+  })
+  const [isOfflineCopy, setIsOfflineCopy] = useState<boolean>(() => {
+    if (!profile && typeof window !== 'undefined') {
+      const cached = localStorage.getItem('cached_resident_id_profile')
+      return Boolean(cached)
+    }
+    return false
+  })
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(profile?.avatar_url || activeProfile?.avatar_url || null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Synchronize profile prop and cache to localStorage
   useEffect(() => {
-    setAvatarUrl(profile.avatar_url || null)
-  }, [profile.avatar_url])
+    if (profile && profile.id) {
+      setActiveProfile(profile)
+      setIsOfflineCopy(false)
+      setAvatarUrl(profile.avatar_url || null)
+      try {
+        localStorage.setItem('cached_resident_id_profile', JSON.stringify(profile))
+      } catch (err) {
+        console.warn('Failed to save resident profile to localStorage:', err)
+      }
+    } else {
+      // If profile prop is absent (e.g. offline fallback), attempt retrieval from cache
+      try {
+        const cached = localStorage.getItem('cached_resident_id_profile')
+        if (cached) {
+          const parsed = JSON.parse(cached)
+          if (parsed && parsed.id) {
+            setActiveProfile(parsed)
+            setIsOfflineCopy(true)
+            setAvatarUrl(parsed.avatar_url || null)
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load cached resident ID profile:', err)
+      }
+    }
+  }, [profile])
 
-  const isDaine2 = profile.barangay === 'daine_2'
+  if (!activeProfile) {
+    return (
+      <div className={`p-8 rounded-3xl border border-border/80 bg-card text-center space-y-4 shadow-sm ${className}`}>
+        <div className="p-3.5 rounded-2xl bg-primary/10 text-primary w-14 h-14 flex items-center justify-center mx-auto shadow-inner">
+          <User className="h-7 w-7" />
+        </div>
+        <div className="space-y-1 max-w-md mx-auto">
+          <h3 className="font-bold text-base text-foreground">Digital Resident ID Offline Cache</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Walang naka-save na offline resident ID. Mag-log in habang may koneksyon sa internet upang awtomatikong mai-save ang iyong digital ID para sa offline use.
+          </p>
+        </div>
+        <Button asChild size="sm" className="min-h-[38px] px-5 font-bold rounded-xl bg-primary">
+          <Link to="/login">Mag-log In</Link>
+        </Button>
+      </div>
+    )
+  }
+
+  const effectiveProfile = activeProfile
+  const isDaine2 = effectiveProfile.barangay === 'daine_2'
   const barangayTitle = isDaine2 ? 'BARANGAY DAINE 2' : 'BARANGAY DAINE 1'
   const barangaySub = isDaine2 ? 'Daine 2, Indang, Cavite' : 'Daine 1, Indang, Cavite'
   const prefix = isDaine2 ? 'BD2-RES-' : 'BD1-RES-'
-  const controlNumber = `${prefix}${profile.id.replace(/-/g, '').slice(0, 8).toUpperCase()}`
-  const residentName = profile.full_name || 'Bona Fide Resident'
-  const purokName = profile.purok || 'Purok Centro'
+  const controlNumber = `${prefix}${effectiveProfile.id.replace(/-/g, '').slice(0, 8).toUpperCase()}`
+  const residentName = effectiveProfile.full_name || 'Bona Fide Resident'
+  const purokName = effectiveProfile.purok || 'Purok Centro'
 
-  const issueDateObj = profile.created_at ? new Date(profile.created_at) : new Date()
+  const issueDateObj = effectiveProfile.created_at ? new Date(effectiveProfile.created_at) : new Date()
   const issuedDateFormatted = format(issueDateObj, 'MMM dd, yyyy')
 
   // Verification URL
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://ag-brgy-connect.vercel.app'
-  const verifyUrl = `${origin}/verify/resident/${profile.id}`
+  const verifyUrl = `${origin}/verify/resident/${effectiveProfile.id}`
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&format=png&data=${encodeURIComponent(verifyUrl)}`
 
   const handleCopyCode = () => {
@@ -107,6 +172,10 @@ export function DigitalResidentID({
   }
 
   const handleTriggerUpload = () => {
+    if (isOfflineCopy) {
+      toast.info('Photo upload is disabled in offline copy mode.')
+      return
+    }
     if (isUploadingPhoto) return
     fileInputRef.current?.click()
   }
@@ -115,10 +184,8 @@ export function DigitalResidentID({
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Clear input value so selecting the same file triggers change
     e.target.value = ''
 
-    // File validation
     const validTypes = ['image/jpeg', 'image/png', 'image/webp']
     if (!validTypes.includes(file.type)) {
       toast.error('Please upload a valid image file (JPEG, PNG, or WebP).')
@@ -134,24 +201,27 @@ export function DigitalResidentID({
     const toastId = toast.loading('Uploading Resident 2x2 Photo...')
 
     try {
-      const publicUrl = await uploadAvatarPhoto(file, profile.id)
+      const publicUrl = await uploadAvatarPhoto(file, effectiveProfile.id)
       if (!publicUrl) {
         throw new Error('Failed to upload photo to storage. Please try again.')
       }
 
-      // Update avatar in profiles table
       try {
-        await updateResidentAvatar({ data: { avatarUrl: publicUrl, profileId: profile.id } })
+        await updateResidentAvatar({ data: { avatarUrl: publicUrl, profileId: effectiveProfile.id } })
       } catch (serverErr) {
         console.warn('Server function update failed, trying client SDK:', serverErr)
         const { error: clientErr } = await supabase
           .from('profiles')
           .update({ avatar_url: publicUrl })
-          .eq('id', profile.id)
+          .eq('id', effectiveProfile.id)
         if (clientErr) throw clientErr
       }
 
+      const updatedProfile = { ...effectiveProfile, avatar_url: publicUrl }
+      setActiveProfile(updatedProfile)
       setAvatarUrl(publicUrl)
+      localStorage.setItem('cached_resident_id_profile', JSON.stringify(updatedProfile))
+
       if (onPhotoUpdated) {
         onPhotoUpdated(publicUrl)
       }
@@ -176,34 +246,33 @@ export function DigitalResidentID({
       const ctx = canvas.getContext('2d')
       if (!ctx) throw new Error('Canvas 2D context not available')
 
-      // Set canvas size (1000px × 630px for high-DPI ID card)
       const width = 1000
       const height = 630
       canvas.width = width
       canvas.height = height
 
-      // Background Gradient (civic deep navy / slate)
+      // Background Gradient
       const bgGrad = ctx.createLinearGradient(0, 0, width, height)
-      bgGrad.addColorStop(0, '#0F172A') // slate-900
-      bgGrad.addColorStop(0.5, '#1E293B') // slate-800
-      bgGrad.addColorStop(1, '#0A192F') // deep navy
+      bgGrad.addColorStop(0, '#0F172A')
+      bgGrad.addColorStop(0.5, '#1E293B')
+      bgGrad.addColorStop(1, '#0A192F')
       ctx.fillStyle = bgGrad
       ctx.beginPath()
       drawRoundedRectPath(ctx, 0, 0, width, height, 32)
       ctx.fill()
 
-      // Security Pattern Overlay / Border
+      // Border
       ctx.lineWidth = 4
-      ctx.strokeStyle = '#38BDF8' // sky-400
+      ctx.strokeStyle = '#38BDF8'
       ctx.stroke()
 
-      // Philippine Flag Top Stripe
+      // Flag Stripe
       const stripeH = 8
-      ctx.fillStyle = '#0038A8' // Royal blue
+      ctx.fillStyle = '#0038A8'
       ctx.fillRect(32, 28, (width - 64) * 0.45, stripeH)
-      ctx.fillStyle = '#FCD116' // Yellow sun gold
+      ctx.fillStyle = '#FCD116'
       ctx.fillRect(32 + (width - 64) * 0.45, 28, (width - 64) * 0.1, stripeH)
-      ctx.fillStyle = '#CE1126' // Red
+      ctx.fillStyle = '#CE1126'
       ctx.fillRect(32 + (width - 64) * 0.55, 28, (width - 64) * 0.45, stripeH)
 
       // Header Box Background
@@ -240,7 +309,7 @@ export function DigitalResidentID({
         ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2, 0, Math.PI * 2)
         ctx.stroke()
       } catch {
-        // Fallback gracefully if logo is unavailable
+        // Fallback gracefully
       }
 
       // Header Texts
@@ -264,21 +333,19 @@ export function DigitalResidentID({
       ctx.letterSpacing = '1px'
       ctx.fillText('OFFICIAL DIGITAL RESIDENT IDENTIFICATION CARD', width / 2 + 20, 134)
 
-      // Photo Box / Placeholder
+      // Photo Box
       const photoX = 64
       const photoY = 180
       const photoW = 200
       const photoH = 250
 
-      // Photo background fill
       ctx.fillStyle = '#1E293B'
       ctx.beginPath()
       drawRoundedRectPath(ctx, photoX, photoY, photoW, photoH, 16)
       ctx.fill()
 
-      // If user has avatar, try loading and drawing with center-crop; otherwise draw crisp official citizen silhouette
       let photoLoaded = false
-      const currentPhotoUrl = avatarUrl || profile.avatar_url
+      const currentPhotoUrl = avatarUrl || effectiveProfile.avatar_url
 
       if (currentPhotoUrl) {
         try {
@@ -296,7 +363,6 @@ export function DigitalResidentID({
           drawRoundedRectPath(ctx, photoX, photoY, photoW, photoH, 16)
           ctx.clip()
 
-          // Center crop calculation
           const imgAspect = (img.naturalWidth || img.width) / (img.naturalHeight || img.height)
           const boxAspect = photoW / photoH
           let sx = 0,
@@ -322,7 +388,6 @@ export function DigitalResidentID({
       }
 
       if (!photoLoaded) {
-        // Draw crisp official citizen silhouette and text
         ctx.save()
         ctx.beginPath()
         drawRoundedRectPath(ctx, photoX, photoY, photoW, photoH, 16)
@@ -334,18 +399,15 @@ export function DigitalResidentID({
         ctx.fillStyle = placeholderGrad
         ctx.fillRect(photoX, photoY, photoW, photoH)
 
-        // Citizen Silhouette Head
         ctx.fillStyle = '#475569'
         ctx.beginPath()
         ctx.arc(photoX + photoW / 2, photoY + 95, 45, 0, Math.PI * 2)
         ctx.fill()
 
-        // Citizen Silhouette Shoulders
         ctx.beginPath()
         ctx.arc(photoX + photoW / 2, photoY + 230, 75, Math.PI, 0)
         ctx.fill()
 
-        // Silhouette Text
         ctx.fillStyle = '#94A3B8'
         ctx.font = 'bold 11px system-ui, sans-serif'
         ctx.textAlign = 'center'
@@ -354,24 +416,23 @@ export function DigitalResidentID({
         ctx.restore()
       }
 
-      // Golden Photo Border
       ctx.lineWidth = 3
       ctx.strokeStyle = '#FCD116'
       ctx.beginPath()
       drawRoundedRectPath(ctx, photoX, photoY, photoW, photoH, 16)
       ctx.stroke()
 
-      // Photo tag: VERIFIED RESIDENT
+      // Photo tag
       ctx.fillStyle = '#0F172A'
       ctx.beginPath()
       drawRoundedRectPath(ctx, photoX + 15, photoY + photoH - 30, photoW - 30, 24, 6)
       ctx.fill()
-      ctx.fillStyle = '#38BDF8'
+      ctx.fillStyle = isOfflineCopy ? '#F59E0B' : '#38BDF8'
       ctx.font = 'bold 10px system-ui, sans-serif'
       ctx.textAlign = 'center'
-      ctx.fillText('VERIFIED RESIDENT', photoX + photoW / 2, photoY + photoH - 14)
+      ctx.fillText(isOfflineCopy ? 'OFFLINE COPY' : 'VERIFIED RESIDENT', photoX + photoW / 2, photoY + photoH - 14)
 
-      // Resident Details (Middle Column)
+      // Resident Details
       ctx.textAlign = 'left'
 
       // Full Name
@@ -388,7 +449,7 @@ export function DigitalResidentID({
       ctx.font = 'bold 12px system-ui, sans-serif'
       ctx.fillText('RESIDENT CONTROL NUMBER', 300, 280)
 
-      ctx.fillStyle = '#FCD116' // Gold
+      ctx.fillStyle = '#FCD116'
       ctx.font = 'bold 18px monospace, sans-serif'
       ctx.fillText(controlNumber, 300, 305)
 
@@ -412,11 +473,11 @@ export function DigitalResidentID({
       ctx.fillStyle = '#94A3B8'
       ctx.font = 'bold 12px system-ui, sans-serif'
       ctx.fillText('STATUS', 470, 420)
-      ctx.fillStyle = '#10B981' // Emerald
+      ctx.fillStyle = isOfflineCopy ? '#F59E0B' : '#10B981'
       ctx.font = 'bold 15px system-ui, sans-serif'
-      ctx.fillText('ACTIVE RESIDENT', 470, 442)
+      ctx.fillText(isOfflineCopy ? 'OFFLINE CACHED' : 'ACTIVE RESIDENT', 470, 442)
 
-      // QR Code Box (Right Side)
+      // QR Code Box
       const qrX = width - 260
       const qrY = 180
       const qrSize = 190
@@ -440,7 +501,6 @@ export function DigitalResidentID({
         })
         ctx.drawImage(qrImg, qrX + 10, qrY + 10, qrSize - 20, qrSize - 20)
       } catch {
-        // QR fallback text
         ctx.fillStyle = '#0F172A'
         ctx.font = 'bold 12px monospace'
         ctx.textAlign = 'center'
@@ -453,7 +513,7 @@ export function DigitalResidentID({
       ctx.textAlign = 'center'
       ctx.fillText('SCAN TO VERIFY AUTHENTICITY', qrX + qrSize / 2, qrY + qrSize + 25)
 
-      // Card Bottom Bar / Footer
+      // Footer
       ctx.fillStyle = '#0F172A'
       ctx.beginPath()
       drawRoundedRectPath(ctx, 32, height - 90, width - 64, 60, 12)
@@ -480,7 +540,6 @@ export function DigitalResidentID({
       ctx.font = '10px system-ui, sans-serif'
       ctx.fillText('Executive Officer', width - 50, height - 44)
 
-      // Convert to blob and download
       const dataUrl = canvas.toDataURL('image/png')
       const a = document.createElement('a')
       a.href = dataUrl
@@ -507,7 +566,7 @@ export function DigitalResidentID({
         accept="image/jpeg,image/png,image/webp"
         onChange={handleFileChange}
         className="hidden"
-        disabled={isUploadingPhoto}
+        disabled={isUploadingPhoto || isOfflineCopy}
       />
 
       {/* Action Bar */}
@@ -517,7 +576,14 @@ export function DigitalResidentID({
             <Sparkles className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-sm font-bold tracking-tight">Official Digital Resident ID</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-bold tracking-tight">Official Digital Resident ID</h3>
+              {isOfflineCopy && (
+                <Badge variant="outline" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/40 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                  <WifiOff className="h-3 w-3" /> Offline Copy
+                </Badge>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">Certified Digital Credential • {barangayTitle}</p>
           </div>
         </div>
@@ -605,9 +671,9 @@ export function DigitalResidentID({
                     }}
                     className={cn(
                       'h-32 w-28 sm:h-36 sm:w-30 rounded-2xl bg-slate-800 border-2 border-amber-400/80 overflow-hidden shadow-lg flex items-center justify-center relative cursor-pointer transition-all duration-200 hover:border-amber-300 hover:shadow-amber-500/20 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-amber-400',
-                      isUploadingPhoto && 'pointer-events-none opacity-80'
+                      (isUploadingPhoto || isOfflineCopy) && 'opacity-80'
                     )}
-                    title="Click to change or upload 2x2 Photo"
+                    title={isOfflineCopy ? 'Offline Copy Mode' : 'Click to change or upload 2x2 Photo'}
                   >
                     {avatarUrl ? (
                       <img
@@ -622,50 +688,60 @@ export function DigitalResidentID({
                       </div>
                     )}
 
-                    {/* Camera Hover / Focus Overlay */}
-                    <div
-                      className={cn(
-                        'absolute inset-0 bg-slate-950/75 backdrop-blur-[1px] flex flex-col items-center justify-center p-2 text-center transition-all duration-200',
-                        isUploadingPhoto
-                          ? 'opacity-100'
-                          : 'opacity-0 group-hover/photo:opacity-100 group-focus/photo:opacity-100'
-                      )}
-                    >
-                      {isUploadingPhoto ? (
-                        <div className="flex flex-col items-center gap-1 text-white">
-                          <Loader2 className="h-6 w-6 animate-spin text-amber-400" />
-                          <span className="text-[9px] font-bold tracking-wider uppercase text-amber-300">
-                            Uploading...
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center gap-1 text-white">
-                          <div className="p-1.5 rounded-full bg-amber-400 text-slate-950 shadow-md">
-                            <Camera className="h-4 w-4" />
+                    {/* Camera Hover / Focus Overlay (active when online) */}
+                    {!isOfflineCopy && (
+                      <div
+                        className={cn(
+                          'absolute inset-0 bg-slate-950/75 backdrop-blur-[1px] flex flex-col items-center justify-center p-2 text-center transition-all duration-200',
+                          isUploadingPhoto
+                            ? 'opacity-100'
+                            : 'opacity-0 group-hover/photo:opacity-100 group-focus/photo:opacity-100'
+                        )}
+                      >
+                        {isUploadingPhoto ? (
+                          <div className="flex flex-col items-center gap-1 text-white">
+                            <Loader2 className="h-6 w-6 animate-spin text-amber-400" />
+                            <span className="text-[9px] font-bold tracking-wider uppercase text-amber-300">
+                              Uploading...
+                            </span>
                           </div>
-                          <span className="text-[9px] font-black tracking-wider uppercase text-amber-300 leading-tight">
-                            {avatarUrl ? 'Change Photo' : 'Upload 2x2'}
-                          </span>
-                          <span className="text-[7px] text-slate-300 font-medium">JPEG, PNG, WebP</span>
-                        </div>
-                      )}
-                    </div>
+                        ) : (
+                          <div className="flex flex-col items-center gap-1 text-white">
+                            <div className="p-1.5 rounded-full bg-amber-400 text-slate-950 shadow-md">
+                              <Camera className="h-4 w-4" />
+                            </div>
+                            <span className="text-[9px] font-black tracking-wider uppercase text-amber-300 leading-tight">
+                              {avatarUrl ? 'Change Photo' : 'Upload 2x2'}
+                            </span>
+                            <span className="text-[7px] text-slate-300 font-medium">JPEG, PNG, WebP</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
-                  <Badge className="mt-1.5 bg-emerald-600/90 hover:bg-emerald-600 text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 border border-emerald-400/40 shadow-xs">
-                    <CheckCircle2 className="h-2.5 w-2.5 mr-1 inline" /> Verified
-                  </Badge>
+                  {isOfflineCopy ? (
+                    <Badge className="mt-1.5 bg-amber-600 hover:bg-amber-600 text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 border border-amber-400/40 shadow-xs">
+                      <WifiOff className="h-2.5 w-2.5 mr-1 inline" /> Offline Copy
+                    </Badge>
+                  ) : (
+                    <Badge className="mt-1.5 bg-emerald-600/90 hover:bg-emerald-600 text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 border border-emerald-400/40 shadow-xs">
+                      <CheckCircle2 className="h-2.5 w-2.5 mr-1 inline" /> Verified
+                    </Badge>
+                  )}
 
-                  {/* Direct Change/Upload Photo button under avatar for touch & accessibility */}
-                  <button
-                    type="button"
-                    onClick={handleTriggerUpload}
-                    disabled={isUploadingPhoto}
-                    className="mt-1 inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 hover:text-amber-300 transition-colors cursor-pointer hover:underline"
-                  >
-                    <Camera className="h-3 w-3" />
-                    {avatarUrl ? 'Change Photo' : 'Upload 2x2 Photo'}
-                  </button>
+                  {/* Direct Change/Upload Photo button under avatar when online */}
+                  {!isOfflineCopy && (
+                    <button
+                      type="button"
+                      onClick={handleTriggerUpload}
+                      disabled={isUploadingPhoto}
+                      className="mt-1 inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 hover:text-amber-300 transition-colors cursor-pointer hover:underline"
+                    >
+                      <Camera className="h-3 w-3" />
+                      {avatarUrl ? 'Change Photo' : 'Upload 2x2 Photo'}
+                    </button>
+                  )}
                 </div>
 
                 {/* Resident Details */}
@@ -703,7 +779,9 @@ export function DigitalResidentID({
 
                     <div>
                       <p className="text-[9px] uppercase font-bold tracking-wider text-slate-400">Status</p>
-                      <p className="text-xs font-bold text-emerald-400">Active Resident</p>
+                      <p className={`text-xs font-bold ${isOfflineCopy ? 'text-amber-400' : 'text-emerald-400'}`}>
+                        {isOfflineCopy ? 'Offline Cached' : 'Active Resident'}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -764,7 +842,7 @@ export function DigitalResidentID({
                   <div className="pt-1">
                     <Link
                       to="/verify/resident/$residentId"
-                      params={{ residentId: profile.id }}
+                      params={{ residentId: effectiveProfile.id }}
                       target="_blank"
                       className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-400 hover:text-sky-300 transition-colors underline underline-offset-2"
                     >

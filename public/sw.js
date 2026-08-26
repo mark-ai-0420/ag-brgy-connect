@@ -1,4 +1,4 @@
-const CACHE_NAME = 'brgyconnect-v1'
+const CACHE_NAME = 'brgyconnect-v2'
 const STATIC_ASSETS = [
   '/',
   '/emergency',
@@ -14,7 +14,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting()
 })
 
-// Activate: clean up old caches
+// Activate: clean up old caches and claim clients
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -26,43 +26,82 @@ self.addEventListener('activate', (event) => {
   self.clients.claim()
 })
 
-// Fetch: network-first for API/navigation, cache-first for static assets
+// Fetch strategy handler
 self.addEventListener('fetch', (event) => {
   const { request } = event
-  const url = new URL(request.url)
 
   // Skip non-GET requests
   if (request.method !== 'GET') return
 
-  // Skip Supabase API calls — always go to network
-  if (url.hostname.includes('supabase')) return
+  const url = new URL(request.url)
 
-  // For navigation requests: network-first with cache fallback
-  if (request.mode === 'navigate') {
+  // 1. Navigation & Emergency Contacts: Stale-While-Revalidate
+  const isNavigation = request.mode === 'navigate'
+  const isEmergency = url.pathname.includes('/emergency') || url.pathname.includes('emergency')
+
+  if (isNavigation || isEmergency) {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          const clone = response.clone()
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
-          return response
-        })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match('/')))
+      caches.open(CACHE_NAME).then(async (cache) => {
+        const cachedResponse = await cache.match(request)
+        const fetchPromise = fetch(request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              cache.put(request, networkResponse.clone())
+            }
+            return networkResponse
+          })
+          .catch(async () => {
+            if (cachedResponse) return cachedResponse
+            if (isEmergency) {
+              const fallbackEmergency = await cache.match('/emergency')
+              if (fallbackEmergency) return fallbackEmergency
+            }
+            const fallbackRoot = await cache.match('/')
+            if (fallbackRoot) return fallbackRoot
+            return new Response('Offline - Barangay Daine Connect', {
+              status: 503,
+              headers: { 'Content-Type': 'text/plain' },
+            })
+          })
+
+        return cachedResponse || fetchPromise
+      })
     )
     return
   }
 
-  // For static assets: cache-first
-  if (url.pathname.match(/\.(js|css|jpg|png|svg|ico|woff2?)$/)) {
+  // 2. Static Assets (js, css, images, fonts, manifest): Cache-First
+  const isStaticAsset =
+    url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|ico|webp|avif|woff2?|ttf|eot)$/i) ||
+    url.pathname.startsWith('/assets/') ||
+    url.pathname === '/manifest.json'
+
+  if (isStaticAsset) {
     event.respondWith(
-      caches.match(request).then((cached) => {
-        if (cached) return cached
-        return fetch(request).then((response) => {
-          const clone = response.clone()
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
-          return response
+      caches.match(request).then((cachedResponse) => {
+        if (cachedResponse) return cachedResponse
+        return fetch(request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const clone = networkResponse.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
+          }
+          return networkResponse
         })
       })
     )
     return
   }
+
+  // 3. Data requests (APIs, Supabase queries, dynamic server functions): Network-First with cache fallback
+  event.respondWith(
+    fetch(request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const clone = networkResponse.clone()
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
+        }
+        return networkResponse
+      })
+      .catch(() => caches.match(request))
+  )
 })

@@ -13,8 +13,10 @@ import {
   Radio,
   Ambulance,
   MapPin,
+  WifiOff,
 } from 'lucide-react'
 import { useBarangayScope } from '#/hooks/useBarangayScope'
+import { useNetworkStatus } from '#/hooks/useNetworkStatus'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 
@@ -102,6 +104,11 @@ const DEFAULT_EMERGENCY_SECTIONS = [
   },
 ]
 
+function formatTelUri(phoneStr: string): string {
+  const digits = phoneStr.replace(/[^0-9+]/g, '')
+  return `tel:${digits}`
+}
+
 const getEmergencyContacts = createServerFn({ method: 'GET' }).handler(async () => {
   try {
     const supabase = createSupabaseServerClient()
@@ -128,6 +135,7 @@ export const Route = createFileRoute('/emergency')({
 function EmergencyRoute() {
   const dbContacts = Route.useLoaderData() ?? []
   const { scope, setScope } = useBarangayScope()
+  const { isOffline } = useNetworkStatus()
   
   // Merge database custom contacts with built-in default directory
   const displaySections = useMemo(() => {
@@ -172,6 +180,23 @@ function EmergencyRoute() {
 
   return (
     <div className="min-h-screen pb-16">
+      {/* Prominent Civic Offline Banner */}
+      {isOffline && (
+        <aside
+          aria-label="Offline Mode Notification"
+          className="bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 border-b-2 border-amber-700 text-slate-950 px-4 py-3.5 shadow-lg transition-all animate-in slide-in-from-top duration-300"
+        >
+          <div className="container mx-auto max-w-5xl flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-amber-950 text-amber-300 shrink-0 shadow-inner">
+              <WifiOff className="h-5 w-5 animate-pulse" />
+            </div>
+            <p className="text-xs sm:text-sm md:text-base font-black leading-relaxed tracking-tight text-white drop-shadow-xs">
+              ⚡ Offline Mode Active — Ang lahat ng emergency hotlines ay maaari pa ring tawagan gamit ang regular direct phone call kahit walang signal o Wi-Fi.
+            </p>
+          </div>
+        </aside>
+      )}
+
       {/* Urgent header banner */}
       <div className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 text-white py-10 px-4 shadow-md">
         <div className="container mx-auto max-w-5xl">
@@ -200,7 +225,7 @@ function EmergencyRoute() {
             ].map(({ label, number }) => (
               <a
                 key={number}
-                href={`tel:${number.replace(/[^0-9+]/g, '')}`}
+                href={formatTelUri(number)}
                 className="flex items-center gap-3 bg-white/15 hover:bg-white/25 active:bg-white/30 transition-all backdrop-blur-sm rounded-xl px-4 py-3 ring-1 ring-white/20 min-h-[48px] shadow-sm hover:scale-[1.02]"
               >
                 <Phone className="h-5 w-5 text-yellow-300 shrink-0" />
@@ -277,29 +302,32 @@ function EmergencyRoute() {
                           )}
                         </div>
                         <div className="flex flex-col gap-2">
-                          {numbers.map((number: string, nIdx: number) => (
-                            <div
-                              key={nIdx}
-                              className="flex items-center justify-between gap-3 p-2 rounded-xl bg-muted/30 hover:bg-muted/70 transition-colors"
-                            >
-                              <a
-                                href={`tel:${number.replace(/[^0-9+]/g, '')}`}
-                                className="text-base sm:text-lg font-bold tracking-tight text-primary hover:underline min-h-[44px] flex items-center"
+                          {numbers.map((number: string, nIdx: number) => {
+                            const telUri = formatTelUri(number)
+                            return (
+                              <div
+                                key={nIdx}
+                                className="flex items-center justify-between gap-3 p-2 rounded-xl bg-muted/30 hover:bg-muted/70 transition-colors"
                               >
-                                {number}
-                              </a>
-                              <Button
-                                asChild
-                                size="sm"
-                                className="shrink-0 bg-emerald-700 hover:bg-emerald-800 text-white font-bold min-h-[40px] px-3.5 rounded-xl shadow-sm"
-                              >
-                                <a href={`tel:${number.replace(/[^0-9+]/g, '')}`}>
-                                  <Phone className="h-3.5 w-3.5 mr-1.5" />
-                                  Call
+                                <a
+                                  href={telUri}
+                                  className="text-base sm:text-lg font-bold tracking-tight text-primary hover:underline min-h-[44px] flex items-center"
+                                >
+                                  {number}
                                 </a>
-                              </Button>
-                            </div>
-                          ))}
+                                <Button
+                                  asChild
+                                  size="sm"
+                                  className="shrink-0 bg-emerald-700 hover:bg-emerald-800 text-white font-bold min-h-[40px] px-3.5 rounded-xl shadow-sm cursor-pointer"
+                                >
+                                  <a href={telUri}>
+                                    <Phone className="h-3.5 w-3.5 mr-1.5" />
+                                    Call
+                                  </a>
+                                </Button>
+                              </div>
+                            )
+                          })}
                         </div>
                       </div>
                     )
