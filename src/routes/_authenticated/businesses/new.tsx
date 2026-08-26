@@ -23,6 +23,8 @@ const createBusiness = createServerFn({ method: 'POST' })
       barangay: data.barangay,
       purok: data.purok || null,
       address: data.address,
+      latitude: data.latitude ?? null,
+      longitude: data.longitude ?? null,
       phone: data.phone,
       messenger_link: data.messenger_link || null,
       payment_methods: data.payment_methods?.length ? data.payment_methods : ['Cash', 'GCash'],

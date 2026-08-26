@@ -7,7 +7,7 @@ export const getMapBusinesses = createServerFn({ method: 'GET' }).handler(async 
     const supabase = createSupabaseServerClient()
     const { data, error } = await supabase
       .from('businesses')
-      .select('id, name, category, phone, address, hours, description, map_url')
+      .select('id, name, category, phone, address, hours, description, map_url, barangay, purok, latitude, longitude, messenger_link, photo_url')
       .eq('status', 'approved')
       .order('name')
     if (error) console.error('Error fetching businesses for map:', error)

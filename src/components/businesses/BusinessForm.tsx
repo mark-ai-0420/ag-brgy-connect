@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -8,8 +9,9 @@ import { Input } from '#/components/ui/input'
 import { Textarea } from '#/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select'
 import { Checkbox } from '#/components/ui/checkbox'
-import { Store, Image as ImageIcon, Utensils, Sparkles, MessageSquare, Phone, MapPin, Clock, CreditCard, Building2 } from 'lucide-react'
+import { Store, Image as ImageIcon, Utensils, Sparkles, MessageSquare, Phone, MapPin, Clock, CreditCard, Building2, Navigation, Loader2 } from 'lucide-react'
 import { ImageUploader } from '#/components/common/ImageUploader'
+import { toast } from 'sonner'
 
 export const CATEGORIES = [
   'Sari-Sari Store',
@@ -44,6 +46,8 @@ export const businessFormSchema = z.object({
   }),
   purok: z.string().optional().default(''),
   address: z.string().min(5, 'Please provide a complete address / landmark'),
+  latitude: z.number().nullable().optional(),
+  longitude: z.number().nullable().optional(),
   phone: z.string().min(7, 'Please provide a valid contact number'),
   messenger_link: z.string().optional().default(''),
   payment_methods: z.array(z.string()).default(['Cash', 'GCash']),
@@ -72,6 +76,8 @@ export function BusinessForm({
   isSubmitting = false,
   mode
 }: BusinessFormProps) {
+  const [isLocating, setIsLocating] = useState(false)
+
   const form = useForm<BusinessFormValues>({
     resolver: zodResolver(businessFormSchema) as any,
     defaultValues: {
@@ -80,6 +86,8 @@ export function BusinessForm({
       barangay: initialValues?.barangay ?? 'daine_1',
       purok: initialValues?.purok ?? '',
       address: initialValues?.address ?? '',
+      latitude: initialValues?.latitude ?? null,
+      longitude: initialValues?.longitude ?? null,
       phone: initialValues?.phone ?? '',
       messenger_link: initialValues?.messenger_link ?? '',
       payment_methods: initialValues?.payment_methods ?? ['Cash', 'GCash'],
@@ -91,6 +99,32 @@ export function BusinessForm({
       misc_image_url: initialValues?.misc_image_url ?? null,
     },
   })
+
+  const handleGetGPS = () => {
+    if (!('geolocation' in navigator)) {
+      toast.error('Geolocation is not supported by your browser.')
+      return
+    }
+
+    setIsLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        const lat = Number(latitude.toFixed(6))
+        const lng = Number(longitude.toFixed(6))
+        form.setValue('latitude', lat, { shouldValidate: true, shouldDirty: true })
+        form.setValue('longitude', lng, { shouldValidate: true, shouldDirty: true })
+        toast.success('GPS coordinates captured!')
+        setIsLocating(false)
+      },
+      (error) => {
+        console.error('GPS error:', error)
+        toast.error(error.message || 'Unable to retrieve your location.')
+        setIsLocating(false)
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    )
+  }
 
   const handleSubmit = (values: BusinessFormValues) => {
     return onSubmit(values)
@@ -316,6 +350,92 @@ export function BusinessForm({
                     </FormItem>
                   )}
                 />
+              </div>
+
+              {/* GPS Coordinates Section */}
+              <div className="space-y-4 rounded-2xl border p-5 bg-muted/20">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Navigation className="h-4 w-4 text-primary" />
+                      <h3 className="text-sm font-bold tracking-tight">GIS Map Pin & GPS Coordinates (Optional)</h3>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Pinpoint your store location precisely on the Barangay Interactive GIS Map.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleGetGPS}
+                    disabled={isLocating || isSubmitting}
+                    className="min-h-[38px] text-xs font-semibold shrink-0 gap-1.5 border-primary/30 text-primary hover:bg-primary/10 cursor-pointer"
+                  >
+                    {isLocating ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        Acquiring GPS...
+                      </>
+                    ) : (
+                      <>
+                        📍 Get My Current GPS Location
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="latitude"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">Latitude</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="any"
+                            placeholder="e.g. 14.1955"
+                            className="h-10 text-sm"
+                            value={field.value !== null && field.value !== undefined ? field.value : ''}
+                            onChange={(e) => {
+                              const val = e.target.value
+                              field.onChange(val === '' ? null : parseFloat(val))
+                            }}
+                            disabled={isSubmitting}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="longitude"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">Longitude</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="any"
+                            placeholder="e.g. 120.8798"
+                            className="h-10 text-sm"
+                            value={field.value !== null && field.value !== undefined ? field.value : ''}
+                            onChange={(e) => {
+                              const val = e.target.value
+                              field.onChange(val === '' ? null : parseFloat(val))
+                            }}
+                            disabled={isSubmitting}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
               {/* Contact & Instant Messaging */}

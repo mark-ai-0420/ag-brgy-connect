@@ -1,33 +1,65 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import {
-  MapPin, ShieldAlert, Building2, Store, Phone, Navigation, Search, Users, CheckCircle2, Flame, Stethoscope, Radio, ExternalLink, Layers, Sparkles, Info, Compass, Maximize2, RefreshCw
+  MapPin, ShieldAlert, Building2, Store, Phone, Navigation, Search, Users, Flame, Stethoscope, Radio,
+  Layers, Compass, Maximize2, RefreshCw, Droplets, GraduationCap, Recycle, Trophy,
+  WifiOff, Clock, MessageSquare, ExternalLink, Filter, CheckCircle2, AlertTriangle, ShieldCheck
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '#/components/ui/card'
 import { Button } from '#/components/ui/button'
 import { Badge } from '#/components/ui/badge'
 import { Input } from '#/components/ui/input'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '#/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '#/components/ui/tabs'
+import { useBarangayScope, type BarangayScope } from '#/hooks/useBarangayScope'
+import { useNetworkStatus } from '#/hooks/useNetworkStatus'
+import { cn } from '#/lib/utils'
 
 import { Route as MapRoute } from './index'
 
-function escapeHtml(unsafe) {
-  if (!unsafe) return '';
-  return String(unsafe).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+function escapeHtml(unsafe: any): string {
+  if (unsafe === undefined || unsafe === null) return ''
+  return String(unsafe)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
 }
 
-export const Route = createLazyFileRoute('/map/')({
-  component: MapRouteComponent,
-})
+function formatMessengerUrl(link?: string): string | null {
+  if (!link || !link.trim()) return null
+  const trimmed = link.trim()
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed
+  }
+  const clean = trimmed.replace(/^@/, '').replace(/^m\.me\//, '').replace(/^facebook\.com\//, '')
+  return `https://m.me/${clean}`
+}
+
+export type SpotScope = 'daine_1' | 'daine_2' | 'both'
+
+export type SpotCategory =
+  | 'evacuation'
+  | 'government'
+  | 'health'
+  | 'emergency'
+  | 'water'
+  | 'education'
+  | 'mrf'
+  | 'sports'
+  | 'business'
 
 export interface MapSpot {
   id: string
   name: string
-  category: 'evacuation' | 'government' | 'emergency' | 'business'
+  category: SpotCategory
   categoryTag: string
+  scope: SpotScope
+  purok?: string
   lat: number
   lng: number
   phone?: string
+  messenger_link?: string
   address: string
   capacity?: number
   amenities?: string[]
@@ -35,13 +67,244 @@ export interface MapSpot {
   description?: string
   hours?: string
   isBusiness?: boolean
+  photo_url?: string
 }
 
-const MAP_CENTER = { lat: 14.1955, lng: 120.8798, zoom: 15 }
+export interface OpenStatusResult {
+  isOpen: boolean
+  label: string
+  badgeClass: string
+  color: string
+}
 
-// Haversine formula to compute distance in km from center
+export const DAINE_1_CENTER = { lat: 14.1955, lng: 120.8798, zoom: 16 }
+export const DAINE_2_CENTER = { lat: 14.1970, lng: 120.8860, zoom: 16 }
+export const ALL_DAINE_CENTER = { lat: 14.1962, lng: 120.8829, zoom: 15 }
+
+export const PUROK_ANCHORS = {
+  daine_1: {
+    purok_1: { lat: 14.1962, lng: 120.8785, label: 'Daine 1 - Purok 1' },
+    purok_2: { lat: 14.1955, lng: 120.8798, label: 'Daine 1 - Purok 2 (Hall / Covered Court)' },
+    purok_3: { lat: 14.1942, lng: 120.8810, label: 'Daine 1 - Purok 3 (Elementary School)' },
+    purok_4: { lat: 14.1925, lng: 120.8802, label: 'Daine 1 - Purok 4 (Tanod Outpost)' },
+  },
+  daine_2: {
+    purok_1: { lat: 14.1982, lng: 120.8845, label: 'Daine 2 - Purok 1 / Sitio Ilaya' },
+    purok_2: { lat: 14.1970, lng: 120.8860, label: 'Daine 2 - Purok 2 / Daine 2 Hall' },
+    purok_3: { lat: 14.1958, lng: 120.8875, label: 'Daine 2 - Purok 3 / Sitio Ibaba' },
+    purok_4: { lat: 14.1945, lng: 120.8890, label: 'Daine 2 - Purok 4 / Boundary' },
+  },
+}
+
+// Compute real-time open/closed status from hours string
+export function computeOpenStatus(hours?: string): OpenStatusResult {
+  if (!hours || typeof hours !== 'string' || !hours.trim()) {
+    return {
+      isOpen: true,
+      label: '🟢 Open Today',
+      badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300',
+      color: 'text-emerald-600',
+    }
+  }
+
+  const raw = hours.trim().toLowerCase()
+
+  // 24/7 check
+  if (
+    raw.includes('24/7') ||
+    raw.includes('24 hours') ||
+    raw.includes('24-hour') ||
+    raw.includes('always open') ||
+    raw.includes('ready & operational') ||
+    raw.includes('emergency activation')
+  ) {
+    return {
+      isOpen: true,
+      label: '🟢 Open 24/7',
+      badgeClass: 'bg-emerald-500/15 text-emerald-700 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300',
+      color: 'text-emerald-600',
+    }
+  }
+
+  const now = new Date()
+  const currentDay = now.getDay() // 0 = Sun, 1 = Mon, ..., 6 = Sat
+  const currentMinutes = now.getHours() * 60 + now.getMinutes()
+
+  // Check day applicability
+  let isTodayApplicable = true
+  if (
+    raw.includes('mon-fri') ||
+    raw.includes('monday to friday') ||
+    raw.includes('lunes hanggang biyernes') ||
+    raw.includes('lunes - biyernes')
+  ) {
+    if (currentDay === 0 || currentDay === 6) {
+      isTodayApplicable = false
+    }
+  } else if (
+    raw.includes('mon-sat') ||
+    raw.includes('monday to saturday') ||
+    raw.includes('lunes hanggang sabado') ||
+    raw.includes('lunes - sabado')
+  ) {
+    if (currentDay === 0) {
+      isTodayApplicable = false
+    }
+  }
+
+  if (!isTodayApplicable) {
+    return {
+      isOpen: false,
+      label: '⚪ Closed Today',
+      badgeClass: 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400',
+      color: 'text-slate-500',
+    }
+  }
+
+  // Parse time range e.g. "8:00 AM - 5:00 PM"
+  const timeMatch = raw.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*(?:-|to)\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i)
+
+  if (timeMatch) {
+    let startHour = parseInt(timeMatch[1], 10)
+    const startMin = timeMatch[2] ? parseInt(timeMatch[2], 10) : 0
+    const startAmPm = (timeMatch[3] || '').toLowerCase()
+
+    let endHour = parseInt(timeMatch[4], 10)
+    const endMin = timeMatch[5] ? parseInt(timeMatch[5], 10) : 0
+    const endAmPm = (timeMatch[6] || '').toLowerCase()
+
+    if (startAmPm === 'pm' && startHour < 12) startHour += 12
+    if (startAmPm === 'am' && startHour === 12) startHour = 0
+
+    if (endAmPm === 'pm' && endHour < 12) endHour += 12
+    if (endAmPm === 'am' && endHour === 12) endHour = 0
+
+    if (!startAmPm && endAmPm === 'pm' && startHour < 12 && startHour <= endHour - 12) {
+      // e.g. 8 - 5 PM -> 8 AM
+    }
+
+    const startTotal = startHour * 60 + startMin
+    const endTotal = endHour * 60 + endMin
+
+    if (currentMinutes >= startTotal && currentMinutes <= endTotal) {
+      return {
+        isOpen: true,
+        label: '🟢 Open Now',
+        badgeClass: 'bg-emerald-500/15 text-emerald-700 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300',
+        color: 'text-emerald-600',
+      }
+    } else {
+      return {
+        isOpen: false,
+        label: '🔴 Closed Now',
+        badgeClass: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300',
+        color: 'text-rose-600',
+      }
+    }
+  }
+
+  return {
+    isOpen: true,
+    label: '🟢 Open Today',
+    badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300',
+    color: 'text-emerald-600',
+  }
+}
+
+// Deterministic coordinate resolver (GPS coordinates -> Purok anchors with ID hash micro-offset)
+export function resolveSpotCoordinates(
+  business: {
+    id?: string | number
+    name?: string
+    latitude?: number | string | null
+    longitude?: number | string | null
+    map_url?: string | null
+    barangay?: string | null
+    purok?: string | null
+    address?: string | null
+  },
+  index: number
+): { lat: number; lng: number } {
+  // 1. If explicit latitude & longitude are valid numbers
+  if (
+    business.latitude !== undefined &&
+    business.latitude !== null &&
+    business.longitude !== undefined &&
+    business.longitude !== null
+  ) {
+    const lat = typeof business.latitude === 'number' ? business.latitude : parseFloat(String(business.latitude))
+    const lng = typeof business.longitude === 'number' ? business.longitude : parseFloat(String(business.longitude))
+    if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+      return { lat, lng }
+    }
+  }
+
+  // 2. If map_url contains coordinates
+  if (business.map_url) {
+    const match =
+      business.map_url.match(/#map=\d+\/([0-9.-]+)\/([0-9.-]+)/) ||
+      business.map_url.match(/destination=([0-9.-]+),([0-9.-]+)/) ||
+      business.map_url.match(/@([0-9.-]+),([0-9.-]+)/) ||
+      business.map_url.match(/q=([0-9.-]+),([0-9.-]+)/)
+    if (match && match[1] && match[2]) {
+      const lat = parseFloat(match[1])
+      const lng = parseFloat(match[2])
+      if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+        return { lat, lng }
+      }
+    }
+  }
+
+  // 3. Resolve Barangay ('daine_1' or 'daine_2')
+  const brgyRaw = (business.barangay || '').toLowerCase()
+  const addrRaw = (business.address || '').toLowerCase()
+  const isDaine2 =
+    brgyRaw === 'daine_2' ||
+    brgyRaw === 'daine2' ||
+    brgyRaw.includes('daine 2') ||
+    addrRaw.includes('daine 2') ||
+    addrRaw.includes('daine ii') ||
+    addrRaw.includes('ilaya') ||
+    addrRaw.includes('ibaba')
+
+  const brgyKey = isDaine2 ? 'daine_2' : 'daine_1'
+
+  // 4. Resolve Purok Anchor
+  const purokRaw = (business.purok || '').toLowerCase()
+  let purokKey: 'purok_1' | 'purok_2' | 'purok_3' | 'purok_4' = 'purok_2'
+
+  if (purokRaw.includes('1') || addrRaw.includes('purok 1') || addrRaw.includes('sitio 1') || addrRaw.includes('ilaya')) {
+    purokKey = 'purok_1'
+  } else if (purokRaw.includes('2') || addrRaw.includes('purok 2') || addrRaw.includes('sitio 2') || addrRaw.includes('hall')) {
+    purokKey = 'purok_2'
+  } else if (purokRaw.includes('3') || addrRaw.includes('purok 3') || addrRaw.includes('sitio 3') || addrRaw.includes('ibaba') || addrRaw.includes('school')) {
+    purokKey = 'purok_3'
+  } else if (purokRaw.includes('4') || addrRaw.includes('purok 4') || addrRaw.includes('sitio 4') || addrRaw.includes('boundary') || addrRaw.includes('outpost')) {
+    purokKey = 'purok_4'
+  }
+
+  const anchor = PUROK_ANCHORS[brgyKey][purokKey]
+
+  // 5. Deterministic micro-offset based on business ID hash (NO random jitter)
+  const idStr = String(business.id || business.name || `biz-${index}`)
+  let hash = 5381
+  for (let i = 0; i < idStr.length; i++) {
+    hash = ((hash << 5) + hash) + idStr.charCodeAt(i)
+    hash = hash & hash
+  }
+  const absHash = Math.abs(hash)
+  const angle = ((absHash % 360) * Math.PI) / 180
+  const dist = 0.00020 + ((absHash >> 4) % 35) * 0.00001
+
+  return {
+    lat: anchor.lat + Math.sin(angle) * dist,
+    lng: anchor.lng + Math.cos(angle) * dist,
+  }
+}
+
+// Haversine formula to compute distance in km
 function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const R = 6371 // Earth radius in km
+  const R = 6371
   const dLat = ((lat2 - lat1) * Math.PI) / 180
   const dLon = ((lon2 - lon1) * Math.PI) / 180
   const a =
@@ -54,103 +317,333 @@ function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: num
   return R * c
 }
 
-const STATIC_SPOTS: MapSpot[] = [
+// Authentic Civic Infrastructure & Emergency Facilities Layer
+export const STATIC_SPOTS: MapSpot[] = [
+  // ==================== BARANGAY DAINE 1 ====================
   {
-    id: 'evac-1',
-    name: 'Barangay Daine Covered Court & Multipurpose Hall',
+    id: 'd1-evac-1',
+    name: 'Barangay Daine 1 Covered Court & Multipurpose Hall',
     category: 'evacuation',
     categoryTag: '🚨 Evacuation Center',
-    lat: 14.1958,
-    lng: 120.8802,
-    address: 'Sitio 1, Brgy. Daine, Indang, Cavite',
-    phone: '0917-555-0101',
-    capacity: 500,
-    amenities: ['Restrooms', 'Generator', 'Medical Station', 'Water Supply'],
-    status: 'Ready & Operational',
-    description: 'Primary emergency shelter with standby power generator and medical bay.',
-  },
-  {
-    id: 'evac-2',
-    name: 'Barangay Daine Elementary School Grounds',
-    category: 'evacuation',
-    categoryTag: '🚨 Evacuation Center',
-    lat: 14.1942,
-    lng: 120.8785,
-    address: 'School Road, Brgy. Daine, Indang, Cavite',
-    phone: '0917-555-0101',
-    capacity: 800,
-    amenities: ['Classrooms', 'Water Supply', 'Field Area', 'Relief Staging Desk'],
-    status: 'Primary Typhoon & Flood Shelter',
-    description: 'Main school facility designated as high-capacity typhoon relief shelter.',
-  },
-  {
-    id: 'gov-1',
-    name: 'Barangay Daine Hall & Operations Center',
-    category: 'government',
-    categoryTag: '🏛️ Barangay Hall & Ops',
+    scope: 'daine_1',
+    purok: 'Purok 2',
     lat: 14.1955,
     lng: 120.8798,
-    address: 'Main Road, Brgy. Daine, Indang, Cavite',
-    phone: '0917-123-DAINE',
-    amenities: ['Admin Office', 'CCTV Operations', 'Barangay Captain Desk'],
-    status: 'Open 24/7 Duty',
-    description: 'Headquarters for local barangay services and emergency command operations.',
+    address: 'Purok 2 (Barangay Complex), Brgy. Daine 1, Indang, Cavite',
+    phone: '0917-123-0001',
+    messenger_link: 'https://m.me/BrgyDaine1Cavite',
+    capacity: 500,
+    amenities: ['Standby 25kVA Generator', 'Medical Triage Bay', 'Restrooms & Showers', 'Potable Water Tank'],
+    status: 'Primary Evacuation Center — Ready & Operational',
+    description: 'Central typhoon and calamity emergency shelter with emergency standby power, high-volume potable water bladder, and medical triage station.',
+    hours: 'Open 24/7',
   },
   {
-    id: 'gov-2',
-    name: 'Barangay Daine Health Center & Birthing Clinic',
+    id: 'd1-evac-2',
+    name: 'Barangay Daine 1 Elementary School Evacuation Grounds',
+    category: 'evacuation',
+    categoryTag: '🚨 Evacuation Center',
+    scope: 'daine_1',
+    purok: 'Purok 3',
+    lat: 14.1942,
+    lng: 120.8810,
+    address: 'School Road, Purok 3, Brgy. Daine 1, Indang, Cavite',
+    phone: '0917-123-0001',
+    capacity: 850,
+    amenities: ['12 High-Capacity Classrooms', 'Deep Well Water Pump', 'Relief Staging Yard', 'Community Feeding Kitchen'],
+    status: 'Designated High-Capacity Typhoon Shelter',
+    description: 'High-capacity institutional shelter designated for severe flood, typhoon, and disaster relief operations.',
+    hours: '24/7 Emergency Activation',
+  },
+  {
+    id: 'd1-gov-1',
+    name: 'Barangay Daine 1 Hall & Executive Operations Center',
     category: 'government',
-    categoryTag: '🏛️ Health & Birthing Clinic',
+    categoryTag: '🏛️ Barangay Hall & Ops',
+    scope: 'daine_1',
+    purok: 'Purok 2',
+    lat: 14.1955,
+    lng: 120.8798,
+    address: 'Barangay Center, Purok 2, Brgy. Daine 1, Indang, Cavite',
+    phone: '0917-123-0001',
+    messenger_link: 'https://m.me/BrgyDaine1Cavite',
+    amenities: ['Captain & Kagawad Desks', 'Lupon Mediation Office', 'CCTV Command Operations', 'Resident Clearance Window'],
+    status: 'Open for Public Services & Emergency Command',
+    description: 'Headquarters for local barangay government administrative services, Lupon Tagapamayapa, and disaster coordination.',
+    hours: 'Mon-Fri 8:00 AM - 5:00 PM',
+  },
+  {
+    id: 'd1-health-1',
+    name: 'Barangay Daine 1 Health Center & Birthing Station',
+    category: 'health',
+    categoryTag: '🏥 Health & Birthing Clinic',
+    scope: 'daine_1',
+    purok: 'Purok 2',
     lat: 14.1952,
     lng: 120.8805,
-    address: 'Health Complex, Brgy. Daine, Indang, Cavite',
-    phone: '0928-555-0102',
-    amenities: ['First Aid', 'Maternal Care', 'Vaccine Cold Storage', 'Pharmacy Depot'],
-    status: 'Mon-Fri 8:00 AM - 5:00 PM',
-    description: 'Community clinic for basic healthcare, maternal checkups, and triage.',
+    address: 'Health Complex, Purok 2, Brgy. Daine 1, Indang, Cavite',
+    phone: '0928-555-0103',
+    amenities: ['First Aid & Triage', 'Vaccine Cold Storage', 'Maternal & Prenatal Checkup', 'Free Maintenance Medicine'],
+    status: 'Public Health Station',
+    description: 'Community health station providing immunization, prenatal care, emergency first aid, and basic diagnostic services.',
+    hours: 'Mon-Fri 8:00 AM - 5:00 PM',
   },
   {
-    id: 'emerg-1',
+    id: 'd1-emerg-1',
+    name: 'Barangay Daine 1 Tanod Outpost & Security Desk',
+    category: 'emergency',
+    categoryTag: '🛡️ Security & Tanod Outpost',
+    scope: 'daine_1',
+    purok: 'Purok 4',
+    lat: 14.1925,
+    lng: 120.8802,
+    address: 'Purok 4 Junction, Brgy. Daine 1, Indang, Cavite',
+    phone: '0928-555-0101',
+    amenities: ['24/7 Patrol Motorcycle', 'Two-Way VHF Radio Hub', 'First Responder First Aid Kit', 'Emergency Searchlights'],
+    status: '24/7 Peacekeeping & Incident Patrol',
+    description: 'Barangay Peacekeeping Officer (Tanod) outpost providing round-the-clock community patrol and disaster response.',
+    hours: 'Open 24/7',
+  },
+  {
+    id: 'd1-water-1',
+    name: 'Daine 1 Community Potable Water Refilling Hub (Disaster Reserve)',
+    category: 'water',
+    categoryTag: '🚰 Community Water Refilling',
+    scope: 'daine_1',
+    purok: 'Purok 1',
+    lat: 14.1962,
+    lng: 120.8785,
+    address: 'Purok 1 Water Compound, Brgy. Daine 1, Indang, Cavite',
+    phone: '0917-555-0131',
+    messenger_link: 'https://m.me/BrgyDaine1Cavite',
+    amenities: ['Potable Water Supply During Disasters', 'Reverse Osmosis Filtration', 'Gravity-Fed Bladder Tanks', 'Free Calamity Rations'],
+    status: 'Active Potable Water & Relief Hub',
+    description: 'Designated potable water supply station equipped with backup filtration and emergency water bladders for disaster relief.',
+    hours: 'Daily 6:00 AM - 7:00 PM',
+  },
+  {
+    id: 'd1-edu-1',
+    name: 'Barangay Daine 1 Day Care & Early Learning Center',
+    category: 'education',
+    categoryTag: '🏫 Day Care & Early Learning',
+    scope: 'daine_1',
+    purok: 'Purok 2',
+    lat: 14.1957,
+    lng: 120.8792,
+    address: 'Purok 2 Civic Grounds, Brgy. Daine 1, Indang, Cavite',
+    phone: '0917-123-0001',
+    amenities: ['ECCD Early Learning Classrooms', 'Supplementary Feeding Kitchen', 'Safe Children Play Area', 'First Aid Station'],
+    status: 'Accredited Barangay Child Development Center',
+    description: 'Barangay Early Childhood Care and Development center providing preschool education and child nutrition feeding programs.',
+    hours: 'Mon-Fri 7:30 AM - 4:30 PM',
+  },
+  {
+    id: 'd1-mrf-1',
+    name: 'Daine 1 Material Recovery Facility (MRF) & Composting Hub',
+    category: 'mrf',
+    categoryTag: '♻️ Material Recovery Facility (MRF)',
+    scope: 'daine_1',
+    purok: 'Purok 4',
+    lat: 14.1920,
+    lng: 120.8795,
+    address: 'Eco-Park Area, Purok 4, Brgy. Daine 1, Indang, Cavite',
+    amenities: ['Biodegradable Composting Pit', 'Plastic Shredder & Baler', 'Recyclables Segregation Bay', 'Eco-Brick Production Desk'],
+    status: 'Ecological Solid Waste Operations',
+    description: 'Barangay ecological solid waste management facility enforcing Purok-level zero-waste segregation and organic composting.',
+    hours: 'Mon-Sat 7:00 AM - 4:00 PM',
+  },
+  {
+    id: 'd1-sports-1',
+    name: 'Daine 1 Purok 1 Covered Court & Youth Development Center',
+    category: 'sports',
+    categoryTag: '🏀 Covered Court & Youth Center',
+    scope: 'daine_1',
+    purok: 'Purok 1',
+    lat: 14.1965,
+    lng: 120.8780,
+    address: 'Purok 1 Sports Grounds, Brgy. Daine 1, Indang, Cavite',
+    amenities: ['Full Covered Basketball Court', 'SK Youth Desk', 'Night Floodlights', 'Secondary Evacuation Ready'],
+    status: 'Youth Center & Multi-Purpose Covered Court',
+    description: 'Community sports venue and Sangguniang Kabataan youth center used for sports, assemblies, and secondary disaster shelter.',
+    hours: 'Daily 6:00 AM - 10:00 PM',
+  },
+
+  // ==================== BARANGAY DAINE 2 ====================
+  {
+    id: 'd2-evac-1',
+    name: 'Barangay Daine 2 Multi-Purpose Covered Court & Relief Center',
+    category: 'evacuation',
+    categoryTag: '🚨 Evacuation Center',
+    scope: 'daine_2',
+    purok: 'Purok 2',
+    lat: 14.1970,
+    lng: 120.8860,
+    address: 'Purok 2 (Barangay Center), Brgy. Daine 2, Indang, Cavite',
+    phone: '0917-123-0002',
+    messenger_link: 'https://m.me/BrgyDaine2Cavite',
+    capacity: 600,
+    amenities: ['Standby Generator Unit', 'Comfort Rooms & Wash Stations', 'Mobile Kitchen Staging Area', 'Child-Friendly Space'],
+    status: 'Primary Evacuation Center — Ready & Operational',
+    description: 'Central disaster shelter and relief staging grounds for Barangay Daine 2 residents during typhoons and calamities.',
+    hours: 'Open 24/7',
+  },
+  {
+    id: 'd2-gov-1',
+    name: 'Barangay Daine 2 Hall & Command Operations Center',
+    category: 'government',
+    categoryTag: '🏛️ Barangay Hall & Ops',
+    scope: 'daine_2',
+    purok: 'Purok 2',
+    lat: 14.1970,
+    lng: 120.8860,
+    address: 'Main Road, Purok 2, Brgy. Daine 2, Indang, Cavite',
+    phone: '0917-123-0002',
+    messenger_link: 'https://m.me/BrgyDaine2Cavite',
+    amenities: ['Captain & Kagawad Offices', 'Lupon Tagapamayapa Mediation Room', 'Incident Command Post', 'Public WiFi Hotspot'],
+    status: 'Open for Public Services & Emergency Command',
+    description: 'Executive administration building and disaster operations command center for Barangay Daine 2.',
+    hours: 'Mon-Fri 8:00 AM - 5:00 PM',
+  },
+  {
+    id: 'd2-health-1',
+    name: 'Barangay Daine 2 Health Station & Nutrition Depot',
+    category: 'health',
+    categoryTag: '🏥 Health & Birthing Clinic',
+    scope: 'daine_2',
+    purok: 'Purok 2',
+    lat: 14.1968,
+    lng: 120.8863,
+    address: 'Civic Center, Purok 2, Brgy. Daine 2, Indang, Cavite',
+    phone: '0928-555-0104',
+    amenities: ['Immunization Clinic', 'Maternal Care Unit', 'Blood Pressure & Glucose Screening', 'Emergency Oxygen Supply'],
+    status: 'Public Health Station',
+    description: 'Primary public health facility serving Daine 2 puroks with free infant vaccines, prenatal care, and health counseling.',
+    hours: 'Mon-Fri 8:00 AM - 5:00 PM',
+  },
+  {
+    id: 'd2-emerg-1',
+    name: 'Daine 2 Tanod Outpost & Sitio Ilaya Peacekeeping Post',
+    category: 'emergency',
+    categoryTag: '🛡️ Security & Tanod Outpost',
+    scope: 'daine_2',
+    purok: 'Purok 1',
+    lat: 14.1982,
+    lng: 120.8845,
+    address: 'Sitio Ilaya / Purok 1 Corridor, Brgy. Daine 2, Indang, Cavite',
+    phone: '0928-555-0102',
+    amenities: ['Tanod Patrol Base', 'Emergency Searchlights', 'First Aid Trauma Bag', 'Two-Way Radio Hub'],
+    status: '24/7 Peacekeeping & Incident Patrol',
+    description: 'North perimeter peacekeeping post and emergency response station for Sitio Ilaya and boundary roads.',
+    hours: 'Open 24/7',
+  },
+  {
+    id: 'd2-water-1',
+    name: 'Daine 2 Community Mineral & Alkaline Refilling Center (Sitio Ibaba)',
+    category: 'water',
+    categoryTag: '🚰 Community Water Refilling',
+    scope: 'daine_2',
+    purok: 'Purok 3',
+    lat: 14.1958,
+    lng: 120.8875,
+    address: 'Sitio Ibaba / Purok 3, Brgy. Daine 2, Indang, Cavite',
+    phone: '0917-555-0132',
+    messenger_link: 'https://m.me/BrgyDaine2Cavite',
+    amenities: ['Potable Water Supply During Disasters', 'UV Sterilization Line', 'Emergency Power Hookup', 'Disaster Ration Tanks'],
+    status: 'Active Potable Water & Relief Hub',
+    description: 'Community potable water station dedicated to serving Sitio Ibaba and designated emergency water distribution point.',
+    hours: 'Daily 6:30 AM - 7:30 PM',
+  },
+  {
+    id: 'd2-edu-1',
+    name: 'Barangay Daine 2 Child Development & Day Care Center',
+    category: 'education',
+    categoryTag: '🏫 Day Care & Early Learning',
+    scope: 'daine_2',
+    purok: 'Purok 2',
+    lat: 14.1973,
+    lng: 120.8858,
+    address: 'Purok 2 Civic Area, Brgy. Daine 2, Indang, Cavite',
+    phone: '0917-123-0002',
+    amenities: ['Preschool Learning Modules', 'Supplementary Feeding Kitchen', 'Interactive Toy Corner', 'Sanitized Washrooms'],
+    status: 'Accredited Barangay Child Development Center',
+    description: 'Barangay child development center providing early childhood education, child care, and nutrition assistance.',
+    hours: 'Mon-Fri 8:00 AM - 4:00 PM',
+  },
+  {
+    id: 'd2-mrf-1',
+    name: 'Daine 2 Material Recovery Facility (MRF) & Eco-Park',
+    category: 'mrf',
+    categoryTag: '♻️ Material Recovery Facility (MRF)',
+    scope: 'daine_2',
+    purok: 'Purok 4',
+    lat: 14.1945,
+    lng: 120.8890,
+    address: 'Purok 4 Boundary Road, Brgy. Daine 2, Indang, Cavite',
+    amenities: ['Waste Segregation Bays', 'Compost Fertilizer Shed', 'Bottle & Can Compactor', 'Community Herbal Garden'],
+    status: 'Ecological Solid Waste Operations',
+    description: 'Ecological MRF and community organic garden transforming barangay biodegradable waste into free fertilizer for farmers.',
+    hours: 'Mon-Sat 7:00 AM - 4:30 PM',
+  },
+  {
+    id: 'd2-sports-1',
+    name: 'Daine 2 Sitio Ibaba Multi-Purpose Court & Youth Center',
+    category: 'sports',
+    categoryTag: '🏀 Covered Court & Youth Center',
+    scope: 'daine_2',
+    purok: 'Purok 3',
+    lat: 14.1955,
+    lng: 120.8880,
+    address: 'Sitio Ibaba Sports Area, Brgy. Daine 2, Indang, Cavite',
+    amenities: ['Multi-Purpose Court', 'Community Staging Stage', 'Night Lighting', 'Relief Distribution Point'],
+    status: 'Youth Center & Multi-Purpose Covered Court',
+    description: 'Sitio Ibaba community sports facility and secondary emergency relief distribution center.',
+    hours: 'Daily 6:00 AM - 9:30 PM',
+  },
+
+  // ==================== MUNICIPAL / BOTH BARANGAYS ====================
+  {
+    id: 'emerg-bfp',
     name: 'BFP Indang Fire Station Outpost',
     category: 'emergency',
-    categoryTag: '🏥 Fire & Rescue Station',
+    categoryTag: '🚒 Fire & Rescue Station',
+    scope: 'both',
+    purok: 'Provincial Corridor',
     lat: 14.1965,
     lng: 120.8812,
-    address: 'Provincial Road, Brgy. Daine Outpost, Indang',
+    address: 'Provincial Road, Brgy. Daine Outpost, Indang, Cavite',
     phone: '(046) 415-0322',
-    amenities: ['Fire Engine', 'Rescue Gear', 'Hydrant Access'],
+    amenities: ['Fire Engine Tanker', 'Rescue Vehicle', 'Hydrant Network Access', 'Emergency EMT Equipment'],
     status: '24/7 Response Unit',
-    description: 'Bureau of Fire Protection station for fast fire and emergency rescue response.',
+    description: 'Bureau of Fire Protection station for fast fire suppression, vehicular rescue, and heavy calamity response.',
+    hours: 'Open 24/7',
   },
   {
-    id: 'emerg-2',
-    name: 'Barangay Tanod Outpost / Police Community Desk',
+    id: 'emerg-pnp',
+    name: 'Indang Municipal Police Station (PNP) Mobile Patrol Desk',
     category: 'emergency',
-    categoryTag: '🏥 Security & Police Patrol',
-    lat: 14.1950,
-    lng: 120.8795,
-    address: 'Purok 1 Outpost, Brgy. Daine, Indang',
+    categoryTag: '🚓 Police Mobile Patrol Desk',
+    scope: 'both',
+    purok: 'Provincial Junction',
+    lat: 14.1938,
+    lng: 120.8835,
+    address: 'Provincial Junction Desk, Indang, Cavite',
     phone: '(046) 415-0211',
-    amenities: ['24/7 Patrol Vehicle', 'Radio Dispatch', 'First Responders'],
-    status: '24/7 Patrol Duty',
-    description: 'Barangay Peacekeeping Officer (Tanod) and Police Community Patrol Desk.',
+    amenities: ['PNP Patrol Vehicle', 'VHF Repeater Base', '24/7 Dispatch Desk'],
+    status: '24/7 Law Enforcement',
+    description: 'Philippine National Police rapid response and mobile patrol unit serving both Daine 1 and Daine 2.',
+    hours: 'Open 24/7',
   },
 ]
 
-// Default coordinate offsets for database businesses lacking explicit lat/lng
-const BUSINESS_OFFSETS = [
-  { lat: 0.0012, lng: -0.0018 },
-  { lat: -0.0011, lng: 0.0022 },
-  { lat: 0.0019, lng: 0.0011 },
-  { lat: -0.0016, lng: -0.0025 },
-  { lat: 0.0009, lng: 0.0033 },
-  { lat: -0.0024, lng: 0.0015 },
-  { lat: 0.0025, lng: -0.0010 },
-  { lat: -0.0008, lng: -0.0030 },
-]
+export const Route = createLazyFileRoute('/map/')({
+  component: MapRouteComponent,
+})
 
 function MapRouteComponent() {
   const loadedBusinesses = MapRoute.useLoaderData()
+  const { scope, setScope } = useBarangayScope()
+  const { isOffline, isOnline } = useNetworkStatus()
+
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null)
@@ -161,94 +654,125 @@ function MapRouteComponent() {
   const markersRef = useRef<Record<string, any>>({})
   const [leafletLoaded, setLeafletLoaded] = useState(false)
 
-  // Merge static spots + dynamic database businesses
+  // Merge static authentic civic spots + dynamic database businesses
   const allSpots: MapSpot[] = useMemo(() => {
     const businessSpots: MapSpot[] = (loadedBusinesses || []).map((b: any, index: number) => {
-      let lat = MAP_CENTER.lat
-      let lng = MAP_CENTER.lng
+      const coords = resolveSpotCoordinates(b, index)
+      const isDaine2 =
+        (b.barangay && (b.barangay === 'daine_2' || b.barangay.toLowerCase().includes('2'))) ||
+        (b.address && (b.address.toLowerCase().includes('daine 2') || b.address.toLowerCase().includes('daine ii')))
 
-      // Extract coords from map_url if present
-      if (b.map_url) {
-        const match = b.map_url.match(/#map=\d+\/([0-9.-]+)\/([0-9.-]+)/) || b.map_url.match(/destination=([0-9.-]+),([0-9.-]+)/)
-        if (match && match[1] && match[2]) {
-          lat = parseFloat(match[1])
-          lng = parseFloat(match[2])
-        } else {
-          const offset = BUSINESS_OFFSETS[index % BUSINESS_OFFSETS.length]
-          lat = MAP_CENTER.lat + offset.lat
-          lng = MAP_CENTER.lng + offset.lng
-        }
-      } else {
-        const offset = BUSINESS_OFFSETS[index % BUSINESS_OFFSETS.length]
-        const jitterLat = (Math.random() - 0.5) * 0.0015
-        const jitterLng = (Math.random() - 0.5) * 0.0015
-        lat = MAP_CENTER.lat + offset.lat + jitterLat
-        lng = MAP_CENTER.lng + offset.lng + jitterLng
-      }
+      const spotScope: SpotScope = isDaine2 ? 'daine_2' : 'daine_1'
+      const messengerLink = formatMessengerUrl(b.messenger_link)
 
       return {
         id: `biz-${b.id || index}`,
         name: b.name,
-        category: 'business',
+        category: 'business' as SpotCategory,
         categoryTag: `🏪 ${b.category || 'Local Business'}`,
-        lat,
-        lng,
+        scope: spotScope,
+        purok: b.purok || undefined,
+        lat: coords.lat,
+        lng: coords.lng,
         phone: b.phone || undefined,
-        address: b.address || 'Barangay Daine, Indang, Cavite',
+        messenger_link: messengerLink || undefined,
+        address: b.address || (isDaine2 ? 'Barangay Daine 2, Indang, Cavite' : 'Barangay Daine 1, Indang, Cavite'),
         hours: b.hours || undefined,
         description: b.description || undefined,
         isBusiness: true,
-        status: 'Verified Business',
+        status: 'Verified MSME Business',
+        photo_url: b.photo_url || undefined,
       }
     })
 
     return [...STATIC_SPOTS, ...businessSpots]
   }, [loadedBusinesses])
 
+  // Filter spots by scope
+  const scopeFilteredSpots = useMemo(() => {
+    if (scope === 'all') return allSpots
+    if (scope === 'daine1') {
+      return allSpots.filter((s) => s.scope === 'daine_1' || s.scope === 'both')
+    }
+    if (scope === 'daine2') {
+      return allSpots.filter((s) => s.scope === 'daine_2' || s.scope === 'both')
+    }
+    return allSpots
+  }, [allSpots, scope])
+
   // Filter spots by category & search query
   const filteredSpots = useMemo(() => {
-    return allSpots.filter((spot) => {
+    return scopeFilteredSpots.filter((spot) => {
       let matchesCategory = true
-      if (selectedCategory === 'evacuation') {
-        matchesCategory = spot.category === 'evacuation'
-      } else if (selectedCategory === 'government') {
-        matchesCategory = spot.category === 'government'
-      } else if (selectedCategory === 'emergency') {
-        matchesCategory = spot.category === 'emergency'
-      } else if (selectedCategory === 'business') {
-        matchesCategory = spot.category === 'business'
+      if (selectedCategory !== 'all') {
+        matchesCategory = spot.category === selectedCategory
       }
 
+      const q = searchQuery.trim().toLowerCase()
       const matchesSearch =
-        searchQuery.trim() === '' ||
-        spot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        spot.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        spot.categoryTag.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (spot.description && spot.description.toLowerCase().includes(searchQuery.toLowerCase()))
+        q === '' ||
+        spot.name.toLowerCase().includes(q) ||
+        spot.address.toLowerCase().includes(q) ||
+        spot.categoryTag.toLowerCase().includes(q) ||
+        (spot.purok && spot.purok.toLowerCase().includes(q)) ||
+        (spot.description && spot.description.toLowerCase().includes(q)) ||
+        (spot.phone && spot.phone.toLowerCase().includes(q))
 
       return matchesCategory && matchesSearch
     })
-  }, [allSpots, selectedCategory, searchQuery])
+  }, [scopeFilteredSpots, selectedCategory, searchQuery])
 
-  // Stats calculation
+  // Stats calculation based on current scope
   const totalEvacCapacity = useMemo(() => {
-    return STATIC_SPOTS.filter((s) => s.category === 'evacuation').reduce((acc, curr) => acc + (curr.capacity || 0), 0)
-  }, [])
+    return scopeFilteredSpots
+      .filter((s) => s.category === 'evacuation')
+      .reduce((acc, curr) => acc + (curr.capacity || 0), 0)
+  }, [scopeFilteredSpots])
 
   const reliefStationsCount = useMemo(() => {
-    return STATIC_SPOTS.filter((s) => s.category === 'evacuation').length
-  }, [])
+    return scopeFilteredSpots.filter((s) => s.category === 'evacuation').length
+  }, [scopeFilteredSpots])
+
+  const waterStationsCount = useMemo(() => {
+    return scopeFilteredSpots.filter((s) => s.category === 'water').length
+  }, [scopeFilteredSpots])
 
   const emergencyOutpostsCount = useMemo(() => {
-    return STATIC_SPOTS.filter((s) => s.category === 'emergency').length
-  }, [])
+    return scopeFilteredSpots.filter((s) => s.category === 'emergency').length
+  }, [scopeFilteredSpots])
+
+  const businessesCount = useMemo(() => {
+    return scopeFilteredSpots.filter((s) => s.category === 'business').length
+  }, [scopeFilteredSpots])
+
+  // Active reference center for distance calculation
+  const referenceCenter = useMemo(() => {
+    if (scope === 'daine1') return DAINE_1_CENTER
+    if (scope === 'daine2') return DAINE_2_CENTER
+    return ALL_DAINE_CENTER
+  }, [scope])
+
+  // Smoothly fly to scope center on scope change
+  const handleScopeChange = useCallback((newScope: BarangayScope) => {
+    setScope(newScope)
+    setSelectedSpotId(null)
+
+    if (mapInstanceRef.current) {
+      if (newScope === 'daine1') {
+        mapInstanceRef.current.flyTo([DAINE_1_CENTER.lat, DAINE_1_CENTER.lng], DAINE_1_CENTER.zoom, { duration: 1.2 })
+      } else if (newScope === 'daine2') {
+        mapInstanceRef.current.flyTo([DAINE_2_CENTER.lat, DAINE_2_CENTER.lng], DAINE_2_CENTER.zoom, { duration: 1.2 })
+      } else {
+        mapInstanceRef.current.flyTo([ALL_DAINE_CENTER.lat, ALL_DAINE_CENTER.lng], ALL_DAINE_CENTER.zoom, { duration: 1.0 })
+      }
+    }
+  }, [setScope])
 
   // Initialize Leaflet map on client-side
   useEffect(() => {
     if (typeof window === 'undefined') return
     let isMounted = true
 
-    // Dynamically inject Leaflet CSS if missing
     if (!document.getElementById('leaflet-css')) {
       const link = document.createElement('link')
       link.id = 'leaflet-css'
@@ -261,15 +785,17 @@ function MapRouteComponent() {
       if (!isMounted || !mapContainerRef.current) return
       setLeafletLoaded(true)
 
-      // Destroy previous map instance if re-initializing
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove()
         mapInstanceRef.current = null
       }
 
+      const initialCenter =
+        scope === 'daine1' ? DAINE_1_CENTER : scope === 'daine2' ? DAINE_2_CENTER : ALL_DAINE_CENTER
+
       const map = L.map(mapContainerRef.current, {
-        center: [MAP_CENTER.lat, MAP_CENTER.lng],
-        zoom: MAP_CENTER.zoom,
+        center: [initialCenter.lat, initialCenter.lng],
+        zoom: initialCenter.zoom,
         zoomControl: true,
       })
 
@@ -283,64 +809,143 @@ function MapRouteComponent() {
 
       // Add markers for filtered spots
       filteredSpots.forEach((spot) => {
-        const getMarkerBg = (cat: string) => {
-          if (cat === 'evacuation') return 'bg-red-600 border-red-900 text-white shadow-red-500/50'
-          if (cat === 'government') return 'bg-blue-600 border-blue-950 text-white shadow-blue-500/50'
-          if (cat === 'emergency') return 'bg-emerald-600 border-emerald-950 text-white shadow-emerald-500/50'
-          return 'bg-amber-500 border-amber-900 text-amber-950 shadow-amber-500/50'
+        const getMarkerConfig = (cat: SpotCategory) => {
+          switch (cat) {
+            case 'evacuation':
+              return { bg: 'bg-red-600 border-red-950 text-white shadow-red-500/50', emoji: '🚨' }
+            case 'government':
+              return { bg: 'bg-blue-600 border-blue-950 text-white shadow-blue-500/50', emoji: '🏛️' }
+            case 'health':
+              return { bg: 'bg-teal-600 border-teal-950 text-white shadow-teal-500/50', emoji: '🏥' }
+            case 'emergency':
+              return { bg: 'bg-indigo-600 border-indigo-950 text-white shadow-indigo-500/50', emoji: '🛡️' }
+            case 'water':
+              return { bg: 'bg-cyan-600 border-cyan-950 text-white shadow-cyan-500/50', emoji: '🚰' }
+            case 'education':
+              return { bg: 'bg-emerald-600 border-emerald-950 text-white shadow-emerald-500/50', emoji: '🏫' }
+            case 'mrf':
+              return { bg: 'bg-lime-600 border-lime-950 text-white shadow-lime-500/50', emoji: '♻️' }
+            case 'sports':
+              return { bg: 'bg-purple-600 border-purple-950 text-white shadow-purple-500/50', emoji: '🏀' }
+            case 'business':
+            default:
+              return { bg: 'bg-amber-500 border-amber-950 text-amber-950 shadow-amber-500/50', emoji: '🏪' }
+          }
         }
 
-        const getMarkerEmoji = (cat: string) => {
-          if (cat === 'evacuation') return '🚨'
-          if (cat === 'government') return '🏛️'
-          if (cat === 'emergency') return '🏥'
-          return '🏪'
-        }
+        const markerConfig = getMarkerConfig(spot.category)
 
         const customIcon = L.divIcon({
           className: 'custom-leaflet-pin',
           html: `
             <div class="relative group cursor-pointer flex flex-col items-center">
-              <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shadow-md border-2 ${getMarkerBg(
-                spot.category
-              )} transition-transform hover:scale-110">
-                ${getMarkerEmoji(spot.category)}
+              <div class="w-10 h-10 rounded-full flex items-center justify-center text-base font-bold shadow-lg border-2 ${
+                markerConfig.bg
+              } transition-transform hover:scale-115">
+                ${markerConfig.emoji}
               </div>
-              <div class="w-2 h-2 ${
-                getMarkerBg(spot.category).split(' ')[0]
-              } rotate-45 -mt-1 shadow-sm"></div>
+              <div class="w-2.5 h-2.5 ${markerConfig.bg.split(' ')[0]} rotate-45 -mt-1.5 shadow-sm"></div>
             </div>
           `,
-          iconSize: [36, 42],
-          iconAnchor: [18, 42],
-          popupAnchor: [0, -36],
+          iconSize: [40, 46],
+          iconAnchor: [20, 46],
+          popupAnchor: [0, -40],
         })
 
+        const openStatus = computeOpenStatus(spot.hours)
+        const messengerUrl = formatMessengerUrl(spot.messenger_link)
         const directionUrl = `https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}`
-        const phoneHtml = spot.phone
-          ? `<a href="tel:${escapeHtml(spot.phone)}" class="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200 font-semibold mt-2">📞 Call: ${escapeHtml(spot.phone)}</a>`
+
+        const scopeLabel =
+          spot.scope === 'daine_1'
+            ? 'Barangay Daine 1'
+            : spot.scope === 'daine_2'
+            ? 'Barangay Daine 2'
+            : 'Municipal / Indang'
+
+        const phoneBtn = spot.phone
+          ? `<a href="tel:${escapeHtml(
+              spot.phone
+            )}" class="inline-flex items-center justify-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 font-semibold no-underline" title="Call Hotline">
+              📞 Call
+            </a>`
           : ''
 
-        const capacityHtml = spot.capacity
-          ? `<div class="text-xs font-semibold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/30 px-2 py-0.5 rounded border border-red-200 inline-block mt-1">👥 Evacuation Capacity: ${spot.capacity.toLocaleString()} residents</div>`
+        const messengerBtn = messengerUrl
+          ? `<a href="${escapeHtml(
+              messengerUrl
+            )}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-sky-50 text-sky-800 hover:bg-sky-100 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-300 font-semibold no-underline" title="Chat on Messenger">
+              💬 Messenger
+            </a>`
           : ''
+
+        const capacityBadge = spot.capacity
+          ? `<div class="text-[11px] font-bold text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40 px-2 py-1 rounded border border-red-200 mt-1.5 flex items-center gap-1">
+              👥 Evacuation Capacity: <strong>${spot.capacity.toLocaleString()} persons</strong>
+            </div>`
+          : ''
+
+        const hoursInfo = spot.hours
+          ? `<div class="text-[11px] text-slate-700 dark:text-slate-300 mt-1 flex items-center gap-1 font-medium">
+              🕒 ${escapeHtml(spot.hours)}
+            </div>`
+          : ''
+
+        const amenitiesHtml =
+          spot.amenities && spot.amenities.length > 0
+            ? `<div class="flex flex-wrap gap-1 mt-1.5">
+                ${spot.amenities
+                  .slice(0, 3)
+                  .map(
+                    (a) =>
+                      `<span class="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded font-medium">✓ ${escapeHtml(
+                        a
+                      )}</span>`
+                  )
+                  .join('')}
+                ${
+                  spot.amenities.length > 3
+                    ? `<span class="text-[9px] text-slate-500 font-medium">+${spot.amenities.length - 3} more</span>`
+                    : ''
+                }
+              </div>`
+            : ''
 
         const popupContent = `
-          <div class="p-1 max-w-xs font-sans">
-            <span class="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-200">${escapeHtml(spot.categoryTag)}</span>
-            <h3 class="font-bold text-sm text-slate-900 mt-1.5 mb-1 leading-snug">${escapeHtml(spot.name)}</h3>
-            <p class="text-xs text-slate-600 mb-1">${escapeHtml(spot.address)}</p>
-            ${capacityHtml}
-            ${
-              spot.status
-                ? `<div class="text-[11px] text-emerald-700 font-medium mt-1">Status: ${escapeHtml(spot.status)}</div>`
-                : ''
-            }
-            <div class="flex items-center gap-2 mt-3 pt-2 border-t border-slate-100">
-              <a href="${directionUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded bg-primary text-primary-foreground font-semibold hover:opacity-90">
-                🗺️ Directions
+          <div class="p-1 max-w-[280px] font-sans text-slate-900 dark:text-slate-100">
+            <div class="flex items-center justify-between gap-1 mb-1">
+              <span class="text-[10px] font-extrabold tracking-wider uppercase px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
+                ${escapeHtml(spot.categoryTag)}
+              </span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${openStatus.badgeClass}">
+                ${escapeHtml(openStatus.label)}
+              </span>
+            </div>
+
+            <h3 class="font-bold text-sm text-slate-900 dark:text-slate-100 leading-snug mt-1 mb-0.5">
+              ${escapeHtml(spot.name)}
+            </h3>
+
+            <div class="text-[11px] text-blue-700 dark:text-blue-300 font-semibold flex items-center gap-1">
+              📍 ${escapeHtml(scopeLabel)}${spot.purok ? ` • ${escapeHtml(spot.purok)}` : ''}
+            </div>
+
+            <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 line-clamp-2 leading-relaxed">
+              ${escapeHtml(spot.address)}
+            </p>
+
+            ${hoursInfo}
+            ${capacityBadge}
+            ${amenitiesHtml}
+
+            <div class="grid grid-cols-3 gap-1.5 mt-3 pt-2 border-t border-slate-200 dark:border-slate-800">
+              <a href="${directionUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 no-underline col-span-${
+                phoneBtn && messengerBtn ? '1' : !phoneBtn && !messengerBtn ? '3' : '2'
+              }">
+                🗺️ Maps
               </a>
-              ${phoneHtml}
+              ${phoneBtn}
+              ${messengerBtn}
             </div>
           </div>
         `
@@ -362,7 +967,7 @@ function MapRouteComponent() {
         mapInstanceRef.current = null
       }
     }
-  }, [filteredSpots])
+  }, [filteredSpots, scope])
 
   // Center map on spot selection
   const handleSpotClick = (spot: MapSpot) => {
@@ -374,7 +979,6 @@ function MapRouteComponent() {
         marker.openPopup()
       }
     }
-    // Switch to map view on mobile if needed
     setActiveTab('map')
   }
 
@@ -383,43 +987,124 @@ function MapRouteComponent() {
     setSearchQuery('')
     setSelectedSpotId(null)
     if (mapInstanceRef.current) {
-      mapInstanceRef.current.flyTo([MAP_CENTER.lat, MAP_CENTER.lng], MAP_CENTER.zoom, { duration: 1 })
+      const center = scope === 'daine1' ? DAINE_1_CENTER : scope === 'daine2' ? DAINE_2_CENTER : ALL_DAINE_CENTER
+      mapInstanceRef.current.flyTo([center.lat, center.lng], center.zoom, { duration: 1 })
     }
   }
 
   return (
     <div className="container mx-auto py-6 px-4 md:px-6 max-w-7xl">
-      {/* Header Banner with Philippine Color Accents */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0038A8] via-[#002675] to-[#1E3A8A] text-white p-6 sm:p-8 mb-6 shadow-xl">
+      {/* Offline Alert Banner */}
+      {isOffline && (
+        <div className="mb-6 p-4 rounded-2xl bg-amber-500/15 border-2 border-amber-500/40 text-amber-950 dark:text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md animate-in fade-in duration-300">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-xl bg-amber-500 text-slate-950 shrink-0 mt-0.5">
+              <WifiOff className="h-5 w-5 animate-pulse" />
+            </div>
+            <div>
+              <h4 className="text-sm font-extrabold text-amber-900 dark:text-amber-100 flex items-center gap-2">
+                ⚡ Offline Mode — Showing cached emergency shelters and nearby purok hotlines.
+              </h4>
+              <p className="text-xs text-amber-800/90 dark:text-amber-300/90 mt-0.5 leading-relaxed">
+                Map tiles cannot download without active internet. All evacuation capacities, Purok anchor coordinates, and emergency hotlines below remain 100% accessible offline.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+            <Button
+              size="sm"
+              onClick={() => setActiveTab('list')}
+              className="text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white w-full sm:w-auto"
+            >
+              <Layers className="h-3.5 w-3.5 mr-1" /> View Offline Spot Directory
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Header Banner with Philippine Color Accents & Dual-Barangay Scope Switcher */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0038A8] via-[#002675] to-[#1E3A8A] text-white p-6 sm:p-8 mb-6 shadow-xl">
         {/* Subtle Philippine Flag Accent bar */}
         <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-[#0038A8] via-[#FCD116] to-[#CE1126]" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Badge className="bg-[#FCD116] text-[#0038A8] hover:bg-[#FCD116]/90 font-extrabold px-3 py-1 text-xs border border-amber-300">
-                <Compass className="h-3.5 w-3.5 mr-1" /> Interactive GIS Map
-              </Badge>
-              <Badge variant="outline" className="text-white border-white/30 text-xs">
-                Barangay Daine, Indang, Cavite
-              </Badge>
+        <div className="relative z-10 space-y-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className="bg-[#FCD116] text-[#0038A8] hover:bg-[#FCD116]/90 font-extrabold px-3 py-1 text-xs border border-amber-300">
+                  <Compass className="h-3.5 w-3.5 mr-1" /> Interactive GIS Map & Civic Infrastructure
+                </Badge>
+                <Badge variant="outline" className="text-white border-white/30 text-xs">
+                  Indang, Cavite
+                </Badge>
+              </div>
+              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                Emergency Evacuation & GIS Directory
+              </h1>
+              <p className="text-white/80 text-sm sm:text-base leading-relaxed">
+                Locate emergency shelters, potable water hubs, health centers, early learning day care, MRF eco-facilities, and verified local businesses across Barangay Daine 1 and Daine 2.
+              </p>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white flex items-center gap-2">
-              Emergency Evacuation & GIS Directory
-            </h1>
-            <p className="text-white/80 text-sm sm:text-base max-w-2xl">
-              Locate emergency shelters, typhoon evacuation capacity, health centers, fire stations, and verified local businesses across Barangay Daine.
-            </p>
+
+            {/* High-Contrast Dual-Barangay Scope Switcher */}
+            <div className="bg-slate-950/80 p-2 rounded-2xl border border-white/20 backdrop-blur-md shadow-2xl flex flex-col gap-2 shrink-0">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-amber-300 px-2 flex items-center gap-1.5">
+                <Building2 className="h-3.5 w-3.5" /> Select Barangay Scope:
+              </div>
+              <div className="grid grid-cols-3 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleScopeChange('all')}
+                  className={cn(
+                    'px-3 py-2 rounded-xl text-xs font-extrabold transition-all text-center flex flex-col items-center justify-center gap-0.5',
+                    scope === 'all'
+                      ? 'bg-[#FCD116] text-[#0038A8] shadow-lg ring-2 ring-white/50 scale-102'
+                      : 'bg-white/10 text-white hover:bg-white/20 hover:text-white'
+                  )}
+                >
+                  <span className="leading-tight">All Daine</span>
+                  <span className="text-[10px] opacity-80 font-semibold">(1 & 2)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleScopeChange('daine1')}
+                  className={cn(
+                    'px-3 py-2 rounded-xl text-xs font-extrabold transition-all text-center flex flex-col items-center justify-center gap-0.5',
+                    scope === 'daine1'
+                      ? 'bg-blue-500 text-white shadow-lg ring-2 ring-white/50 scale-102'
+                      : 'bg-white/10 text-white hover:bg-white/20 hover:text-white'
+                  )}
+                >
+                  <span className="leading-tight">Barangay</span>
+                  <span className="text-[10px] opacity-90 font-semibold">Daine 1</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleScopeChange('daine2')}
+                  className={cn(
+                    'px-3 py-2 rounded-xl text-xs font-extrabold transition-all text-center flex flex-col items-center justify-center gap-0.5',
+                    scope === 'daine2'
+                      ? 'bg-amber-500 text-slate-950 shadow-lg ring-2 ring-white/50 scale-102'
+                      : 'bg-white/10 text-white hover:bg-white/20 hover:text-white'
+                  )}
+                >
+                  <span className="leading-tight">Barangay</span>
+                  <span className="text-[10px] opacity-90 font-semibold">Daine 2</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2 border-t border-white/15">
             <div className="bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/15 text-center">
               <div className="text-xs text-white/70 font-medium flex items-center justify-center gap-1">
-                <Users className="h-3.5 w-3.5 text-amber-300" /> Total Capacity
+                <Users className="h-3.5 w-3.5 text-amber-300" /> Evac Capacity
               </div>
               <div className="text-xl font-black text-amber-300 mt-0.5">{totalEvacCapacity.toLocaleString()}</div>
-              <div className="text-[10px] text-white/60">Residents</div>
+              <div className="text-[10px] text-white/60">Residents Shelter</div>
             </div>
 
             <div className="bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/15 text-center">
@@ -427,7 +1112,15 @@ function MapRouteComponent() {
                 <ShieldAlert className="h-3.5 w-3.5 text-red-400" /> Relief Hubs
               </div>
               <div className="text-xl font-black text-red-400 mt-0.5">{reliefStationsCount}</div>
-              <div className="text-[10px] text-white/60">Active Centers</div>
+              <div className="text-[10px] text-white/60">Evac Centers</div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/15 text-center">
+              <div className="text-xs text-white/70 font-medium flex items-center justify-center gap-1">
+                <Droplets className="h-3.5 w-3.5 text-cyan-300" /> Water Stations
+              </div>
+              <div className="text-xl font-black text-cyan-300 mt-0.5">{waterStationsCount}</div>
+              <div className="text-[10px] text-white/60">Disaster Potable</div>
             </div>
 
             <div className="bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/15 text-center">
@@ -435,16 +1128,14 @@ function MapRouteComponent() {
                 <Radio className="h-3.5 w-3.5 text-emerald-400" /> 24/7 Response
               </div>
               <div className="text-xl font-black text-emerald-400 mt-0.5">{emergencyOutpostsCount}</div>
-              <div className="text-[10px] text-white/60">Outposts</div>
+              <div className="text-[10px] text-white/60">Security & Fire</div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/15 text-center">
+            <div className="bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/15 text-center col-span-2 sm:col-span-1">
               <div className="text-xs text-white/70 font-medium flex items-center justify-center gap-1">
                 <Store className="h-3.5 w-3.5 text-blue-300" /> Businesses
               </div>
-              <div className="text-xl font-black text-blue-300 mt-0.5">
-                {allSpots.filter((s) => s.category === 'business').length}
-              </div>
+              <div className="text-xl font-black text-blue-300 mt-0.5">{businessesCount}</div>
               <div className="text-[10px] text-white/60">Verified Pinned</div>
             </div>
           </div>
@@ -452,91 +1143,177 @@ function MapRouteComponent() {
       </div>
 
       {/* Filter Badges & Search Top Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6 bg-card p-4 rounded-xl border shadow-sm">
-        {/* Category Badges */}
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col gap-4 mb-6 bg-card p-4 rounded-2xl border shadow-sm">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search spots, Purok anchor, hotlines, services..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 text-xs sm:text-sm h-10 rounded-xl"
+            />
+          </div>
+          {(selectedCategory !== 'all' || searchQuery !== '' || selectedSpotId !== null) && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleResetView}
+              className="h-10 text-xs font-semibold gap-1.5 rounded-xl shrink-0"
+            >
+              <RefreshCw className="h-3.5 w-3.5" /> Reset Filters
+            </Button>
+          )}
+        </div>
+
+        {/* Category Badges Filter */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-1 overflow-x-auto pb-1">
           <Button
             variant={selectedCategory === 'all' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setSelectedCategory('all')}
-            className="rounded-full text-xs font-semibold"
+            className="rounded-full text-xs font-semibold h-8"
           >
-            All Locations ({allSpots.length})
+            All Spots ({scopeFilteredSpots.length})
           </Button>
 
           <Button
             variant={selectedCategory === 'evacuation' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setSelectedCategory('evacuation')}
-            className={`rounded-full text-xs font-semibold ${
-              selectedCategory === 'evacuation' ? 'bg-red-600 hover:bg-red-700 text-white' : 'hover:bg-red-50 text-red-700 border-red-200'
-            }`}
+            className={cn(
+              'rounded-full text-xs font-semibold h-8',
+              selectedCategory === 'evacuation'
+                ? 'bg-red-600 hover:bg-red-700 text-white'
+                : 'hover:bg-red-50 text-red-700 border-red-200 dark:hover:bg-red-950/40 dark:text-red-300'
+            )}
           >
-            🚨 Evacuation Centers ({STATIC_SPOTS.filter((s) => s.category === 'evacuation').length})
+            🚨 Evacuation Centers ({scopeFilteredSpots.filter((s) => s.category === 'evacuation').length})
           </Button>
 
           <Button
             variant={selectedCategory === 'government' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setSelectedCategory('government')}
-            className={`rounded-full text-xs font-semibold ${
-              selectedCategory === 'government' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'hover:bg-blue-50 text-blue-700 border-blue-200'
-            }`}
+            className={cn(
+              'rounded-full text-xs font-semibold h-8',
+              selectedCategory === 'government'
+                ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                : 'hover:bg-blue-50 text-blue-700 border-blue-200 dark:hover:bg-blue-950/40 dark:text-blue-300'
+            )}
           >
-            🏛️ Barangay Hall & Health ({STATIC_SPOTS.filter((s) => s.category === 'government').length})
+            🏛️ Barangay Hall & Ops ({scopeFilteredSpots.filter((s) => s.category === 'government').length})
+          </Button>
+
+          <Button
+            variant={selectedCategory === 'health' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedCategory('health')}
+            className={cn(
+              'rounded-full text-xs font-semibold h-8',
+              selectedCategory === 'health'
+                ? 'bg-teal-600 hover:bg-teal-700 text-white'
+                : 'hover:bg-teal-50 text-teal-700 border-teal-200 dark:hover:bg-teal-950/40 dark:text-teal-300'
+            )}
+          >
+            🏥 Health & Birthing ({scopeFilteredSpots.filter((s) => s.category === 'health').length})
           </Button>
 
           <Button
             variant={selectedCategory === 'emergency' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setSelectedCategory('emergency')}
-            className={`rounded-full text-xs font-semibold ${
-              selectedCategory === 'emergency' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'hover:bg-emerald-50 text-emerald-700 border-emerald-200'
-            }`}
+            className={cn(
+              'rounded-full text-xs font-semibold h-8',
+              selectedCategory === 'emergency'
+                ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                : 'hover:bg-indigo-50 text-indigo-700 border-indigo-200 dark:hover:bg-indigo-950/40 dark:text-indigo-300'
+            )}
           >
-            🏥 Emergency Outposts ({STATIC_SPOTS.filter((s) => s.category === 'emergency').length})
+            🛡️ Security & Fire ({scopeFilteredSpots.filter((s) => s.category === 'emergency').length})
+          </Button>
+
+          <Button
+            variant={selectedCategory === 'water' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedCategory('water')}
+            className={cn(
+              'rounded-full text-xs font-semibold h-8',
+              selectedCategory === 'water'
+                ? 'bg-cyan-600 hover:bg-cyan-700 text-white'
+                : 'hover:bg-cyan-50 text-cyan-700 border-cyan-200 dark:hover:bg-cyan-950/40 dark:text-cyan-300'
+            )}
+          >
+            🚰 Water Stations ({scopeFilteredSpots.filter((s) => s.category === 'water').length})
+          </Button>
+
+          <Button
+            variant={selectedCategory === 'education' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedCategory('education')}
+            className={cn(
+              'rounded-full text-xs font-semibold h-8',
+              selectedCategory === 'education'
+                ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                : 'hover:bg-emerald-50 text-emerald-700 border-emerald-200 dark:hover:bg-emerald-950/40 dark:text-emerald-300'
+            )}
+          >
+            🏫 Day Care Centers ({scopeFilteredSpots.filter((s) => s.category === 'education').length})
+          </Button>
+
+          <Button
+            variant={selectedCategory === 'mrf' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedCategory('mrf')}
+            className={cn(
+              'rounded-full text-xs font-semibold h-8',
+              selectedCategory === 'mrf'
+                ? 'bg-lime-600 hover:bg-lime-700 text-white'
+                : 'hover:bg-lime-50 text-lime-800 border-lime-200 dark:hover:bg-lime-950/40 dark:text-lime-300'
+            )}
+          >
+            ♻️ MRF / Eco-Park ({scopeFilteredSpots.filter((s) => s.category === 'mrf').length})
+          </Button>
+
+          <Button
+            variant={selectedCategory === 'sports' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedCategory('sports')}
+            className={cn(
+              'rounded-full text-xs font-semibold h-8',
+              selectedCategory === 'sports'
+                ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                : 'hover:bg-purple-50 text-purple-700 border-purple-200 dark:hover:bg-purple-950/40 dark:text-purple-300'
+            )}
+          >
+            🏀 Covered Courts ({scopeFilteredSpots.filter((s) => s.category === 'sports').length})
           </Button>
 
           <Button
             variant={selectedCategory === 'business' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setSelectedCategory('business')}
-            className={`rounded-full text-xs font-semibold ${
-              selectedCategory === 'business' ? 'bg-amber-600 hover:bg-amber-700 text-white' : 'hover:bg-amber-50 text-amber-800 border-amber-200'
-            }`}
+            className={cn(
+              'rounded-full text-xs font-semibold h-8',
+              selectedCategory === 'business'
+                ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                : 'hover:bg-amber-50 text-amber-800 border-amber-200 dark:hover:bg-amber-950/40 dark:text-amber-300'
+            )}
           >
-            🏪 Local Businesses ({allSpots.filter((s) => s.category === 'business').length})
+            🏪 Local MSMEs ({scopeFilteredSpots.filter((s) => s.category === 'business').length})
           </Button>
-        </div>
-
-        {/* Search Input & Reset */}
-        <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
-          <div className="relative w-full">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search spots, phone, address..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-xs h-9"
-            />
-          </div>
-          {(selectedCategory !== 'all' || searchQuery !== '' || selectedSpotId !== null) && (
-            <Button variant="ghost" size="icon" onClick={handleResetView} title="Reset View & Filters" className="h-9 w-9 shrink-0">
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-          )}
         </div>
       </div>
 
       {/* Main Layout: Split Screen on Desktop, Tabs on Mobile */}
       <div className="block lg:hidden mb-4">
         <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as 'map' | 'list')}>
-          <TabsList className="grid grid-cols-2 w-full">
-            <TabsTrigger value="map" className="text-xs font-bold">
+          <TabsList className="grid grid-cols-2 w-full h-11 p-1 bg-muted rounded-xl">
+            <TabsTrigger value="map" className="text-xs font-bold rounded-lg">
               🗺️ GIS Map View
             </TabsTrigger>
-            <TabsTrigger value="list" className="text-xs font-bold">
+            <TabsTrigger value="list" className="text-xs font-bold rounded-lg">
               📋 Spot List ({filteredSpots.length})
             </TabsTrigger>
           </TabsList>
@@ -546,21 +1323,26 @@ function MapRouteComponent() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Map Container Column */}
         <div className={`lg:col-span-8 ${activeTab === 'list' ? 'hidden lg:block' : 'block'}`}>
-          <Card className="overflow-hidden border shadow-md relative">
-            <CardHeader className="p-4 bg-muted/30 border-b flex flex-row items-center justify-between">
+          <Card className="overflow-hidden border shadow-md relative rounded-2xl">
+            <CardHeader className="p-4 bg-muted/30 border-b flex flex-row items-center justify-between gap-2">
               <div>
                 <CardTitle className="text-base font-bold flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-primary" /> Barangay Daine GIS Interactive Map
+                  <MapPin className="h-4 w-4 text-primary" />{' '}
+                  {scope === 'daine1'
+                    ? 'Barangay Daine 1 GIS Map'
+                    : scope === 'daine2'
+                    ? 'Barangay Daine 2 GIS Map'
+                    : 'Barangay Daine (1 & 2) Interactive GIS Map'}
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Click any marker or spot card to fly directly to location and view emergency details.
+                  Click any marker or list card to fly to coordinates, check Open/Closed status, or open Messenger.
                 </CardDescription>
               </div>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleResetView}
-                className="text-xs h-8 gap-1 hidden sm:flex"
+                className="text-xs h-8 gap-1 hidden sm:flex rounded-lg"
               >
                 <Maximize2 className="h-3.5 w-3.5" /> Recenter Map
               </Button>
@@ -569,14 +1351,14 @@ function MapRouteComponent() {
             <CardContent className="p-0 relative">
               <div
                 ref={mapContainerRef}
-                className="w-full h-[60dvh] min-h-[420px] max-h-[650px] sm:h-[550px] lg:h-[600px] z-10 bg-slate-100 dark:bg-slate-900 rounded-b-lg overflow-hidden"
+                className="w-full h-[60dvh] min-h-[460px] max-h-[680px] sm:h-[580px] lg:h-[630px] z-10 bg-slate-100 dark:bg-slate-900 rounded-b-2xl overflow-hidden"
               />
 
               {!leafletLoaded && (
                 <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-20">
                   <div className="flex flex-col items-center gap-2 text-muted-foreground">
                     <RefreshCw className="h-6 w-6 animate-spin text-primary" />
-                    <span className="text-xs font-semibold">Loading Barangay Daine Map Tiles...</span>
+                    <span className="text-xs font-semibold">Loading Barangay Daine GIS Tiles...</span>
                   </div>
                 </div>
               )}
@@ -586,15 +1368,16 @@ function MapRouteComponent() {
 
         {/* Location List Panel Column */}
         <div className={`lg:col-span-4 ${activeTab === 'map' ? 'hidden lg:block' : 'block'}`}>
-          <Card className="border shadow-md h-[600px] lg:h-[670px] flex flex-col">
+          <Card className="border shadow-md h-[600px] lg:h-[700px] flex flex-col rounded-2xl">
             <CardHeader className="p-4 border-b bg-muted/30 shrink-0">
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-base font-bold flex items-center gap-2">
-                    <Layers className="h-4 w-4 text-primary" /> Evacuation & Spots List
+                    <Layers className="h-4 w-4 text-primary" /> Evacuation & Civic Spot Directory
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Showing {filteredSpots.length} location{filteredSpots.length === 1 ? '' : 's'}
+                    Showing {filteredSpots.length} location{filteredSpots.length === 1 ? '' : 's'} in{' '}
+                    {scope === 'daine1' ? 'Daine 1' : scope === 'daine2' ? 'Daine 2' : 'Daine 1 & 2'}
                   </CardDescription>
                 </div>
               </div>
@@ -608,62 +1391,116 @@ function MapRouteComponent() {
                   </div>
                   <h4 className="text-sm font-semibold">No spots matching your filter</h4>
                   <p className="text-xs text-muted-foreground">
-                    Try adjusting your search query or switching categories.
+                    Try adjusting your search query, switching scopes, or changing categories.
                   </p>
-                  <Button variant="outline" size="sm" onClick={handleResetView} className="text-xs">
+                  <Button variant="outline" size="sm" onClick={handleResetView} className="text-xs rounded-xl">
                     Reset Filters
                   </Button>
                 </div>
               ) : (
                 filteredSpots.map((spot) => {
-                  const distKm = calculateDistanceKm(MAP_CENTER.lat, MAP_CENTER.lng, spot.lat, spot.lng)
+                  const distKm = calculateDistanceKm(
+                    referenceCenter.lat,
+                    referenceCenter.lng,
+                    spot.lat,
+                    spot.lng
+                  )
                   const isSelected = selectedSpotId === spot.id
+                  const openStatus = computeOpenStatus(spot.hours)
+                  const messengerUrl = formatMessengerUrl(spot.messenger_link)
+
+                  const scopeTag =
+                    spot.scope === 'daine_1'
+                      ? 'Daine 1'
+                      : spot.scope === 'daine_2'
+                      ? 'Daine 2'
+                      : 'All Indang'
 
                   return (
                     <div
                       key={spot.id}
                       onClick={() => handleSpotClick(spot)}
-                      className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
+                      className={`p-3.5 rounded-2xl border transition-all cursor-pointer ${
                         isSelected
                           ? 'border-primary ring-2 ring-primary/20 bg-primary/5 shadow-md'
-                          : 'bg-card hover:border-primary/50 hover:bg-accent/40 shadow-sm'
+                          : 'bg-card hover:border-primary/50 hover:bg-accent/40 shadow-xs'
                       }`}
                     >
-                      <div className="flex items-start justify-between gap-2 mb-1.5">
-                        <span
-                          className={`text-[10px] font-extrabold px-2 py-0.5 rounded border uppercase tracking-wider ${
-                            spot.category === 'evacuation'
-                              ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300'
-                              : spot.category === 'government'
-                              ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
-                              : spot.category === 'emergency'
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-                              : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
-                          }`}
-                        >
-                          {spot.categoryTag}
-                        </span>
+                      <div className="flex items-start justify-between gap-1.5 mb-1.5">
+                        <div className="flex flex-wrap items-center gap-1">
+                          <span
+                            className={cn(
+                              'text-[10px] font-extrabold px-2 py-0.5 rounded border uppercase tracking-wider',
+                              spot.category === 'evacuation'
+                                ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300'
+                                : spot.category === 'government'
+                                ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                                : spot.category === 'health'
+                                ? 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/40 dark:text-teal-300'
+                                : spot.category === 'emergency'
+                                ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300'
+                                : spot.category === 'water'
+                                ? 'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300'
+                                : spot.category === 'education'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                : spot.category === 'mrf'
+                                ? 'bg-lime-50 text-lime-800 border-lime-200 dark:bg-lime-950/40 dark:text-lime-300'
+                                : spot.category === 'sports'
+                                ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300'
+                                : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
+                            )}
+                          >
+                            {spot.categoryTag}
+                          </span>
+                          <span className="text-[10px] font-bold bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
+                            {scopeTag}
+                          </span>
+                        </div>
 
-                        <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1 bg-muted px-2 py-0.5 rounded">
-                          <Navigation className="h-3 w-3 text-primary" /> {distKm < 1 ? `${Math.round(distKm * 1000)}m` : `${distKm.toFixed(1)}km`}
+                        <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1 bg-muted px-2 py-0.5 rounded shrink-0">
+                          <Navigation className="h-3 w-3 text-primary" />{' '}
+                          {distKm < 1 ? `${Math.round(distKm * 1000)}m` : `${distKm.toFixed(1)}km`}
                         </span>
                       </div>
 
-                      <h3 className="font-bold text-sm tracking-tight text-foreground leading-snug mb-1">
-                        {spot.name}
-                      </h3>
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <h3 className="font-bold text-sm tracking-tight text-foreground leading-snug">
+                          {spot.name}
+                        </h3>
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border shrink-0 ${openStatus.badgeClass}`}>
+                          {openStatus.label}
+                        </span>
+                      </div>
 
-                      <p className="text-xs text-muted-foreground flex items-start gap-1 mb-2">
+                      <p className="text-xs text-muted-foreground flex items-start gap-1 mb-1.5">
                         <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-                        <span>{spot.address}</span>
+                        <span>
+                          {spot.purok ? <strong className="text-foreground/80">{spot.purok} • </strong> : null}
+                          {spot.address}
+                        </span>
                       </p>
+
+                      {/* Hours info if available */}
+                      {spot.hours && (
+                        <p className="text-[11px] text-muted-foreground/90 flex items-center gap-1 mb-2 font-medium">
+                          <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
+                          <span>{spot.hours}</span>
+                        </p>
+                      )}
 
                       {/* Capacity badge for Evacuation Centers */}
                       {spot.capacity && (
-                        <div className="mb-2 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-xs font-semibold text-red-700 dark:text-red-400 flex items-center gap-1.5">
-                          <Users className="h-3.5 w-3.5" />
+                        <div className="mb-2 p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-xs font-semibold text-red-700 dark:text-red-400 flex items-center gap-1.5">
+                          <Users className="h-3.5 w-3.5 shrink-0" />
                           <span>Evacuation Capacity: {spot.capacity.toLocaleString()} persons</span>
                         </div>
+                      )}
+
+                      {/* Description / civic role */}
+                      {spot.description && (
+                        <p className="text-[11px] text-muted-foreground/80 mb-2 line-clamp-2 leading-relaxed">
+                          {spot.description}
+                        </p>
                       )}
 
                       {/* Amenities pills */}
@@ -672,7 +1509,7 @@ function MapRouteComponent() {
                           {spot.amenities.map((item, idx) => (
                             <span
                               key={idx}
-                              className="text-[10px] bg-secondary text-secondary-foreground px-2 py-0.5 rounded font-medium"
+                              className="text-[10px] bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md font-medium"
                             >
                               ✓ {item}
                             </span>
@@ -681,24 +1518,39 @@ function MapRouteComponent() {
                       )}
 
                       {/* Action buttons */}
-                      <div className="flex items-center gap-2 pt-2 border-t border-border/50">
+                      <div className="grid grid-cols-3 gap-1.5 pt-2 border-t border-border/50">
                         <a
                           href={`https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="flex-1 inline-flex items-center justify-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity"
+                          className={cn(
+                            'inline-flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-xl bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity',
+                            spot.phone && messengerUrl ? 'col-span-1' : !spot.phone && !messengerUrl ? 'col-span-3' : 'col-span-2'
+                          )}
                         >
-                          <Navigation className="h-3 w-3" /> Get Directions
+                          <Navigation className="h-3 w-3" /> Maps
                         </a>
 
                         {spot.phone && (
                           <a
                             href={`tel:${spot.phone}`}
                             onClick={(e) => e.stopPropagation()}
-                            className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-secondary text-secondary-foreground font-semibold hover:bg-secondary/80 border border-border"
+                            className="inline-flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 font-semibold border border-emerald-300"
                           >
-                            <Phone className="h-3 w-3 text-emerald-600" /> Call Hotline
+                            <Phone className="h-3 w-3 text-emerald-600 dark:text-emerald-400" /> Call
+                          </a>
+                        )}
+
+                        {messengerUrl && (
+                          <a
+                            href={messengerUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-xl bg-sky-50 text-sky-800 hover:bg-sky-100 dark:bg-sky-950/60 dark:text-sky-300 font-semibold border border-sky-300"
+                          >
+                            <MessageSquare className="h-3 w-3 text-sky-600 dark:text-sky-400" /> Chat
                           </a>
                         )}
                       </div>

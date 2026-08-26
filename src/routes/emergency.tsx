@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useMemo } from 'react'
+import { useMemo, type ComponentType } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Button } from '#/components/ui/button'
 import { Separator } from '#/components/ui/separator'
@@ -21,7 +21,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 
 // Reliable mapping of icons by category name
-const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+const CATEGORY_ICONS: Record<string, ComponentType<{ className?: string }>> = {
   'Barangay Daine 1 Operations & Responders': ShieldAlert,
   'Barangay Daine 2 Operations & Responders': ShieldAlert,
   'Police & Law Enforcement': ShieldCheck,

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, type ChangeEvent } from 'react'
 import { Link, useRouter } from '@tanstack/react-router'
 import { Button } from '#/components/ui/button'
 import { Badge } from '#/components/ui/badge'
@@ -180,7 +180,7 @@ export function DigitalResidentID({
     fileInputRef.current?.click()
   }
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
