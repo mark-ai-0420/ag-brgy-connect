@@ -6,16 +6,41 @@ Welcome to **BrgyConnect** (`ag-brgy-connect`). This document defines the operat
 
 ## 🤝 1. Collaboration & User Pairing Philosophy
 
-1. **Explicit User Approval for Git (MANDATORY)**:
+1. **5-Node Multi-Agent Lifecycle Protocol (MANDATORY)**:
+   ```mermaid
+   graph TD
+       A["1. 🎯 Product Strategist"] -->|Feature Scope & Requirements| B["2. 🎨 UI/UX Designer"]
+       B -->|Clarify / Iterate if Blocked| A
+       B -->|Approved Design Spec & Handoff| C["3. ⚡ Engineering Hub"]
+       C -->|Parallel Builders with File-Lock| C_Test["Verified Build & Screenshots"]
+       C_Test -->|Schema changes?| DBA_Check{"Migration files changed?"}
+       DBA_Check -->|YES: Full Audit| D["4. 🗄️ DBA & Cloud Architect"]
+       DBA_Check -->|NO: Awareness-only| UserGate["Prompt User for Git Approval"]
+       C_Test -->|Screenshots & Walkthrough| E["5. 📢 Poster / Community Lead"]
+       D -->|RLS, Indexes & Security Sign-Off| UserGate
+       UserGate -->|User Confirms| GitPush["Git Commit & Push to Main"]
+       GitPush -->|Release Broadcast| E_Live["Poster Publishes"]
+       E_Live -->|Citizen Engagement Insights| A
+   ```
+   - **Step 1 (Product -> UX)**: Product Strategist defines citizen problem, feature requirements, and handoff.
+   - **Step 2 (UX -> Engineering)**: UI/UX Designer reviews, specs out responsive UI/UX, validates usability with Product, and passes to Engineering Hub.
+   - **Step 3 (Engineering Execution)**: Engineering Hub fans out parallel builders **with explicit file-lock ownership**, validates build (`pnpm run build`), executes automated E2E browser tests, and captures high-res screenshots.
+   - **Step 4 (Conditional DBA Gate + Poster)**: If migration files were changed, DBA audit is mandatory and blocking. If UI-only, DBA is notified for awareness (non-blocking). Poster is always notified in parallel with screenshots.
+   - **Step 5 (Git Gate)**: Engineering Hub prompts the user for explicit Git commit/push confirmation (after DBA sign-off if required).
+   - **Step 6 (Release Broadcast)**: Once pushed to `main`, Poster finalizes and publishes community social media announcements.
+   - **Step 7 (Retrospective Loop)**: Poster feeds citizen engagement insights back to Product Strategist for the next cycle.
+
+2. **Explicit User Approval for Git (MANDATORY)**:
    - **NEVER** run `git commit` or `git push` automatically or silently.
-   - Always complete the code changes, run full build verification (`pnpm run build`), verify visually with screenshots, and ask the user for explicit confirmation before committing or pushing.
+   - For **schema-touching releases**: wait for DBA audit sign-off, verify build, present screenshots, then ask user for explicit confirmation.
+   - For **UI-only releases**: verify build, present screenshots, then ask user for explicit confirmation (DBA notified for awareness, non-blocking).
    - Format approved commits using **Conventional Commits** (e.g. `feat(admin): scope user list by barangay unit and add role-aware navbar`).
-2. **Hybrid Execution & Subagent Workflow**:
+3. **Hybrid Execution & Subagent Workflow**:
    - **Architectural Features & Audits**: Use planning mode + subagent fan-out (parallel builders) followed by a QA Critic verification subagent.
    - **Targeted Fixes & Quick Tweaks**: Execute directly with verification and zero regressions.
-3. **High-Signal Communication & QA Proof**:
+4. **High-Signal Communication & QA Proof**:
    - Present verification via concise markdown with clickable file links (e.g. [`src/routes/__root.tsx`](file:///Users/markhuelgas/Documents/antigravity/ag-brgy-connect/src/routes/__root.tsx)), structured **Pass/Fail tables**, and **high-resolution screenshot carousels**.
-4. **Proactive & Solution-Oriented**:
+5. **Proactive & Solution-Oriented**:
    - Diagnose root causes directly instead of asking the user to troubleshoot.
    - When encountering ambiguities or high-impact trade-offs, proactively propose the cleanest architectural solution with rationale and utilize `/grill-me`.
 
@@ -43,26 +68,30 @@ Every task MUST follow the systematic Quality-Driven process defined in [`.agent
 
 ```mermaid
 graph TD
-    A[Task Ingestion & Plan] --> B[Subagent Fan-Out: Parallel Builders (3.7 Flash)]
+    A[Task Ingestion & Plan] --> B[Subagent Fan-Out: Parallel Builders with File-Lock]
     B --> C[Unified Build: pnpm run build]
-    C --> D[Primary Thread Critic (3.7 Flash High): Automated Tests & Visual Audit]
+    C --> D[Primary Thread Critic: E2E Tests & Visual Audit]
     D -->|FAIL| B
     D -->|PASS| E[Walkthrough & Report Artifacts]
-    E --> F[Prompt User for Git Commit/Push Approval]
+    E --> F[Conditional DBA Gate + Prompt User for Git Approval]
 ```
 
-1. **Fan-Out Parallel Builders**:
+1. **Fan-Out Parallel Builders with File-Lock Protocol**:
    - Decompose multi-file features across dedicated builder subagents (`Model: 'flash'`).
+   - **Each builder must have explicit file-level ownership.** No two builders may modify the same file. If overlap is unavoidable, one builder is primary owner; the other reports its changes as instructions to the orchestrator for sequential application.
    - Each subagent verifies its changes independently before reporting completion.
 2. **High-Reasoning Orchestrator & Critic (Primary Thread)**:
-   - The primary conversation runs on **Gemini 3.7 Flash (High)** set by the user.
-   - The Orchestrator consolidates code from builders, runs unified build checks, and directly executes automated test scripts and visual verification with High reasoning effort.
+   - The Orchestrator consolidates code from builders, runs unified build checks, and directly executes automated test scripts and visual verification.
    - Issues a formal `PASS` / `FAIL` verdict before presenting work.
 3. **Zero Build Regressions**:
    - `npx --yes pnpm run build` must succeed with **0 TypeScript, Vite SSR, and Nitro compilation errors**.
 4. **High-Signal Visual Artifacts**:
    - Save high-resolution verification screenshots to the artifact directory.
    - Update `walkthrough.md` and present structured Pass/Fail tables and screenshot carousels.
+5. **Conditional DBA Gate**:
+   - **Schema-touching releases** (new migrations, RLS changes): DBA audit is mandatory and blocking before Git.
+   - **UI-only releases** (no migration files changed): DBA is notified for awareness only (non-blocking). Proceed directly to user Git approval.
+   - Detection: `git diff --cached --name-only | grep -c 'supabase/migrations'`
 
 ---
 

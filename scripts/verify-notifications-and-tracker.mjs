@@ -1,8 +1,8 @@
 import puppeteer from 'puppeteer'
 import path from 'path'
 
-const SCREENSHOT_DIR = '/Users/markhuelgas/.gemini/antigravity/brain/b1e2f794-7a77-49d6-ad06-adbd1b04aa1e/screenshots'
-const BASE_URL = 'http://localhost:3000'
+const SCREENSHOT_DIR = process.env.ARTIFACT_DIR || path.join(process.cwd(), 'scratch/screenshots');
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
 async function runVerification() {
   console.log('🚀 Starting Puppeteer Verification for Option A (Notifications & Public Tracker)...')
