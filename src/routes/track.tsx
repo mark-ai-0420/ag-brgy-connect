@@ -23,6 +23,7 @@ import {
   SearchCheck,
   WifiOff,
   History,
+  Share2,
 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { toast } from 'sonner'
@@ -82,6 +83,74 @@ function getStageIcon(step: number, state: TrackingStage['state']) {
   if (step === 2) return <Search className="h-4 w-4" />
   if (step === 3) return <Stamp className="h-4 w-4" />
   return <Building2 className="h-4 w-4" />
+}
+
+function getProgressInfo(status?: string) {
+  const s = (status || '').toLowerCase()
+  switch (s) {
+    case 'submitted':
+    case 'pending':
+      return {
+        percent: 25,
+        percentLabel: '25%',
+        statusLabel: '25% — Request Submitted & Pending Intake',
+        color: 'from-blue-600 to-indigo-600',
+        badgeColor: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300',
+      }
+    case 'under_review':
+    case 'in_review':
+      return {
+        percent: 50,
+        percentLabel: '50%',
+        statusLabel: '50% — Secretary Verification & Requirements Check',
+        color: 'from-blue-600 to-indigo-600',
+        badgeColor: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300',
+      }
+    case 'processing':
+    case 'approved':
+      return {
+        percent: 75,
+        percentLabel: '75%',
+        statusLabel: '75% — Barangay Captain Sign-off & Official Seal',
+        color: 'from-blue-600 to-indigo-600',
+        badgeColor: 'bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300',
+      }
+    case 'ready_for_pickup':
+    case 'ready':
+      return {
+        percent: 100,
+        percentLabel: '100%',
+        statusLabel: '100% — Ready for Immediate Hall Pickup & Digital Verification',
+        color: 'from-emerald-500 to-teal-600',
+        badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300',
+      }
+    case 'completed':
+    case 'issued':
+      return {
+        percent: 100,
+        percentLabel: '100%',
+        statusLabel: '100% — Document Issued & Released',
+        color: 'from-emerald-500 to-teal-600',
+        badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300',
+      }
+    case 'rejected':
+    case 'cancelled':
+      return {
+        percent: 100,
+        percentLabel: '100%',
+        statusLabel: 'Requires Attention / Action Needed',
+        color: 'from-red-500 to-rose-600',
+        badgeColor: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-950 dark:text-red-300',
+      }
+    default:
+      return {
+        percent: 25,
+        percentLabel: '25%',
+        statusLabel: '25% — Request Submitted & Pending Intake',
+        color: 'from-blue-600 to-indigo-600',
+        badgeColor: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300',
+      }
+  }
 }
 
 function TrackDocumentRoute() {
@@ -271,6 +340,15 @@ function TrackDocumentRoute() {
     setCopied(true)
     toast.success('Control Number copied to clipboard!', { id: 'copy-toast' })
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  function handleShareTrackingLink() {
+    const code = req?.control_number || result?.request?.control_number || activeCode
+    if (typeof window !== 'undefined') {
+      const shareUrl = `${window.location.origin}/track?code=${encodeURIComponent(code)}`
+      navigator.clipboard.writeText(shareUrl)
+      toast.success('Tracking link copied to clipboard!')
+    }
   }
 
   const req = result?.request
@@ -466,6 +544,18 @@ function TrackDocumentRoute() {
                         {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
                         <span className="sr-only">Copy</span>
                       </button>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleShareTrackingLink}
+                        className="h-8 gap-1.5 text-xs rounded-xl cursor-pointer"
+                        title="Copy direct tracking link to share"
+                      >
+                        <Share2 className="h-3.5 w-3.5" />
+                        <span>Share Link</span>
+                      </Button>
                     </div>
 
                     {/* Document Title */}
@@ -516,7 +606,68 @@ function TrackDocumentRoute() {
               </CardHeader>
 
               <CardContent className="p-6 sm:p-8 space-y-8">
-                
+                {/* ── Dynamic Progress Percentage Bar & Turnaround Window Estimator Strip ── */}
+                {(() => {
+                  const progress = getProgressInfo(req.status)
+                  const isReadyOrCompleted =
+                    req.status === 'ready' ||
+                    req.status === 'ready_for_pickup' ||
+                    req.status === 'completed' ||
+                    req.status === 'issued'
+                  const isRejectedOrCancelled =
+                    req.status === 'rejected' || req.status === 'cancelled'
+
+                  return (
+                    <div id="tracker-progress-summary" className="p-4 sm:p-5 rounded-2xl bg-muted/30 border space-y-3 shadow-2xs">
+                      {/* Header with Progress text and percentage pill */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                            Progress:
+                          </span>
+                          <span className="text-xs font-bold text-foreground">
+                            {progress.statusLabel}
+                          </span>
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className={`text-xs font-extrabold px-2.5 py-0.5 rounded-full w-fit ${progress.badgeColor}`}
+                        >
+                          {progress.percentLabel}
+                        </Badge>
+                      </div>
+
+                      {/* Bar */}
+                      <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-500 rounded-full bg-gradient-to-r ${progress.color}`}
+                          style={{ width: `${progress.percent}%` }}
+                        />
+                      </div>
+
+                      {/* Turnaround Window Estimator Strip */}
+                      <div className="pt-0.5 text-xs font-medium">
+                        {isReadyOrCompleted ? (
+                          <div className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
+                            <span>🎉</span>
+                            <span>Official Document is Certified & Ready for Hall Pickup or Digital Verification</span>
+                          </div>
+                        ) : isRejectedOrCancelled ? (
+                          <div className="text-red-600 dark:text-red-400 font-semibold flex items-center gap-1.5">
+                            <span>⚠️</span>
+                            <span>Requires Attention / Action Needed — Please visit or contact the Barangay Hall</span>
+                          </div>
+                        ) : (
+                          <div className="text-muted-foreground flex items-center gap-1.5">
+                            <span>⏱️</span>
+                            <span>Standard Turnaround: 1 to 2 business days (Monday – Friday, 8:00 AM – 5:00 PM)</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })()}
+
                 {/* ── 4-Stage Lifecycle Stepper ─────────────────────────────── */}
                 <div id="tracker-lifecycle-stepper" className="space-y-4">
                   <div className="flex items-center justify-between">

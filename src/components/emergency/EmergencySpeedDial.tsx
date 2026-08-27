@@ -9,7 +9,7 @@ export function EmergencySpeedDial() {
   const { scope } = useBarangayScope();
 
   return (
-    <div className="fixed bottom-6 left-6 z-40">
+    <div className="fixed bottom-20 md:bottom-6 left-4 md:left-6 z-40">
       {isOpen && (
         <div className="mb-4 w-72 bg-background border rounded-xl shadow-lg overflow-hidden flex flex-col">
           <div className="bg-destructive/10 text-destructive p-4 flex justify-between items-center border-b border-destructive/20">

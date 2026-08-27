@@ -1,9 +1,9 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { useBarangayScope } from '#/hooks/useBarangayScope'
 import { format, parseISO } from 'date-fns'
-import { useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import {
   Building2,
   Calendar,
@@ -22,9 +22,11 @@ import {
   Clock,
   MapPin,
   QrCode,
+  X,
 } from 'lucide-react'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '#/components/ui/card'
 import { Button } from '#/components/ui/button'
+import { Input } from '#/components/ui/input'
 
 const getHomeData = createServerFn({ method: 'GET' }).handler(async () => {
   try {
@@ -167,11 +169,28 @@ const steps: Step[] = [
 
 /* ── Component ────────────────────────────────────────────────────────────── */
 export default function Home() {
+  const navigate = useNavigate()
+  const [trackingInput, setTrackingInput] = useState('')
   const loaderData = Route.useLoaderData()
   const businessesCount = loaderData?.businessesCount ?? '8+'
   const recentAnnouncements = loaderData?.recentAnnouncements ?? []
   const upcomingEvents = loaderData?.upcomingEvents ?? []
   const { scope: activeBarangayScope } = useBarangayScope()
+
+  const handleTrackSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+    const trimmedCode = trackingInput.trim().toUpperCase()
+    if (trimmedCode) {
+      navigate({ to: '/track', search: { code: trimmedCode } })
+    } else {
+      navigate({ to: '/track' })
+    }
+  }
+
+  const handleSampleClick = (code: string) => {
+    setTrackingInput(code)
+    navigate({ to: '/track', search: { code } })
+  }
 
   const filteredAnnouncements = useMemo(() => {
     if (activeBarangayScope === 'all') return recentAnnouncements
@@ -205,43 +224,120 @@ export default function Home() {
           <div className="flex-1 bg-[#0038A8]" />
         </div>
 
-        <div className="page-container relative z-10 py-24 md:py-32">
-          <div className="max-w-4xl">
-            {/* Eyebrow badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/12 border border-white/20 text-white/90 text-sm font-semibold mb-7 backdrop-blur-sm">
-              <span className="inline-block h-2 w-2 rounded-full bg-[#FCD116] animate-pulse" />
-              Barangay Daine, Indang, Cavite, Philippines
+        <div className="page-container relative z-10 py-16 md:py-24 lg:py-28">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+            {/* Left column */}
+            <div className="lg:col-span-7 space-y-6">
+              {/* Eyebrow badge */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/12 border border-white/20 text-white/90 text-sm font-semibold backdrop-blur-sm">
+                <span className="inline-block h-2 w-2 rounded-full bg-[#FCD116] animate-pulse" />
+                Barangay Daine, Indang, Cavite, Philippines
+              </div>
+
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.08] tracking-tight">
+                Barangay Daine
+                <br />
+                <span className="text-[#FCD116] drop-shadow-[0_2px_16px_rgba(252,209,22,0.35)]">
+                  — Connected.
+                </span>
+              </h1>
+
+              <p className="text-base sm:text-lg md:text-xl text-white/85 max-w-2xl leading-relaxed">
+                Your official digital hub for community services, local news, and public assistance in Barangay Daine, Indang, Cavite. Access services, request documents, and connect with local authorities online.
+              </p>
+
+              <div className="flex flex-wrap gap-4 items-center pt-2">
+                <Link
+                  to="/directory"
+                  className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl font-extrabold text-base bg-[#FCD116] text-[#0038A8] hover:bg-[#FFE033] shadow-xl shadow-yellow-500/20 ring-2 ring-[#FCD116]/60 hover:ring-[#FCD116] hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 group"
+                  id="hero-cta-directory"
+                >
+                  <span>Explore Directory</span>
+                  <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
+                </Link>
+                <Link
+                  to="/announcements"
+                  id="hero-cta-announcements"
+                  className="inline-flex items-center gap-2.5 px-7 py-3.5 min-h-[44px] rounded-xl font-bold text-base text-white border border-white/40 bg-white/10 backdrop-blur-md hover:bg-white/20 hover:border-white/80 hover:scale-[1.03] active:scale-[0.98] shadow-lg shadow-black/10 transition-all duration-200 group"
+                >
+                  <span>View Announcements</span>
+                  <Megaphone className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
+                </Link>
+              </div>
             </div>
 
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.08] tracking-tight mb-6">
-              Barangay Daine
-              <br />
-              <span className="text-[#FCD116] drop-shadow-[0_2px_16px_rgba(252,209,22,0.35)]">
-                — Connected.
-              </span>
-            </h1>
+            {/* Right column: Hero Instant Document Tracking Dock */}
+            <div className="lg:col-span-5 w-full">
+              <div className="bg-white/10 dark:bg-card/90 backdrop-blur-md rounded-2xl p-5 sm:p-6 border border-white/20 shadow-2xl space-y-4">
+                {/* Eyebrow header */}
+                <div className="flex items-start gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center text-[#FCD116] shrink-0 shadow-inner">
+                    <FileText className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                      Track Document Instantly
+                    </h2>
+                    <p className="text-xs sm:text-sm text-white/80">
+                      Real-time clearance, permit &amp; indigency status
+                    </p>
+                  </div>
+                </div>
 
-            <p className="text-lg md:text-xl text-white/85 max-w-2xl leading-relaxed mb-10">
-              Your official digital hub for community services, local news, and public assistance in Barangay Daine, Indang, Cavite. Access services, request documents, and connect with local authorities online.
-            </p>
+                {/* Form */}
+                <form onSubmit={handleTrackSubmit} className="space-y-4">
+                  <div className="relative flex items-center">
+                    <Search className="absolute left-3.5 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground pointer-events-none" />
+                    <Input
+                      id="hero-tracking-input"
+                      type="text"
+                      value={trackingInput}
+                      onChange={(e) => setTrackingInput(e.target.value.toUpperCase())}
+                      placeholder="e.g. BD1-8F3A29D1"
+                      className="h-12 pl-10 pr-10 text-sm sm:text-base font-mono uppercase tracking-wider rounded-xl bg-background text-foreground border-input shadow-inner focus-visible:ring-2 focus-visible:ring-[#0038A8]"
+                      aria-label="Document Tracking Reference Number"
+                    />
+                    {trackingInput && (
+                      <button
+                        type="button"
+                        onClick={() => setTrackingInput('')}
+                        className="absolute right-3.5 p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
+                        aria-label="Clear tracking code"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
 
-            <div className="flex flex-wrap gap-4 items-center">
-              <Link
-                to="/directory"
-                className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl font-extrabold text-base bg-[#FCD116] text-[#0038A8] hover:bg-[#FFE033] shadow-xl shadow-yellow-500/20 ring-2 ring-[#FCD116]/60 hover:ring-[#FCD116] hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 group"
-                id="hero-cta-directory"
-              >
-                <span>Explore Directory</span>
-                <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
-              </Link>
-              <Link
-                to="/announcements"
-                id="hero-cta-announcements"
-                className="inline-flex items-center gap-2.5 px-7 py-3.5 min-h-[44px] rounded-xl font-bold text-base text-white border border-white/40 bg-white/10 backdrop-blur-md hover:bg-white/20 hover:border-white/80 hover:scale-[1.03] active:scale-[0.98] shadow-lg shadow-black/10 transition-all duration-200 group"
-              >
-                <span>View Announcements</span>
-                <Megaphone className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-              </Link>
+                  <Button
+                    id="hero-tracking-submit"
+                    type="submit"
+                    className="min-h-[48px] w-full font-extrabold text-sm sm:text-base rounded-xl bg-[#FCD116] text-[#0038A8] hover:bg-[#FFE033] shadow-lg shadow-yellow-500/20 transition-all flex items-center justify-center gap-2"
+                  >
+                    <span>Track Document</span>
+                    <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                  </Button>
+                </form>
+
+                {/* Quick Sample Chips */}
+                <div className="pt-2 border-t border-white/10 flex flex-wrap items-center gap-2">
+                  <span className="text-xs text-white/70 font-medium">Try samples:</span>
+                  <button
+                    type="button"
+                    onClick={() => handleSampleClick('BD1-8F3A29D1')}
+                    className="text-[#FCD116] font-mono text-xs border border-white/20 bg-white/15 hover:bg-white/25 rounded-lg px-2.5 py-1 font-bold transition-all cursor-pointer"
+                  >
+                    BD1-8F3A29D1
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSampleClick('BD2-4E90B17A')}
+                    className="text-[#FCD116] font-mono text-xs border border-white/20 bg-white/15 hover:bg-white/25 rounded-lg px-2.5 py-1 font-bold transition-all cursor-pointer"
+                  >
+                    BD2-4E90B17A
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import {
   MapPin, ShieldAlert, Building2, Store, Phone, Navigation, Search, Users, Flame, Stethoscope, Radio,
   Layers, Compass, Maximize2, RefreshCw, Droplets, GraduationCap, Recycle, Trophy,
-  WifiOff, Clock, MessageSquare, ExternalLink, Filter, CheckCircle2, AlertTriangle, ShieldCheck
+  WifiOff, Clock, MessageSquare, ExternalLink, Filter, CheckCircle2, AlertTriangle, ShieldCheck, Siren, X
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '#/components/ui/card'
 import { Button } from '#/components/ui/button'
@@ -982,6 +982,40 @@ function MapRouteComponent() {
     setActiveTab('map')
   }
 
+  const selectedSpot = useMemo(() => {
+    if (!selectedSpotId) return null
+    return allSpots.find((s) => s.id === selectedSpotId) || null
+  }, [allSpots, selectedSpotId])
+
+  const handleFindNearestEvacuation = useCallback(() => {
+    const evacSpots = scopeFilteredSpots.filter((s) => s.category === 'evacuation')
+    if (evacSpots.length === 0) return
+
+    // Find nearest evacuation shelter relative to current scope center
+    let nearestSpot = evacSpots[0]
+    let minDistance = calculateDistanceKm(referenceCenter.lat, referenceCenter.lng, nearestSpot.lat, nearestSpot.lng)
+
+    for (let i = 1; i < evacSpots.length; i++) {
+      const dist = calculateDistanceKm(referenceCenter.lat, referenceCenter.lng, evacSpots[i].lat, evacSpots[i].lng)
+      if (dist < minDistance) {
+        minDistance = dist
+        nearestSpot = evacSpots[i]
+      }
+    }
+
+    setSelectedCategory('evacuation')
+    setSelectedSpotId(nearestSpot.id)
+    setActiveTab('map')
+
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.flyTo([nearestSpot.lat, nearestSpot.lng], 17, { duration: 1.5 })
+      const marker = markersRef.current[nearestSpot.id]
+      if (marker) {
+        marker.openPopup()
+      }
+    }
+  }, [scopeFilteredSpots, referenceCenter])
+
   const handleResetView = () => {
     setSelectedCategory('all')
     setSearchQuery('')
@@ -1359,6 +1393,163 @@ function MapRouteComponent() {
                   <div className="flex flex-col items-center gap-2 text-muted-foreground">
                     <RefreshCw className="h-6 w-6 animate-spin text-primary" />
                     <span className="text-xs font-semibold">Loading Barangay Daine GIS Tiles...</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Floating "🚨 Nearest Evacuation Shelter" Action Button */}
+              <button
+                type="button"
+                onClick={handleFindNearestEvacuation}
+                className={cn(
+                  'absolute bottom-4 right-4 z-20 bg-red-600 hover:bg-red-700 text-white font-bold text-xs sm:text-sm px-3.5 py-2.5 rounded-xl shadow-xl flex items-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer',
+                  selectedSpot ? 'hidden md:flex' : 'flex'
+                )}
+              >
+                <Siren className="h-4 w-4 animate-pulse" />
+                <span>Nearest Evacuation Shelter</span>
+              </button>
+
+              {/* Responsive Mobile Selected Spot Bottom Drawer (for < 768px / mobile viewports) */}
+              {selectedSpot && (
+                <div className="absolute bottom-2 left-2 right-2 z-30 bg-card/95 backdrop-blur-md border border-border shadow-2xl rounded-2xl p-4 animate-in slide-in-from-bottom-5 duration-200 block md:hidden max-h-[82%] overflow-y-auto">
+                  {/* Header */}
+                  <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-border/50">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span
+                        className={cn(
+                          'text-[10px] font-extrabold px-2 py-0.5 rounded border uppercase tracking-wider',
+                          selectedSpot.category === 'evacuation'
+                            ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300'
+                            : selectedSpot.category === 'government'
+                            ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                            : selectedSpot.category === 'health'
+                            ? 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/40 dark:text-teal-300'
+                            : selectedSpot.category === 'emergency'
+                            ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300'
+                            : selectedSpot.category === 'water'
+                            ? 'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300'
+                            : selectedSpot.category === 'education'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                            : selectedSpot.category === 'mrf'
+                            ? 'bg-lime-50 text-lime-800 border-lime-200 dark:bg-lime-950/40 dark:text-lime-300'
+                            : selectedSpot.category === 'sports'
+                            ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300'
+                            : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
+                        )}
+                      >
+                        {selectedSpot.categoryTag}
+                      </span>
+                      <span className="text-[10px] font-bold bg-muted text-muted-foreground px-2 py-0.5 rounded">
+                        {selectedSpot.scope === 'daine_1'
+                          ? 'Daine 1'
+                          : selectedSpot.scope === 'daine_2'
+                          ? 'Daine 2'
+                          : 'Daine 1 & 2'}
+                      </span>
+                      {(() => {
+                        const status = computeOpenStatus(selectedSpot.hours)
+                        return (
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${status.badgeClass}`}>
+                            {status.label}
+                          </span>
+                        )
+                      })()}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedSpotId(null)}
+                      className="p-1 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                      aria-label="Close details"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  {/* Body */}
+                  <div className="space-y-1.5">
+                    <h3 className="font-bold text-sm sm:text-base text-foreground leading-snug">
+                      {selectedSpot.name}
+                    </h3>
+                    <p className="text-xs text-muted-foreground flex items-start gap-1">
+                      <MapPin className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                      <span>
+                        {selectedSpot.purok ? <strong className="text-foreground/80">{selectedSpot.purok} • </strong> : null}
+                        {selectedSpot.address}
+                      </span>
+                    </p>
+
+                    {selectedSpot.hours && (
+                      <p className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium">
+                        <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
+                        <span>{selectedSpot.hours}</span>
+                      </p>
+                    )}
+
+                    {selectedSpot.capacity && (
+                      <div className="p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-xs font-semibold text-red-700 dark:text-red-400 flex items-center gap-1.5">
+                        <Users className="h-3.5 w-3.5 shrink-0" />
+                        <span>Evacuation Capacity: {selectedSpot.capacity.toLocaleString()} persons</span>
+                      </div>
+                    )}
+
+                    {selectedSpot.description && (
+                      <p className="text-[11px] text-muted-foreground/85 line-clamp-2 leading-relaxed">
+                        {selectedSpot.description}
+                      </p>
+                    )}
+
+                    {selectedSpot.amenities && selectedSpot.amenities.length > 0 && (
+                      <div className="flex flex-wrap gap-1 pt-0.5">
+                        {selectedSpot.amenities.map((item, idx) => (
+                          <span
+                            key={idx}
+                            className="text-[10px] bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md font-medium"
+                          >
+                            ✓ {item}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="grid grid-cols-3 gap-2 mt-3 pt-2 border-t border-border/50">
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${selectedSpot.lat},${selectedSpot.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(
+                        'inline-flex items-center justify-center gap-1 text-xs px-2.5 py-2 rounded-xl bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity no-underline shadow-xs',
+                        selectedSpot.phone && formatMessengerUrl(selectedSpot.messenger_link)
+                          ? 'col-span-1'
+                          : !selectedSpot.phone && !formatMessengerUrl(selectedSpot.messenger_link)
+                          ? 'col-span-3'
+                          : 'col-span-2'
+                      )}
+                    >
+                      <Navigation className="h-3.5 w-3.5" /> Directions
+                    </a>
+
+                    {selectedSpot.phone && (
+                      <a
+                        href={`tel:${selectedSpot.phone}`}
+                        className="inline-flex items-center justify-center gap-1 text-xs px-2.5 py-2 rounded-xl bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 font-semibold border border-emerald-300 no-underline shadow-xs"
+                      >
+                        <Phone className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> Call
+                      </a>
+                    )}
+
+                    {formatMessengerUrl(selectedSpot.messenger_link) && (
+                      <a
+                        href={formatMessengerUrl(selectedSpot.messenger_link)!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-1 text-xs px-2.5 py-2 rounded-xl bg-sky-50 text-sky-800 hover:bg-sky-100 dark:bg-sky-950/60 dark:text-sky-300 font-semibold border border-sky-300 no-underline shadow-xs"
+                      >
+                        <MessageSquare className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" /> Messenger
+                      </a>
+                    )}
                   </div>
                 </div>
               )}
