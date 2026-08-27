@@ -93,56 +93,56 @@ const services: ServiceCard[] = [
     icon: <Building2 className="h-7 w-7" />,
     title: 'Business Directory',
     description: 'Find local businesses, services, and trusted professionals in Barangay Daine.',
-    color: 'text-[#0038A8]',
-    bgColor: 'bg-[#0038A8]/10 group-hover:bg-[#0038A8]/18',
+    color: 'text-blue-600 dark:text-blue-400 font-semibold',
+    bgColor: 'bg-blue-500/10 group-hover:bg-blue-500/20',
   },
   {
     to: '/announcements',
     icon: <Megaphone className="h-7 w-7" />,
     title: 'Announcements',
     description: 'Stay updated with the latest news, advisories, and official notices from the barangay.',
-    color: 'text-[#b91c1c]',
-    bgColor: 'bg-[#CE1126]/10 group-hover:bg-[#CE1126]/18',
+    color: 'text-red-600 dark:text-red-400 font-semibold',
+    bgColor: 'bg-red-500/10 group-hover:bg-red-500/20',
   },
   {
     to: '/events',
     icon: <Calendar className="h-7 w-7" />,
     title: 'Events',
     description: 'Discover upcoming community assemblies, activities, and barangay-sponsored events.',
-    color: 'text-amber-800',
-    bgColor: 'bg-amber-500/10 group-hover:bg-amber-500/18',
+    color: 'text-amber-600 dark:text-amber-400 font-semibold',
+    bgColor: 'bg-amber-500/10 group-hover:bg-amber-500/20',
   },
   {
     to: '/documents',
     icon: <FileText className="h-7 w-7" />,
     title: 'Document Requests',
     description: 'Request barangay clearance, indigency certificates, and more — online, anytime.',
-    color: 'text-emerald-800',
-    bgColor: 'bg-emerald-500/10 group-hover:bg-emerald-500/18',
+    color: 'text-emerald-600 dark:text-emerald-400 font-semibold',
+    bgColor: 'bg-emerald-500/10 group-hover:bg-emerald-500/20',
   },
   {
     to: '/track',
     icon: <QrCode className="h-7 w-7" />,
     title: 'Track Document',
     description: 'Track the real-time processing status of your clearance, certificate, or permit.',
-    color: 'text-indigo-800',
-    bgColor: 'bg-indigo-500/10 group-hover:bg-indigo-500/18',
+    color: 'text-indigo-600 dark:text-indigo-400 font-semibold',
+    bgColor: 'bg-indigo-500/10 group-hover:bg-indigo-500/20',
   },
   {
     to: '/emergency',
     icon: <Phone className="h-7 w-7" />,
     title: 'Emergency Contacts',
     description: 'Instant access to police, fire, medical, and barangay emergency hotlines.',
-    color: 'text-[#b91c1c]',
-    bgColor: 'bg-[#CE1126]/10 group-hover:bg-[#CE1126]/18',
+    color: 'text-red-600 dark:text-red-400 font-semibold',
+    bgColor: 'bg-red-500/10 group-hover:bg-red-500/20',
   },
   {
     to: '/complaints',
     icon: <ShieldAlert className="h-7 w-7" />,
     title: 'Incident Reports',
     description: 'File complaints, blotter reports, and track the status of your submitted incidents.',
-    color: 'text-orange-800',
-    bgColor: 'bg-orange-500/10 group-hover:bg-orange-500/18',
+    color: 'text-orange-600 dark:text-orange-400 font-semibold',
+    bgColor: 'bg-orange-500/10 group-hover:bg-orange-500/20',
   },
 ]
 
@@ -422,7 +422,7 @@ export default function Home() {
       <section className="py-20 md:py-28" id="services">
         <div className="page-container">
           <div className="text-center mb-14">
-            <p className="text-sm font-semibold tracking-widest uppercase text-[#0038A8] mb-3">
+            <p className="text-sm font-bold tracking-widest uppercase text-blue-700 dark:text-blue-400 mb-3">
               What We Offer
             </p>
             <h2 className="section-title mb-4">Barangay Services</h2>
@@ -499,10 +499,10 @@ export default function Home() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between pb-2 border-b">
                     <div className="flex items-center gap-2">
-                      <Megaphone className="h-5 w-5 text-[#b91c1c]" />
+                      <Megaphone className="h-5 w-5 text-red-700 dark:text-red-400" />
                       <h3 className="font-bold text-lg text-foreground">Recent Announcements</h3>
                     </div>
-                    <Link to="/announcements" className="text-xs font-semibold text-primary hover:underline flex items-center gap-0.5 min-h-[36px]">
+                    <Link to="/announcements" className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5 min-h-[36px]">
                       <span>See all</span>
                       <ChevronRight className="h-3.5 w-3.5" />
                     </Link>
@@ -516,6 +516,9 @@ export default function Home() {
                             <img
                               src={item.image_url}
                               alt={item.title}
+                              width="400"
+                              height="225"
+                              decoding="async"
                               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                               loading="lazy"
                             />
@@ -553,7 +556,7 @@ export default function Home() {
                           </p>
                         </CardContent>
                         <CardFooter className="p-3 pt-0 border-t bg-muted/5">
-                          <Button variant="ghost" size="sm" asChild className="w-full text-xs font-semibold text-primary justify-between min-h-[36px] px-2">
+                          <Button variant="ghost" size="sm" asChild className="w-full text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 justify-between min-h-[36px] px-2">
                             <Link to={`/announcements/${item.id}` as any}>
                               <span>Read Bulletin</span>
                               <ChevronRight className="h-3.5 w-3.5" />
@@ -574,7 +577,7 @@ export default function Home() {
                       <Calendar className="h-5 w-5 text-amber-700 dark:text-amber-400" />
                       <h3 className="font-bold text-lg text-foreground">Upcoming Activities</h3>
                     </div>
-                    <Link to="/events" className="text-xs font-semibold text-primary hover:underline flex items-center gap-0.5 min-h-[36px]">
+                    <Link to="/events" className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5 min-h-[36px]">
                       <span>See all</span>
                       <ChevronRight className="h-3.5 w-3.5" />
                     </Link>
@@ -590,6 +593,9 @@ export default function Home() {
                               <img
                                 src={event.image_url}
                                 alt={event.title}
+                                width="400"
+                                height="225"
+                                decoding="async"
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 loading="lazy"
                               />
@@ -631,7 +637,7 @@ export default function Home() {
                             )}
                           </CardContent>
                           <CardFooter className="p-3 pt-0 border-t bg-muted/5">
-                            <Button variant="ghost" size="sm" asChild className="w-full text-xs font-semibold text-primary justify-between min-h-[36px] px-2">
+                            <Button variant="ghost" size="sm" asChild className="w-full text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 justify-between min-h-[36px] px-2">
                               <Link to="/events/$eventId" params={{ eventId: event.id }}>
                                 <span>Event Details</span>
                                 <ChevronRight className="h-3.5 w-3.5" />
@@ -653,7 +659,7 @@ export default function Home() {
       <section className="py-20 md:py-28 bg-muted/40" id="how-it-works">
         <div className="page-container">
           <div className="text-center mb-14">
-            <p className="text-sm font-semibold tracking-widest uppercase text-[#CE1126] mb-3">
+            <p className="text-sm font-bold tracking-widest uppercase text-red-700 dark:text-red-400 mb-3">
               Simple & Fast
             </p>
             <h2 className="section-title mb-4">How It Works</h2>

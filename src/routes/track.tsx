@@ -49,6 +49,31 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute('/track')({
   validateSearch: (search: Record<string, unknown>) => searchSchema.parse(search),
+  head: () => ({
+    meta: [
+      {
+        title: 'Document Tracking & Public Verification | Barangay Daine',
+      },
+      {
+        name: 'description',
+        content:
+          'Track the live issuance status of your Barangay Clearance, Certificate of Indigency, Residency, or Business Clearance in Barangay Daine, Indang, Cavite.',
+      },
+      {
+        property: 'og:title',
+        content: 'Document Tracking & Public Verification | Barangay Daine',
+      },
+      {
+        property: 'og:description',
+        content:
+          'Track the live issuance status of your Barangay Clearance, Certificate of Indigency, Residency, or Business Clearance in Barangay Daine, Indang, Cavite.',
+      },
+      {
+        property: 'og:type',
+        content: 'website',
+      },
+    ],
+  }),
   component: TrackDocumentRoute,
 })
 
@@ -388,6 +413,7 @@ function TrackDocumentRoute() {
                 value={inputCode}
                 onChange={(e) => setInputCode(e.target.value.toUpperCase())}
                 placeholder="Enter Reference Code (e.g. BD1-XXXXXXXX or Request ID)"
+                aria-label="Enter document tracking code (e.g. BRGY-2026-XXXX)"
                 className="pl-11 pr-4 h-12 text-sm sm:text-base font-mono uppercase tracking-wider rounded-xl bg-background border-input shadow-inner focus-visible:ring-[#0038A8]"
                 autoCapitalize="characters"
                 autoComplete="off"
@@ -638,7 +664,14 @@ function TrackDocumentRoute() {
                       </div>
 
                       {/* Bar */}
-                      <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
+                      <div
+                        role="progressbar"
+                        aria-valuenow={progress.percent}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label="Document request processing stage"
+                        className="w-full h-2.5 bg-muted rounded-full overflow-hidden"
+                      >
                         <div
                           className={`h-full transition-all duration-500 rounded-full bg-gradient-to-r ${progress.color}`}
                           style={{ width: `${progress.percent}%` }}
@@ -1036,10 +1069,10 @@ function TrackDocumentRoute() {
             <Card className="border shadow-sm rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 text-white p-6 sm:p-8">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                 <div className="space-y-2 text-center sm:text-left">
-                  <h3 className="text-lg sm:text-xl font-extrabold text-white flex items-center justify-center sm:justify-start gap-2">
+                  <h2 className="text-lg sm:text-xl font-extrabold text-white flex items-center justify-center sm:justify-start gap-2">
                     <FileText className="h-5 w-5 text-[#FCD116]" />
                     Need to request a new barangay document?
-                  </h3>
+                  </h2>
                   <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
                     Submit applications for Barangay Clearance, Certificate of Residency, Indigency, or Business Clearance directly online through our secure portal.
                   </p>

@@ -77,6 +77,19 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
     links: [
       {
+        rel: 'preconnect',
+        href: 'https://fonts.googleapis.com',
+      },
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.gstatic.com',
+        crossOrigin: 'anonymous',
+      },
+      {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap',
+      },
+      {
         rel: 'stylesheet',
         href: appCss,
       },
@@ -118,10 +131,15 @@ function RootComponent() {
   return (
     <AuthProvider>
       <BarangayScopeProvider>
-        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-primary focus:text-primary-foreground">Skip to main content</a>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          Skip to main content
+        </a>
         <OfflineIndicator />
         <NavBar />
-        <main id="main-content" className="flex-1 pb-28 md:pb-0">
+        <main id="main-content" tabIndex={-1} className="flex-1 pb-28 md:pb-0 focus:outline-none">
           <Outlet />
         </main>
         <Footer />
@@ -161,18 +179,20 @@ function RootDocument({ children }: { children: ReactNode }) {
         {children}
         
         <Toaster richColors position="top-right" />
-        <TanStackDevtools
-          config={{
-            position: 'top-left',
-          }}
-          plugins={[
-            {
-              name: 'Tanstack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-            TanStackQueryDevtools,
-          ]}
-        />
+        {process.env.NODE_ENV === 'development' && (
+          <TanStackDevtools
+            config={{
+              position: 'top-left',
+            }}
+            plugins={[
+              {
+                name: 'Tanstack Router',
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+              TanStackQueryDevtools,
+            ]}
+          />
+        )}
         <Scripts />
       </body>
     </html>

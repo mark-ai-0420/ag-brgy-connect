@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState, useEffect } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
 import { Button } from '#/components/ui/button'
 import {
   Form,
@@ -16,10 +17,12 @@ import {
 import { Input } from '#/components/ui/input'
 import { toast } from 'sonner'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
+import { useAuth } from '#/hooks/useAuth'
+import { clearAuthCache } from '#/server/auth'
 
 const signInFnSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(1)
+  password: z.string().min(1),
 })
 
 // Server function — signs in and sets the session cookie server-side
@@ -41,12 +44,35 @@ const signInFn = createServerFn({ method: 'POST' })
       .single()
 
     const role = userRole?.role ?? 'resident'
-    const redirectUrl = (role === 'admin' || role === 'moderator') ? '/admin/businesses' : '/dashboard'
+    const redirectUrl = role === 'admin' || role === 'moderator' ? '/admin/businesses' : '/dashboard'
 
     return { success: true, role, redirectUrl }
   })
 
 export const Route = createFileRoute('/auth/sign-in')({
+  head: () => ({
+    meta: [
+      {
+        title: 'Citizen Sign In | Barangay Daine',
+      },
+      {
+        name: 'description',
+        content: 'Sign in to your Barangay Daine resident or administrative account.',
+      },
+      {
+        property: 'og:title',
+        content: 'Citizen Sign In | Barangay Daine',
+      },
+      {
+        property: 'og:description',
+        content: 'Sign in to your Barangay Daine resident or administrative account.',
+      },
+      {
+        property: 'og:type',
+        content: 'website',
+      },
+    ],
+  }),
   component: SignIn,
 })
 
@@ -57,13 +83,12 @@ const signInSchema = z.object({
 
 type SignInFormValues = z.infer<typeof signInSchema>
 
-import { useAuth } from '#/hooks/useAuth'
-import { clearAuthCache } from '#/server/auth'
-
 function SignIn() {
   const router = useRouter()
   const { refreshAuth } = useAuth()
   const [isHydrated, setIsHydrated] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+
   useEffect(() => {
     setIsHydrated(true)
   }, [])
@@ -94,7 +119,15 @@ function SignIn() {
     <div className="flex h-screen w-full items-center justify-center px-4">
       <div className="w-full max-w-md space-y-6 bg-card p-8 rounded-xl border shadow-sm">
         <div className="space-y-2 text-center">
-          <img src="/logo.jpg" alt="BrgyConnect" className="h-14 w-14 rounded-full object-cover mx-auto ring-2 ring-primary/20" />
+          <img
+            src="/logo.jpg"
+            alt="BrgyConnect"
+            width="56"
+            height="56"
+            loading="lazy"
+            decoding="async"
+            className="h-14 w-14 rounded-full object-cover mx-auto ring-2 ring-primary/20"
+          />
           <h1 className="text-3xl font-bold">Sign In</h1>
           <p className="text-muted-foreground">Access your BrgyConnect account</p>
         </div>
@@ -108,7 +141,13 @@ function SignIn() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="name@example.com" type="email" {...field} />
+                    <Input
+                      placeholder="name@example.com"
+                      type="email"
+                      autoComplete="username"
+                      aria-label="Email address"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -121,7 +160,24 @@ function SignIn() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input placeholder="••••••••" type="password" {...field} />
+                    <div className="relative">
+                      <Input
+                        placeholder="••••••••"
+                        type={showPassword ? 'text' : 'password'}
+                        autoComplete="current-password"
+                        aria-label="Password"
+                        className="pr-10"
+                        {...field}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                        aria-label="Toggle password visibility"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -135,13 +191,13 @@ function SignIn() {
 
         <div className="text-center text-sm space-y-2">
           <p>
-            <Link to="/auth/reset-password" className="text-primary hover:underline">
+            <Link to="/auth/reset-password" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">
               Forgot password?
             </Link>
           </p>
-          <p>
+          <p className="text-muted-foreground">
             Don't have an account?{' '}
-            <Link to="/auth/sign-up" className="text-primary font-medium hover:underline">
+            <Link to="/auth/sign-up" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">
               Sign up
             </Link>
           </p>

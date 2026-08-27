@@ -121,7 +121,7 @@ export function NavBar() {
   }
 
   return (
-    <nav className="bg-primary text-primary-foreground shadow-md sticky top-0 z-50">
+    <nav aria-label="Main Navigation" className="bg-[#0038A8] dark:bg-[#00205c] text-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 gap-4">
           
@@ -131,11 +131,13 @@ export function NavBar() {
               <img
                 src="/logo.jpg"
                 alt="BrgyConnect Logo"
+                width="36"
+                height="36"
                 className="h-9 w-9 rounded-full object-cover ring-2 ring-white/30"
               />
               <div className="flex flex-col">
                 <span className="font-extrabold text-base leading-tight tracking-tight">BrgyConnect</span>
-                <span className="text-[10px] text-primary-foreground/75 leading-none">Barangay Daine</span>
+                <span className="text-[10px] text-white/95 font-medium leading-none">Barangay Daine</span>
               </div>
             </Link>
           </div>
@@ -152,8 +154,8 @@ export function NavBar() {
                   setCommunityOpen(false)
                   setScopeOpen(false)
                 }}
-                className={`min-h-[40px] flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white/10 hover:text-white ${
-                  servicesOpen ? 'bg-white/15 text-white' : 'text-primary-foreground/90'
+                className={`min-h-[40px] flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-white/20 hover:text-white ${
+                  servicesOpen ? 'bg-white/20 text-white' : 'text-white'
                 }`}
               >
                 {isAdmin ? 'Staff Desk' : 'Services'}
@@ -292,8 +294,8 @@ export function NavBar() {
                   setServicesOpen(false)
                   setScopeOpen(false)
                 }}
-                className={`min-h-[40px] flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white/10 hover:text-white ${
-                  communityOpen ? 'bg-white/15 text-white' : 'text-primary-foreground/90'
+                className={`min-h-[40px] flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-white/20 hover:text-white ${
+                  communityOpen ? 'bg-white/20 text-white' : 'text-white'
                 }`}
               >
                 Community
@@ -301,18 +303,18 @@ export function NavBar() {
               </button>
 
               {communityOpen && (
-                <div className="absolute left-0 mt-2 w-64 bg-card text-card-foreground border border-border rounded-xl shadow-xl p-1.5 z-50 animate-in fade-in-0 zoom-in-95 duration-150">
+                <div className="absolute left-0 mt-2 w-72 bg-card text-card-foreground border border-border rounded-xl shadow-xl p-1.5 z-50 animate-in fade-in-0 zoom-in-95 duration-150">
                   <Link
                     to="/announcements"
                     onClick={() => setCommunityOpen(false)}
                     className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors group"
                   >
-                    <div className="p-2 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                    <div className="p-2 rounded-md bg-red-500/10 text-red-600 dark:text-red-400 group-hover:bg-red-500 group-hover:text-white transition-colors">
                       <Megaphone className="h-4 w-4" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold leading-tight">Announcements</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">News & official updates</p>
+                      <p className="text-sm font-semibold leading-tight">Announcements & News</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Barangay bulletins & alerts</p>
                     </div>
                   </Link>
 
@@ -321,7 +323,7 @@ export function NavBar() {
                     onClick={() => setCommunityOpen(false)}
                     className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors group"
                   >
-                    <div className="p-2 rounded-md bg-pink-500/10 text-pink-600 dark:text-pink-400 group-hover:bg-pink-500 group-hover:text-white transition-colors">
+                    <div className="p-2 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 group-hover:bg-amber-500 group-hover:text-white transition-colors">
                       <Calendar className="h-4 w-4" />
                     </div>
                     <div>
@@ -364,9 +366,9 @@ export function NavBar() {
             {/* Emergency Direct Link */}
             <Link
               to="/emergency"
-              className="min-h-[40px] flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-red-200 hover:text-white hover:bg-red-500/20 transition-colors [&.active]:bg-red-500/30 [&.active]:text-white font-semibold"
+              className="min-h-[40px] flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-bold text-white bg-red-600 hover:bg-red-700 transition-colors shadow-xs"
             >
-              <PhoneCall className="h-3.5 w-3.5 text-red-300" />
+              <PhoneCall className="h-4 w-4 text-white" />
               Emergency
             </Link>
           </div>
@@ -384,12 +386,12 @@ export function NavBar() {
                     setServicesOpen(false)
                     setCommunityOpen(false)
                   }}
-                  className="inline-flex items-center gap-1.5 min-h-[38px] px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium text-white transition-colors border border-white/15 cursor-pointer shadow-sm"
-                  aria-label="Filter Barangay Scope"
+                  className="inline-flex items-center gap-1.5 min-h-[38px] px-3 py-1.5 rounded-lg bg-[#002266] hover:bg-[#001848] text-xs font-bold text-white transition-colors border border-white/40 cursor-pointer shadow-sm"
+                  aria-label={`${scopeLabels[scope]} - Select Barangay View`}
                 >
                   <MapPin className="h-3.5 w-3.5 text-yellow-300" />
                   <span>{scopeLabels[scope]}</span>
-                  <ChevronDown className={`h-3 w-3 text-white/70 transition-transform duration-200 ${scopeOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-3 w-3 text-white transition-transform duration-200 ${scopeOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {scopeOpen && (
@@ -429,8 +431,10 @@ export function NavBar() {
 
             {/* Search (⌘K) */}
             <button
+              type="button"
               onClick={() => setSearchOpen(true)}
               className="inline-flex items-center gap-2 min-h-[38px] px-2.5 py-1.5 rounded-lg text-sm text-primary-foreground/80 hover:text-white hover:bg-white/10 transition-colors"
+              aria-label="Search portal (Command K)"
               title="Search (⌘K)"
             >
               <Search className="h-4 w-4" />
@@ -537,7 +541,7 @@ export function NavBar() {
               aria-expanded={isOpen}
               aria-controls="mobile-menu"
               className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-lg hover:bg-white/10 focus:outline-none transition-colors"
-              aria-label="Toggle menu"
+              aria-label="Toggle navigation menu"
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>

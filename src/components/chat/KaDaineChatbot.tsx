@@ -93,8 +93,9 @@ export function KaDaineChatbot() {
         <button
           onClick={() => setIsOpen(true)}
           className="relative flex items-center justify-center w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-transform hover:scale-105 group focus:outline-none focus:ring-4 focus:ring-primary/30"
-          title="Chat with Ka-Daine"
-          aria-label="Open Chat with Ka-Daine"
+          title="Chat with Ka-Daine AI Resident Assistant"
+          aria-label="Chat with Ka-Daine AI Resident Assistant"
+          aria-expanded={false}
         >
           <MessageCircle className="w-6 h-6" />
           <div className="absolute -top-1 -right-1 bg-yellow-400 text-yellow-900 rounded-full p-1 shadow-sm">
@@ -107,7 +108,12 @@ export function KaDaineChatbot() {
       )}
 
       {isOpen && (
-        <div className="flex flex-col w-[380px] max-w-[calc(100vw-2rem)] h-[600px] max-h-[calc(100vh-4rem)] bg-background border rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-300 ring-1 ring-black/5 dark:ring-white/10">
+        <div
+          role="dialog"
+          aria-label="Ka-Daine AI Resident Assistant Chat"
+          aria-modal="true"
+          className="flex flex-col w-[380px] max-w-[calc(100vw-2rem)] h-[600px] max-h-[calc(100vh-4rem)] bg-background border rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-300 ring-1 ring-black/5 dark:ring-white/10"
+        >
           {/* Header */}
           <div className="flex items-center justify-between p-4 bg-primary text-primary-foreground">
             <div className="flex items-center space-x-3">
@@ -210,6 +216,7 @@ export function KaDaineChatbot() {
                 maxLength={500}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Type your message (max 500 chars)..."
+                aria-label="Type your question for Ka-Daine"
                 className="flex-1 bg-slate-100 dark:bg-zinc-900 border-transparent focus:bg-white dark:focus:bg-zinc-950 border focus:border-primary/50 text-sm rounded-full pl-4 pr-12 py-3 outline-none transition-all"
                 disabled={isLoading}
               />

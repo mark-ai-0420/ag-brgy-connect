@@ -167,6 +167,31 @@ const getEmergencyContacts = createServerFn({ method: 'GET' }).handler(async () 
 })
 
 export const Route = createFileRoute('/emergency')({
+  head: () => ({
+    meta: [
+      {
+        title: 'Emergency Hotlines & Disaster Response | Barangay Daine',
+      },
+      {
+        name: 'description',
+        content:
+          'Emergency hotlines and disaster response contact numbers for Barangay Daine 1 and Daine 2, Indang, Cavite. Direct speed-dial to PNP, BFP, RHU, and MDRRMO.',
+      },
+      {
+        property: 'og:title',
+        content: 'Emergency Hotlines & Disaster Response | Barangay Daine',
+      },
+      {
+        property: 'og:description',
+        content:
+          'Emergency hotlines and disaster response contact numbers for Barangay Daine 1 and Daine 2, Indang, Cavite. Direct speed-dial to PNP, BFP, RHU, and MDRRMO.',
+      },
+      {
+        property: 'og:type',
+        content: 'website',
+      },
+    ],
+  }),
   component: EmergencyRoute,
   loader: () => getEmergencyContacts(),
 })
@@ -270,7 +295,7 @@ function EmergencyRoute() {
                   <a
                     key={card.number}
                     href={telUri}
-                    aria-label={`Call ${card.title} at ${card.number}`}
+                    aria-label={`${card.title} - Call ${card.number}`}
                     className={`group flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border ${card.cardStyle} shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all min-h-[52px] text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-white/80 focus:ring-offset-2 focus:ring-offset-red-700`}
                   >
                     <div className="flex items-start justify-between gap-1.5 mb-2.5">
@@ -295,7 +320,7 @@ function EmergencyRoute() {
                       <span className={`text-base sm:text-lg font-black tracking-tight ${card.color}`}>
                         {card.number}
                       </span>
-                      <span className="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-emerald-600 group-hover:bg-emerald-700 text-white shadow-xs shrink-0 transition-colors">
+                      <span className="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-emerald-700 group-hover:bg-emerald-800 text-white shadow-xs shrink-0 transition-colors">
                         <Phone className="h-3.5 w-3.5 fill-current" />
                       </span>
                     </div>
@@ -379,6 +404,7 @@ function EmergencyRoute() {
                                   <Phone className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                                   <a
                                     href={telUri}
+                                    aria-label={`Call ${contact.name} at ${number}`}
                                     className="text-base sm:text-lg font-bold tracking-tight text-foreground hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors truncate"
                                   >
                                     {number}
@@ -386,7 +412,7 @@ function EmergencyRoute() {
                                 </div>
                                 <a
                                   href={telUri}
-                                  className="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white min-h-[44px] px-4 font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-sm shrink-0 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                  className="bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white min-h-[44px] px-4 font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-sm shrink-0 transition-all hover:scale-[1.02] active:scale-[0.98]"
                                   aria-label={`Call ${contact.name} at ${number}`}
                                 >
                                   <Phone className="h-4 w-4 fill-current" />

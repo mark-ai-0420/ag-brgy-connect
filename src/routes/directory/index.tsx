@@ -41,6 +41,31 @@ const getBusinesses = createServerFn({ method: 'GET' }).handler(async () => {
 })
 
 export const Route = createFileRoute('/directory/')({
+  head: () => ({
+    meta: [
+      {
+        title: 'MSME Business Directory | Barangay Daine',
+      },
+      {
+        name: 'description',
+        content:
+          'Explore local sari-sari stores, eateries, repair shops, and MSMEs across Barangay Daine 1 and Daine 2, Indang, Cavite.',
+      },
+      {
+        property: 'og:title',
+        content: 'MSME Business Directory | Barangay Daine',
+      },
+      {
+        property: 'og:description',
+        content:
+          'Explore local sari-sari stores, eateries, repair shops, and MSMEs across Barangay Daine 1 and Daine 2, Indang, Cavite.',
+      },
+      {
+        property: 'og:type',
+        content: 'website',
+      },
+    ],
+  }),
   component: DirectoryRoute,
   loader: () => getBusinesses(),
   pendingComponent: () => <FeedSkeleton />,
@@ -302,6 +327,7 @@ function DirectoryRoute() {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             id="directory-search"
+            aria-label="Search businesses by name, service or keyword"
             placeholder="Search by name, category, purok, or street address…"
             className="pl-10 pr-10 h-12 text-sm rounded-xl bg-card shadow-2xs border-input"
             value={search}
@@ -388,18 +414,22 @@ function DirectoryRoute() {
               key={business.id}
               className="h-full flex flex-col border hover:border-primary/50 hover:shadow-md transition-all duration-300 overflow-hidden bg-card group"
             >
-              {/* Storefront Hero Image / Banner */}
+              {/* Storefront Image */}
               <Link
                 to="/directory/$businessId"
                 params={{ businessId: business.id }}
                 className="relative w-full aspect-video h-48 overflow-hidden rounded-t-xl bg-muted block"
               >
+                <span className="sr-only">View details for {business.name}</span>
                 {business.photo_url ? (
                   <img
                     src={business.photo_url}
                     alt={business.name}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    width="400"
+                    height="225"
                     loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 text-primary/40 transition-transform duration-300 group-hover:scale-105">
@@ -509,8 +539,9 @@ function DirectoryRoute() {
                 {business.phone ? (
                   <a
                     href={`tel:${business.phone.replace(/[^0-9+]/g, '')}`}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white min-h-[40px] flex-1 font-bold rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
+                    className="bg-emerald-700 hover:bg-emerald-800 text-white min-h-[40px] flex-1 font-bold rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
                     title={`Call ${business.phone}`}
+                    aria-label={`Call ${business.name} at ${business.phone}`}
                   >
                     <Phone className="h-3.5 w-3.5 shrink-0" />
                     <span>Call</span>
@@ -521,6 +552,7 @@ function DirectoryRoute() {
                     disabled
                     className="bg-muted text-muted-foreground/60 border border-border cursor-not-allowed min-h-[40px] flex-1 font-bold rounded-lg text-xs flex items-center justify-center gap-1.5"
                     title="No phone number provided"
+                    aria-label={`Phone number unavailable for ${business.name}`}
                   >
                     <Phone className="h-3.5 w-3.5 shrink-0" />
                     <span>Call</span>
@@ -533,8 +565,9 @@ function DirectoryRoute() {
                     href={messengerUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-sky-600 hover:bg-sky-700 text-white min-h-[40px] flex-1 font-bold rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
+                    className="bg-sky-700 hover:bg-sky-800 text-white min-h-[40px] flex-1 font-bold rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
                     title="Chat on Messenger"
+                    aria-label={`Chat with ${business.name} on Messenger`}
                   >
                     <MessageCircle className="h-3.5 w-3.5 shrink-0" />
                     <span>Messenger</span>
@@ -545,6 +578,7 @@ function DirectoryRoute() {
                     disabled
                     className="bg-muted text-muted-foreground/60 border border-border cursor-not-allowed min-h-[40px] flex-1 font-bold rounded-lg text-xs flex items-center justify-center gap-1.5"
                     title="No Messenger link provided"
+                    aria-label={`Messenger unavailable for ${business.name}`}
                   >
                     <MessageCircle className="h-3.5 w-3.5 shrink-0" />
                     <span>Messenger</span>
@@ -561,6 +595,7 @@ function DirectoryRoute() {
                   <Link
                     to="/directory/$businessId"
                     params={{ businessId: business.id }}
+                    aria-label={`View details for ${business.name}`}
                   >
                     <span>Details</span>
                     <ChevronRight className="h-3.5 w-3.5" />
