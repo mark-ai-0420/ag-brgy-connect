@@ -85,12 +85,14 @@ function UpdatePassword() {
                       <Input 
                         placeholder="••••••••" 
                         type={showPassword ? "text" : "password"} 
+                        className="pr-12"
                         {...field} 
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] p-2 flex items-center justify-center text-foreground/70 hover:text-foreground hover:bg-muted/80 active:bg-muted active:scale-95 transition-all cursor-pointer rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40 z-10"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -112,12 +114,14 @@ function UpdatePassword() {
                       <Input 
                         placeholder="••••••••" 
                         type={showConfirmPassword ? "text" : "password"} 
+                        className="pr-12"
                         {...field} 
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] p-2 flex items-center justify-center text-foreground/70 hover:text-foreground hover:bg-muted/80 active:bg-muted active:scale-95 transition-all cursor-pointer rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40 z-10"
+                        aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
                       >
                         {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>

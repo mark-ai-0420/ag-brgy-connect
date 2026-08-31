@@ -5,6 +5,7 @@ import {
   Outlet,
   Link,
   useRouter,
+  useRouterState,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
@@ -111,6 +112,9 @@ import { OfflineIndicator } from '#/components/common/OfflineIndicator'
 import { PWAInstallBanner } from '#/components/common/PWAInstallBanner'
 
 function RootComponent() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const isAuthRoute = pathname.startsWith('/auth')
+
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {
@@ -135,8 +139,8 @@ function RootComponent() {
         </main>
         <Footer />
         <PWAInstallBanner />
-        <EmergencySpeedDial />
-        <KaDaineChatbot />
+        {!isAuthRoute && <EmergencySpeedDial />}
+        {!isAuthRoute && <KaDaineChatbot />}
         <SessionTimeoutModal />
       </BarangayScopeProvider>
     </AuthProvider>
