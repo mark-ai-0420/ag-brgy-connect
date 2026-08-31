@@ -293,7 +293,7 @@ function EmergencyRoute() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
+    <div className="min-h-[100dvh] bg-background text-foreground pb-20">
       {/* High-Visibility Offline Mode Resilience Banner */}
       {isOffline && (
         <aside

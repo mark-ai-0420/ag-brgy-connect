@@ -400,7 +400,7 @@ function OfficialsRoute() {
   const barangayDisplayName = activeTab === 'daine_1' ? 'Barangay Daine 1' : 'Barangay Daine 2'
 
   return (
-    <div className="min-h-screen pb-20 bg-slate-50/50 dark:bg-background">
+    <div className="min-h-[100dvh] pb-20 bg-slate-50/50 dark:bg-background">
       {/* ── 1. Hero Civic Horizon Header ───────────────────────────────────────── */}
       <header className="relative overflow-hidden bg-gradient-to-r from-[#002675] via-[#0038A8] to-[#1E3A8A] text-white py-12 px-4 sm:px-6 lg:px-8 shadow-md">
         {/* Flag Accent Ribbon */}

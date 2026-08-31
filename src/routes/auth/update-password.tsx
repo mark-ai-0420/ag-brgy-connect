@@ -64,7 +64,7 @@ function UpdatePassword() {
   }
 
   return (
-    <div className="flex h-screen w-full items-center justify-center px-4">
+    <main className="flex min-h-[100dvh] w-full items-center justify-center px-4 py-8">
       <div className="w-full max-w-md space-y-6 bg-card p-8 rounded-xl border shadow-sm">
         <div className="space-y-2 text-center">
           <img src="/logo.jpg" alt="BrgyConnect" className="h-14 w-14 rounded-full object-cover mx-auto ring-2 ring-primary/20" />
@@ -85,7 +85,7 @@ function UpdatePassword() {
                       <Input 
                         placeholder="••••••••" 
                         type={showPassword ? "text" : "password"} 
-                        className="pr-12"
+                        className="min-h-[44px] pr-12"
                         {...field} 
                       />
                       <button
@@ -114,7 +114,7 @@ function UpdatePassword() {
                       <Input 
                         placeholder="••••••••" 
                         type={showConfirmPassword ? "text" : "password"} 
-                        className="pr-12"
+                        className="min-h-[44px] pr-12"
                         {...field} 
                       />
                       <button
@@ -132,12 +132,12 @@ function UpdatePassword() {
               )}
             />
             
-            <Button type="submit" className="w-full" disabled={!isHydrated || form.formState.isSubmitting}>
+            <Button type="submit" className="w-full min-h-[44px]" disabled={!isHydrated || form.formState.isSubmitting}>
               {form.formState.isSubmitting ? 'Updating…' : 'Update Password'}
             </Button>
           </form>
         </Form>
       </div>
-    </div>
+    </main>
   )
 }

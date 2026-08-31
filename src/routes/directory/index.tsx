@@ -283,7 +283,7 @@ function DirectoryRoute() {
   }
 
   return (
-    <div className="container mx-auto py-8 md:py-10 px-4 md:px-6 max-w-6xl">
+    <div className="min-h-[100dvh] container mx-auto py-8 md:py-10 px-4 md:px-6 max-w-6xl">
       {/* High-visibility MSME Growth Hero Banner with Stitch Civic Horizon Gradient */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0038A8] via-[#002d87] to-teal-800 text-white p-6 sm:p-8 md:p-10 shadow-xl border border-white/15 mb-8">
         {/* Glow and micro-pattern accents */}
@@ -441,7 +441,7 @@ function DirectoryRoute() {
                     <div className="p-3.5 rounded-full bg-background/80 shadow-xs backdrop-blur-xs">
                       <Store className="h-7 w-7 text-primary/70" />
                     </div>
-                    <span className="text-[11px] font-bold text-muted-foreground mt-2 tracking-wide uppercase">
+                    <span className="text-xs font-semibold text-muted-foreground mt-2">
                       Barangay Daine MSME
                     </span>
                   </div>

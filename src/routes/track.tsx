@@ -403,7 +403,7 @@ function TrackDocumentRoute() {
   const req = result?.request
 
   return (
-    <div className="min-h-screen pb-16 bg-slate-50/60 dark:bg-background">
+    <div className="min-h-[100dvh] pb-16 bg-slate-50/60 dark:bg-background">
       {/* ── Hero Banner with Philippine Civic Horizon Gradient ─────────────────────────── */}
       <header className="relative overflow-hidden bg-gradient-to-r from-[#002675] via-[#0038A8] to-[#1E3A8A] text-white py-12 px-4 sm:px-6 lg:px-8 shadow-md">
         {/* National Flag color accent top stripe */}
@@ -582,7 +582,7 @@ function TrackDocumentRoute() {
                     {/* Issuing Barangay & Action Badges */}
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge
-                        className={`text-xs font-extrabold px-3 py-1 uppercase tracking-wider ${
+                        className={`text-xs font-extrabold px-3 py-1 ${
                           req.barangay === 'daine_2'
                             ? 'bg-[#CE1126] hover:bg-[#b00f20] text-white'
                             : 'bg-[#0038A8] hover:bg-[#002d87] text-white'
@@ -600,7 +600,7 @@ function TrackDocumentRoute() {
                         title="Click to copy Reference Code / Control Number"
                         aria-label={`Control Number: ${req.control_number}. Click to copy.`}
                       >
-                        <span className="text-muted-foreground uppercase text-[10px] tracking-wider">Control #</span>
+                        <span className="text-muted-foreground text-xs font-medium">Control #</span>
                         <span className="text-foreground">{req.control_number}</span>
                         {copiedCode ? (
                           <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
@@ -611,7 +611,7 @@ function TrackDocumentRoute() {
 
                       {/* Offline Indicator Badge */}
                       {isFromOfflineCache && (
-                        <Badge className="bg-amber-600 hover:bg-amber-600 text-white text-xs font-bold px-2.5 py-1 uppercase tracking-wider flex items-center gap-1.5 shadow-xs">
+                        <Badge className="bg-amber-600 hover:bg-amber-600 text-white text-xs font-bold px-2.5 py-1 flex items-center gap-1.5 shadow-xs">
                           <WifiOff className="h-3.5 w-3.5" />
                           Offline Record
                         </Badge>
@@ -654,7 +654,7 @@ function TrackDocumentRoute() {
                   {/* Status Pill Badge */}
                   <div className="shrink-0 flex sm:flex-col items-start sm:items-end gap-2">
                     <div
-                      className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold uppercase tracking-wider border shadow-xs ${
+                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold border shadow-xs ${
                         req.status === 'pending'
                           ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-800'
                           : req.status === 'in_review'
@@ -703,7 +703,7 @@ function TrackDocumentRoute() {
                       {/* Header with Progress text, Percentage pill, and Turnaround window */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="space-y-1">
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
+                          <span className="text-xs font-semibold text-muted-foreground block">
                             Live Processing Progress
                           </span>
                           <p className="text-sm font-bold text-foreground">
@@ -784,7 +784,7 @@ function TrackDocumentRoute() {
                 <div id="tracker-lifecycle-stepper" className="space-y-4">
                   <div className="flex items-center justify-between">
                     {/* Sequential Level 3 Heading (h3) */}
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                       <Sparkles className="h-4 w-4 text-primary" />
                       Document Lifecycle & Verification Progress
                     </h3>
@@ -832,7 +832,7 @@ function TrackDocumentRoute() {
 
                             <Badge
                               variant="outline"
-                              className={`text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full ${
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                                 isCompleted
                                   ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
                                   : isCurrent
@@ -871,21 +871,21 @@ function TrackDocumentRoute() {
 
                 {/* ── 3. Document Details Meta Section ─────────────────────────── */}
                 <div className="space-y-3">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                     <FileText className="h-4 w-4 text-primary" />
                     Document Request Details & Metadata
                   </h3>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 bg-muted/40 p-4 sm:p-5 rounded-xl border">
                     <div>
-                      <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+                      <span className="text-xs font-semibold text-muted-foreground block mb-1">
                         Document Requested
                       </span>
                       <span className="text-sm font-bold text-foreground">{req.document_title}</span>
                     </div>
 
                     <div>
-                      <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+                      <span className="text-xs font-semibold text-muted-foreground block mb-1">
                         Declared Purpose
                       </span>
                       <span className="text-sm font-semibold text-foreground">
@@ -894,7 +894,7 @@ function TrackDocumentRoute() {
                     </div>
 
                     <div>
-                      <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+                      <span className="text-xs font-semibold text-muted-foreground block mb-1">
                         Request ID
                       </span>
                       <span className="text-xs font-mono text-muted-foreground truncate block" title={req.id}>
@@ -904,7 +904,7 @@ function TrackDocumentRoute() {
 
                     {req.notes && (
                       <div className="col-span-full pt-2 border-t border-border/40">
-                        <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+                        <span className="text-xs font-semibold text-muted-foreground block mb-1">
                           Barangay Remarks / Official Notes
                         </span>
                         <p className="text-xs text-foreground bg-background p-3 rounded-lg border">
@@ -923,7 +923,7 @@ function TrackDocumentRoute() {
                         <ShieldCheck className="h-7 w-7" />
                       </div>
                       <div>
-                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-200/70 text-emerald-950 dark:bg-emerald-900/70 dark:text-emerald-200 mb-1">
+                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-200/70 text-emerald-950 dark:bg-emerald-900/70 dark:text-emerald-200 mb-1">
                           <QrCode className="h-3 w-3" /> QR Authenticated
                         </div>
                         <h3 className="font-bold text-base text-emerald-950 dark:text-emerald-100">

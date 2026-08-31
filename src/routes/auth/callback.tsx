@@ -26,11 +26,11 @@ function AuthCallback() {
   }, [navigate])
 
   return (
-    <div className="flex h-screen w-full items-center justify-center">
+    <main className="flex min-h-[100dvh] w-full items-center justify-center px-4">
       <div className="text-center">
         <h2 className="text-2xl font-semibold mb-2">Authenticating...</h2>
         <p className="text-muted-foreground">Please wait while we verify your account.</p>
       </div>
-    </div>
+    </main>
   )
 }

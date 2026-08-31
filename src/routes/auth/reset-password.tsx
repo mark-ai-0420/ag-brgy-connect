@@ -54,7 +54,7 @@ function ResetPassword() {
   }
 
   return (
-    <div className="flex h-screen w-full items-center justify-center px-4">
+    <main className="flex min-h-[100dvh] w-full items-center justify-center px-4 py-8">
       <div className="w-full max-w-md space-y-6 bg-card p-8 rounded-xl border shadow-sm">
         <div className="space-y-2 text-center">
           <h1 className="text-3xl font-bold">Reset Password</h1>
@@ -75,13 +75,13 @@ function ResetPassword() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="name@example.com" type="email" {...field} />
+                      <Input placeholder="name@example.com" type="email" className="min-h-[44px]" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+              <Button type="submit" className="w-full min-h-[44px]" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting ? 'Sending...' : 'Send Reset Link'}
               </Button>
             </form>
@@ -91,12 +91,12 @@ function ResetPassword() {
         <div className="text-center text-sm">
           <p>
             Remember your password?{' '}
-            <Link to="/auth/sign-in" className="text-primary font-medium hover:underline">
+            <Link to="/auth/sign-in" className="text-primary font-medium hover:underline inline-flex items-center min-h-[44px] -my-2.5 px-1">
               Sign in
             </Link>
           </p>
         </div>
       </div>
-    </div>
+    </main>
   )
 }

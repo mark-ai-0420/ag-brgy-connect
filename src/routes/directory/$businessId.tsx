@@ -78,7 +78,7 @@ function InfoRow({
         <Icon className="h-4 w-4 text-primary" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">
+        <p className="text-xs font-semibold text-muted-foreground mb-0.5">
           {label}
         </p>
         <div className="text-sm text-foreground font-semibold leading-relaxed">{children}</div>
@@ -94,7 +94,7 @@ function BusinessDetail() {
 
   if (!business) {
     return (
-      <div className="container mx-auto py-20 text-center max-w-md px-4">
+      <div className="min-h-[100dvh] container mx-auto py-20 text-center max-w-md px-4 flex flex-col items-center justify-center">
         <div className="p-4 bg-muted rounded-full inline-flex mb-4">
           <Store className="h-8 w-8 text-muted-foreground" />
         </div>
@@ -146,7 +146,7 @@ function BusinessDetail() {
     : 'https://www.openstreetmap.org/?mlat=14.1875&mlon=120.8452#map=16/14.1875/120.8452')
 
   return (
-    <div className="container mx-auto py-8 md:py-10 px-4 md:px-6 max-w-6xl pb-28 md:pb-10">
+    <div className="min-h-[100dvh] container mx-auto py-8 md:py-10 px-4 md:px-6 max-w-6xl pb-28 md:pb-10">
       {/* Back button */}
       <Button variant="ghost" asChild className="mb-6 -ml-2 text-muted-foreground hover:text-foreground min-h-[44px] px-3 font-semibold rounded-xl">
         <Link to="/directory">
@@ -189,7 +189,7 @@ function BusinessDetail() {
                 {/* Multi-Image Tabs / Thumbnails if > 1 image */}
                 {galleryImages.length > 1 && (
                   <div className="flex items-center gap-2.5 p-3.5 bg-muted/30 border-t overflow-x-auto scrollbar-none touch-pan-x">
-                    <span className="text-xs font-extrabold text-muted-foreground uppercase tracking-wider mr-1 flex items-center gap-1 shrink-0">
+                    <span className="text-xs font-bold text-muted-foreground mr-1 flex items-center gap-1 shrink-0">
                       <ImageIcon className="h-3.5 w-3.5 text-primary" /> Photos:
                     </span>
                     {galleryImages.map((img, idx) => (
@@ -277,7 +277,7 @@ function BusinessDetail() {
             <CardContent className="space-y-5 px-6 pb-6">
               <Separator />
               <div>
-                <h2 className="font-extrabold mb-2.5 text-xs uppercase tracking-wider text-muted-foreground">
+                <h2 className="font-bold mb-2.5 text-sm text-foreground">
                   About the Business
                 </h2>
                 <p className="text-foreground/90 leading-relaxed text-sm sm:text-base whitespace-pre-wrap">
@@ -288,7 +288,7 @@ function BusinessDetail() {
               {/* Accepted Payments */}
               {business.payment_methods && business.payment_methods.length > 0 && (
                 <div className="pt-2">
-                  <h2 className="font-extrabold mb-2.5 text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <h2 className="font-bold mb-2.5 text-sm text-foreground flex items-center gap-1.5">
                     <CreditCard className="h-3.5 w-3.5 text-primary" /> Accepted Payment Methods
                   </h2>
                   <div className="flex flex-wrap gap-2">
@@ -375,7 +375,7 @@ function BusinessDetail() {
           {/* Contact & Details Box */}
           <Card className="border shadow-sm rounded-2xl">
             <CardHeader className="pb-3 px-5">
-              <h2 className="font-extrabold text-xs uppercase tracking-wider text-muted-foreground">
+              <h2 className="font-bold text-sm text-foreground">
                 Contact &amp; Details
               </h2>
             </CardHeader>

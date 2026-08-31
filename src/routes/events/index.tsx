@@ -197,7 +197,7 @@ function EventCard({ event }: { event: EventItem }) {
             <div className="p-3.5 rounded-2xl bg-background/80 shadow-xs backdrop-blur-xs ring-1 ring-primary/15">
               <Calendar className="h-7 w-7 text-primary" />
             </div>
-            <span className="text-[11px] font-bold text-foreground/70 mt-2.5 tracking-wider uppercase">
+            <span className="text-xs font-semibold text-foreground/70 mt-2.5">
               Official Barangay Activity
             </span>
           </div>
@@ -249,7 +249,7 @@ function EventCard({ event }: { event: EventItem }) {
           {/* Scope Badge */}
           {event.scope && (
             <span
-              className={`shrink-0 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider shadow-md backdrop-blur-md border border-white/20 ${
+              className={`shrink-0 text-[10px] font-black px-2.5 py-1 rounded-full uppercase shadow-md backdrop-blur-md border border-white/20 ${
                 event.scope === 'both' || event.scope === 'all'
                   ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
                   : event.scope === 'daine_1'
@@ -397,7 +397,7 @@ function EventsRoute() {
   }, [allEvents])
 
   return (
-    <div className="min-h-screen pb-20 bg-slate-50/50 dark:bg-background">
+    <div className="min-h-[100dvh] pb-20 bg-slate-50/50 dark:bg-background">
       {/* ── 1. Hero Civic Horizon Header ───────────────────────────────────────── */}
       <header className="relative overflow-hidden bg-gradient-to-r from-[#002675] via-[#0038A8] to-[#1E3A8A] text-white py-12 px-4 sm:px-6 lg:px-8 shadow-md">
         {/* Flag Ribbon */}

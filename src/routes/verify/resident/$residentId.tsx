@@ -108,7 +108,7 @@ function VerifyResidentRoute() {
     : 'Barangay Daine 1, Indang, Cavite'
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-slate-50 dark:bg-background">
+    <div className="flex min-h-[100dvh] flex-col items-center justify-center p-4 bg-slate-50 dark:bg-background">
       <Card className="w-full max-w-md shadow-xl border overflow-hidden rounded-2xl">
         <div className="bg-gradient-to-r from-[#0038A8] via-[#002675] to-[#1E3A8A] p-6 text-white text-center relative">
           <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-[#0038A8] via-[#FCD116] to-[#CE1126]" />

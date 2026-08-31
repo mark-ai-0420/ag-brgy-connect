@@ -1047,7 +1047,7 @@ function MapRouteComponent() {
         const popupContent = `
           <div class="p-1 max-w-[280px] font-sans text-slate-900 dark:text-slate-100">
             <div class="flex items-center justify-between gap-1 mb-1">
-              <span class="text-[10px] font-extrabold tracking-wider uppercase px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
+              <span class="text-xs font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
                 ${escapeHtml(spot.categoryTag)}
               </span>
               <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${openStatus.badgeClass}">
@@ -1282,7 +1282,7 @@ function MapRouteComponent() {
   ]
 
   return (
-    <div className="container mx-auto py-6 px-4 md:px-6 max-w-7xl">
+    <div className="min-h-[100dvh] container mx-auto py-6 px-4 md:px-6 max-w-7xl">
       {/* Offline Alert Banner */}
       {isOffline && (
         <div className="mb-6 p-4 rounded-2xl bg-amber-500/15 border-2 border-amber-500/40 text-amber-950 dark:text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md animate-in fade-in duration-300">
@@ -1342,7 +1342,7 @@ function MapRouteComponent() {
 
             {/* High-Contrast Dual-Barangay Scope Switcher with Min 44px Touch Targets */}
             <div className="bg-slate-950/85 p-2.5 rounded-2xl border border-white/20 backdrop-blur-md shadow-2xl flex flex-col gap-2 shrink-0">
-              <div className="text-[11px] font-extrabold uppercase tracking-wider text-amber-300 px-2 flex items-center gap-1.5">
+              <div className="text-xs font-bold text-amber-300 px-2 flex items-center gap-1.5">
                 <Building2 className="h-3.5 w-3.5" /> Select Barangay Scope:
               </div>
               <div className="grid grid-cols-3 gap-2">
@@ -1611,7 +1611,7 @@ function MapRouteComponent() {
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span
                         className={cn(
-                          'text-[10px] font-black px-2.5 py-1 rounded-lg border uppercase tracking-wider',
+                          'text-xs font-bold px-2.5 py-1 rounded-lg border',
                           selectedSpot.category === 'evacuation'
                             ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300'
                             : selectedSpot.category === 'government'
@@ -1831,7 +1831,7 @@ function MapRouteComponent() {
                         <div className="flex flex-wrap items-center gap-1.5">
                           <span
                             className={cn(
-                              'text-[10px] font-black px-2 py-0.5 rounded-md border uppercase tracking-wider',
+                              'text-xs font-bold px-2 py-0.5 rounded-md border',
                               spot.category === 'evacuation'
                                 ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300'
                                 : spot.category === 'government'

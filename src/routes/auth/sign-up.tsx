@@ -174,7 +174,7 @@ function SignUp() {
   }
 
   return (
-    <main className="min-h-screen w-full flex flex-col justify-center items-center relative px-4 py-10 bg-gradient-to-br from-slate-50 via-sky-50/40 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 overflow-x-hidden">
+    <main className="min-h-[100dvh] w-full flex flex-col justify-center items-center relative px-4 py-10 bg-gradient-to-br from-slate-50 via-sky-50/40 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 overflow-x-hidden">
       {/* Decorative ambient civic glow */}
       <div 
         aria-hidden="true" 

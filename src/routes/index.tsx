@@ -253,9 +253,9 @@ function Home() {
   ]
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-[100dvh]">
       {/* ── Dual-Zone Hero Section ───────────────────────────────────────── */}
-      <section className="hero-gradient relative min-h-[90vh] flex items-center overflow-hidden" id="hero">
+      <section className="hero-gradient relative min-h-[90dvh] flex items-center overflow-hidden" id="hero">
         {/* Ambient Radial Lighting Overlay */}
         <div aria-hidden="true" className="absolute inset-0 pointer-events-none overflow-hidden">
           <div

@@ -204,7 +204,7 @@ function VerifyRoute() {
   const isVerified = request && (request.status === 'completed' || request.status === 'ready')
 
   return (
-    <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center bg-slate-50 dark:bg-background relative overflow-hidden">
+    <div className="min-h-[100dvh] py-10 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center bg-slate-50 dark:bg-background relative overflow-hidden">
       {/* Subtle background national civic glow */}
       <div
         className="absolute top-0 right-1/4 w-96 h-96 rounded-full bg-[#0038A8]/5 blur-3xl pointer-events-none"
