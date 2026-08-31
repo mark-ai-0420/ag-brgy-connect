@@ -95,15 +95,33 @@ graph TD
 
 ---
 
-## 🎨 4. Design & Aesthetics Standards
+## 🎨 4. UI/UX Design Intelligence & Consultation Protocol (MANDATORY FOR NODE 2)
 
-1. **Function-Driven Design**:
-   - High visual excellence with clean typography, balanced whitespace, and purposeful micro-interactions.
-   - Avoid generic cliché tropes (no unstyled raw borders, no crowded icon bento boxes, no purple-on-dark glow).
-2. **Fluid Responsiveness**:
-   - All interactive controls (buttons, links, select triggers) must meet minimum 44x44px touch targets.
-   - Every layout must be fully responsive and tested against desktop (1440px) and mobile (375px).
-3. **Dual-Barangay Scoping & Context**:
+**Node 2 (🎨 UI/UX Designer)** and all frontend engineering builders MUST actively consult and synthesize our specialized design intelligence stack before speccing or generating UI components, layouts, or interactions:
+
+1. **`impeccable` (Paul Bakaus Design Language & Anti-Slop)**:
+   - Enforce the craft floor: strictly ban generic AI tropes (no unstyled raw borders, no predictable purple/blue glows, no cookie-cutter bento boxes).
+   - Apply deterministic playbooks (`/impeccable polish`, `/impeccable craft`, `/impeccable animate`).
+   - Ensure distinct visual hierarchy, clear scanability, and authentic tactile micro-feedback.
+
+2. **`taste-skill` (Leonxlnx Aesthetic Direction & Anti-Default Discipline)**:
+   - Perform brief inference: always declare a **"Design Read"** (page kind, target audience, vibe keywords, aesthetic family) before coding.
+   - Practice aesthetic restraint: eliminate repetitive LLM defaults and design specifically for the real civic/user scene.
+   - Build content-first rhythm with strong typography hierarchy.
+
+3. **`emil-design-eng` & `animate` (Emil Kowalski Design Engineering & Motion Physics)**:
+   - Apply realistic spring physics, fluid entry/exit choreography, and spatial continuity.
+   - Compound invisible details: tactile button feedback (`active:scale-95`, `active:bg-muted`), smooth hover transitions (150–200ms), and contextual loading feedback.
+   - Guarantee minimum $44\times 44\text{px}$ touch targets on all interactive controls.
+
+4. **`ui-ux-pro-max` (Design System & Color Tokens)**:
+   - Query 84 styles, 192 color palettes (OKLCH tokens), 74 font pairings, and 98 UX guidelines tailored to the tech stack.
+   - Enforce WCAG AAA contrast ratios ($>9.5:1$ on light/dark mode) and zero layout shifts ($\text{CLS} = 0.00$).
+
+5. **`huashu-design` (5-Dimensional Studio Critique)**:
+   - Apply 5-dimensional self-critique across Art Direction, Visual Hierarchy, Motion Continuity, Frontend Precision, and UX Copywriting.
+
+6. **Dual-Barangay Scoping & Context**:
    - Support multi-tenant scoping for **Barangay Daine 1** and **Barangay Daine 2** across public feeds, official rosters, certificates, and admin consoles.
 
 ---
