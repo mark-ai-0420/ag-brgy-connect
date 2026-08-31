@@ -1,8 +1,13 @@
 import puppeteer from 'puppeteer';
 import path from 'path';
+import fs from 'fs';
 
 const ARTIFACT_DIR = process.env.ARTIFACT_DIR || path.join(process.cwd(), 'scratch/screenshots');
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+
+if (!fs.existsSync(ARTIFACT_DIR)) {
+  fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
+}
 
 async function runFullSystemAudit() {
   console.log('🚀 Starting Full System QA Audit (GIS Map, Tracker, Offline, Security & Guards)...');

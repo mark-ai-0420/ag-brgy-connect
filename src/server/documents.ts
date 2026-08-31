@@ -59,20 +59,28 @@ export const trackDocumentRequest = createServerFn({ method: 'POST' })
       const supabase = createSupabaseServerClient();
       const code = data.referenceCode.trim();
 
-      let query = supabase.from('document_requests').select('*');
+      // 1. Try secure RPC function (runs under SECURITY DEFINER, works seamlessly for anonymous tracking)
+      const { data: rpcRows, error: rpcError } = await supabase.rpc('get_verified_document', {
+        lookup_code: code,
+      });
 
-      if (UUID_REGEX.test(code)) {
-        query = query.eq('id', code);
+      let records: any[] = [];
+      if (!rpcError && Array.isArray(rpcRows) && rpcRows.length > 0) {
+        records = rpcRows;
       } else {
-        // Strict exact match (case-insensitive) on control_number
-        query = query.ilike('control_number', code);
-      }
-
-      const { data: records, error } = await query.limit(1);
-
-      if (error) {
-        console.error('Error searching document request:', error);
-        return { found: false, error: 'Database query failed' };
+        // 2. Direct query fallback
+        let query = supabase.from('document_requests').select('*');
+        if (UUID_REGEX.test(code)) {
+          query = query.eq('id', code);
+        } else {
+          query = query.ilike('control_number', code);
+        }
+        const { data: fallbackRecords, error: fallbackError } = await query.limit(1);
+        if (fallbackRecords && fallbackRecords.length > 0) {
+          records = fallbackRecords;
+        } else if (fallbackError && (!rpcRows || rpcRows.length === 0)) {
+          console.warn('Notice querying document request fallback:', fallbackError.message);
+        }
       }
 
       if (!records || records.length === 0) {

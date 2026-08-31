@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Sparkles, Loader2 } from 'lucide-react';
 import { sendChatMessage } from '#/server/aiChat';
 import { Button } from '#/components/ui/button'; // Assuming standard Shadcn-like components exist, if not I will use simple html elements, but usually UI lib is present

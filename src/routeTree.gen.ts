@@ -178,9 +178,7 @@ const OfficialsIndexRoute = OfficialsIndexRouteImport.update({
   id: '/officials/',
   path: '/officials/',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/officials/index.lazy').then((d) => d.Route),
-)
+} as any)
 const VerifyRequestIdRoute = VerifyRequestIdRouteImport.update({
   id: '/verify/$requestId',
   path: '/verify/$requestId',

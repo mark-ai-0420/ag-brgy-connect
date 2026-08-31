@@ -17,6 +17,7 @@ import {
   Building2,
   CreditCard,
   ChevronRight,
+  ShieldCheck,
 } from 'lucide-react'
 import { useState, useMemo } from 'react'
 import { FeedSkeleton } from '#/components/common/FeedSkeleton'
@@ -89,25 +90,25 @@ export type Category = (typeof CATEGORIES)[number]
 
 export const CATEGORY_COLORS: Record<string, string> = {
   'Sari-Sari Store':
-    'bg-amber-100 text-amber-950 dark:bg-amber-900/50 dark:text-amber-200 border border-amber-300 font-semibold',
+    'bg-amber-100 text-amber-950 dark:bg-amber-950/80 dark:text-amber-200 border border-amber-300 dark:border-amber-700 font-semibold',
   'Eatery / Carenderia':
-    'bg-orange-100 text-orange-950 dark:bg-orange-900/50 dark:text-orange-200 border border-orange-300 font-semibold',
+    'bg-orange-100 text-orange-950 dark:bg-orange-950/80 dark:text-orange-200 border border-orange-300 dark:border-orange-700 font-semibold',
   'Water Station':
-    'bg-blue-100 text-blue-950 dark:bg-blue-900/50 dark:text-blue-200 border border-blue-300 font-semibold',
+    'bg-blue-100 text-blue-950 dark:bg-blue-950/80 dark:text-blue-200 border border-blue-300 dark:border-blue-700 font-semibold',
   Laundry:
-    'bg-sky-100 text-sky-950 dark:bg-sky-900/50 dark:text-sky-200 border border-sky-300 font-semibold',
+    'bg-sky-100 text-sky-950 dark:bg-sky-950/80 dark:text-sky-200 border border-sky-300 dark:border-sky-700 font-semibold',
   Salon:
-    'bg-pink-100 text-pink-950 dark:bg-pink-900/50 dark:text-pink-200 border border-pink-300 font-semibold',
+    'bg-pink-100 text-pink-950 dark:bg-pink-950/80 dark:text-pink-200 border border-pink-300 dark:border-pink-700 font-semibold',
   'Repair Shop':
-    'bg-slate-100 text-slate-950 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 font-semibold',
+    'bg-slate-100 text-slate-950 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-semibold',
   Clinic:
-    'bg-emerald-100 text-emerald-950 dark:bg-emerald-900/50 dark:text-emerald-200 border border-emerald-300 font-semibold',
+    'bg-emerald-100 text-emerald-950 dark:bg-emerald-950/80 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 font-semibold',
   Pharmacy:
-    'bg-teal-100 text-teal-950 dark:bg-teal-900/50 dark:text-teal-200 border border-teal-300 font-semibold',
+    'bg-teal-100 text-teal-950 dark:bg-teal-950/80 dark:text-teal-200 border border-teal-300 dark:border-teal-700 font-semibold',
   Tailoring:
-    'bg-purple-100 text-purple-950 dark:bg-purple-900/50 dark:text-purple-200 border border-purple-300 font-semibold',
+    'bg-purple-100 text-purple-950 dark:bg-purple-950/80 dark:text-purple-200 border border-purple-300 dark:border-purple-700 font-semibold',
   Others:
-    'bg-gray-100 text-gray-950 dark:bg-slate-800 dark:text-slate-200 border border-gray-300 font-semibold',
+    'bg-gray-100 text-gray-950 dark:bg-slate-800 dark:text-slate-200 border border-gray-300 dark:border-slate-700 font-semibold',
 }
 
 export interface OpenStatusResult {
@@ -122,7 +123,7 @@ export function computeOpenStatus(hours?: string | null): OpenStatusResult {
   if (!hours || typeof hours !== 'string' || !hours.trim()) {
     return {
       label: 'Hours Not Listed',
-      badgeClass: 'bg-muted text-muted-foreground border-border',
+      badgeClass: 'bg-slate-900/80 text-slate-200 dark:bg-slate-800/90 dark:text-slate-300 border-white/20',
     }
   }
 
@@ -141,7 +142,7 @@ export function computeOpenStatus(hours?: string | null): OpenStatusResult {
     return {
       label: 'Open 24/7',
       badgeClass:
-        'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700',
+        'bg-emerald-600 text-white dark:bg-emerald-900/90 dark:text-emerald-100 border-emerald-400/50 shadow-xs',
     }
   }
 
@@ -194,20 +195,20 @@ export function computeOpenStatus(hours?: string | null): OpenStatusResult {
       return {
         label: 'Open Now',
         badgeClass:
-          'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700',
+          'bg-emerald-600 text-white dark:bg-emerald-900/90 dark:text-emerald-100 border-emerald-400/50 shadow-xs',
       }
     } else {
       return {
         label: 'Closed Now',
         badgeClass:
-          'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-rose-200 dark:border-rose-800',
+          'bg-rose-600 text-white dark:bg-rose-950/90 dark:text-rose-100 border-rose-400/50 shadow-xs',
       }
     }
   }
 
   return {
     label: 'Hours Not Listed',
-    badgeClass: 'bg-muted text-muted-foreground border-border',
+    badgeClass: 'bg-slate-900/80 text-slate-200 dark:bg-slate-800/90 dark:text-slate-300 border-white/20',
   }
 }
 
@@ -226,7 +227,7 @@ export function getMessengerUrl(link?: string | null) {
 }
 
 function DirectoryRoute() {
-  const businesses = Route.useLoaderData()
+  const businesses = Route.useLoaderData() ?? []
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState<Category>('All')
   const { scope: activeBarangayScope } = useBarangayScope()
@@ -283,38 +284,40 @@ function DirectoryRoute() {
 
   return (
     <div className="container mx-auto py-8 md:py-10 px-4 md:px-6 max-w-6xl">
-      {/* High-visibility MSME Growth Hero Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-teal-700 to-primary text-white p-6 sm:p-8 md:p-10 shadow-lg mb-8">
-        <div className="absolute -right-12 -top-12 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />
-        <div className="absolute -left-12 -bottom-12 w-64 h-64 rounded-full bg-amber-400/15 blur-2xl pointer-events-none" />
+      {/* High-visibility MSME Growth Hero Banner with Stitch Civic Horizon Gradient */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0038A8] via-[#002d87] to-teal-800 text-white p-6 sm:p-8 md:p-10 shadow-xl border border-white/15 mb-8">
+        {/* Glow and micro-pattern accents */}
+        <div className="absolute -right-12 -top-12 w-72 h-72 rounded-full bg-amber-400/20 blur-3xl pointer-events-none" />
+        <div className="absolute -left-12 -bottom-12 w-72 h-72 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.08)_1px,transparent_0)] bg-[size:28px_28px] pointer-events-none" />
 
         <div className="relative z-10 max-w-3xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs sm:text-sm font-semibold tracking-wide border border-white/30 text-white">
-            <Sparkles className="h-3.5 w-3.5 text-amber-300" />
-            <span>Promote Your Business — Free Listing for Daine MSMEs</span>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-xs sm:text-sm font-bold tracking-wide border border-white/30 text-amber-200 shadow-xs">
+            <Sparkles className="h-4 w-4 text-amber-300 fill-amber-300" />
+            <span>Barangay Daine MSME Growth &amp; Livelihood Hub</span>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight drop-shadow-xs">
             Barangay Daine MSME &amp; Business Directory
           </h1>
 
           <p className="text-white/90 text-sm sm:text-base md:text-lg max-w-2xl leading-relaxed">
-            Support local sari-sari stores, eateries, repair shops, and services in Daine 1 &amp; Daine 2. Own a local enterprise? List your business today at zero cost to reach the entire community!
+            Discover and support local sari-sari stores, eateries, repair shops, water stations, and service providers across Daine 1 &amp; Daine 2. Own a local enterprise? Register your business today for free community visibility!
           </p>
 
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <Button
               asChild
               size="lg"
-              className="min-h-[48px] px-6 font-bold bg-white text-emerald-950 hover:bg-white/90 shadow-md gap-2 text-sm sm:text-base"
+              className="min-h-[48px] px-6 font-bold bg-amber-400 hover:bg-amber-300 active:bg-amber-500 text-slate-950 shadow-lg gap-2 text-sm sm:text-base btn-tactile rounded-xl border border-amber-300"
             >
               <Link to="/businesses/new">
-                <Store className="h-5 w-5 text-emerald-700" />
+                <Store className="h-5 w-5 text-slate-950" />
                 Register / List Business
               </Link>
             </Button>
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-white/90 font-medium px-2 py-1">
-              <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-300 animate-pulse" />
+            <div className="inline-flex items-center gap-2 text-xs sm:text-sm text-white/95 font-medium px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
+              <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
               <span>Free Verification for Daine Residents</span>
             </div>
           </div>
@@ -336,7 +339,7 @@ function DirectoryRoute() {
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground rounded-full min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground rounded-full min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
               aria-label="Clear search"
             >
               <X className="h-4 w-4" />
@@ -344,9 +347,9 @@ function DirectoryRoute() {
           )}
         </div>
 
-        {/* Category Carousel Polish */}
+        {/* Horizontal Category Pill Carousel */}
         <div className="relative">
-          <div className="flex gap-2 overflow-x-auto pb-2 pt-1 scroll-smooth scrollbar-none -mx-1 px-1">
+          <div className="flex gap-2.5 overflow-x-auto pb-2.5 pt-1 scroll-smooth scrollbar-none -mx-1 px-1 touch-pan-x">
             {CATEGORIES.map((cat) => {
               const count = categoryCounts[cat] ?? 0
               const isActive = activeCategory === cat
@@ -356,15 +359,15 @@ function DirectoryRoute() {
                   key={cat}
                   id={`category-filter-${cat.replace(/\s+/g, '-').toLowerCase()}`}
                   onClick={() => setActiveCategory(cat as Category)}
-                  className={`shrink-0 min-h-[40px] px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium border transition-all duration-150 flex items-center gap-2 ${
+                  className={`shrink-0 min-h-[44px] px-4 py-2 rounded-full text-xs sm:text-sm font-semibold border transition-all duration-150 flex items-center gap-2.5 cursor-pointer ${
                     isActive
-                      ? 'bg-primary text-primary-foreground border-primary shadow-xs font-semibold'
-                      : 'bg-card text-slate-700 dark:text-slate-200 border-border hover:border-primary/50 hover:text-foreground'
+                      ? 'bg-primary text-primary-foreground border-primary shadow-sm font-bold ring-2 ring-primary/20'
+                      : 'bg-card text-foreground/80 hover:text-foreground hover:bg-muted/80 border-border hover:border-primary/40'
                   }`}
                 >
                   <span>{cat}</span>
                   <span
-                    className={`inline-flex items-center justify-center text-[10px] sm:text-[11px] px-1.5 py-0.5 rounded-full min-w-[20px] font-semibold ${
+                    className={`inline-flex items-center justify-center text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full min-w-[22px] font-bold ${
                       isActive
                         ? 'bg-primary-foreground/20 text-primary-foreground'
                         : 'bg-muted text-muted-foreground'
@@ -381,18 +384,20 @@ function DirectoryRoute() {
 
       {/* Results count & reset */}
       <div className="flex items-center justify-between mb-5">
-        <p className="text-sm font-medium text-muted-foreground">
+        <p className="text-sm font-semibold text-muted-foreground">
           {filtered.length} {filtered.length === 1 ? 'business' : 'businesses'} listed in{' '}
-          {activeBarangayScope === 'daine1'
-            ? 'Barangay Daine I'
-            : activeBarangayScope === 'daine2'
-              ? 'Barangay Daine II'
-              : 'Barangay Daine (All)'}
+          <span className="text-foreground">
+            {activeBarangayScope === 'daine1'
+              ? 'Barangay Daine I'
+              : activeBarangayScope === 'daine2'
+                ? 'Barangay Daine II'
+                : 'Barangay Daine (All)'}
+          </span>
         </p>
         {(search || activeCategory !== 'All') && (
           <button
             onClick={handleReset}
-            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 min-h-[44px] px-2 cursor-pointer"
+            className="text-xs font-bold text-primary hover:underline flex items-center gap-1 min-h-[44px] px-2 cursor-pointer"
           >
             <RotateCcw className="h-3.5 w-3.5" /> Clear Filters
           </button>
@@ -412,13 +417,13 @@ function DirectoryRoute() {
           return (
             <Card
               key={business.id}
-              className="h-full flex flex-col border hover:border-primary/50 hover:shadow-md transition-all duration-300 overflow-hidden bg-card group"
+              className="h-full flex flex-col border hover:border-primary/50 hover:shadow-lg transition-all duration-300 overflow-hidden bg-card group rounded-2xl"
             >
-              {/* Storefront Image */}
+              {/* 16:9 Storefront Image */}
               <Link
                 to="/directory/$businessId"
                 params={{ businessId: business.id }}
-                className="relative w-full aspect-video h-48 overflow-hidden rounded-t-xl bg-muted block"
+                className="relative w-full aspect-video overflow-hidden rounded-t-xl bg-muted block"
               >
                 <span className="sr-only">View details for {business.name}</span>
                 {business.photo_url ? (
@@ -429,14 +434,14 @@ function DirectoryRoute() {
                     height="225"
                     loading="lazy"
                     decoding="async"
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 text-primary/40 transition-transform duration-300 group-hover:scale-105">
-                    <div className="p-3 rounded-full bg-background/80 shadow-xs backdrop-blur-xs">
-                      <Store className="h-6 w-6 text-primary/70" />
+                    <div className="p-3.5 rounded-full bg-background/80 shadow-xs backdrop-blur-xs">
+                      <Store className="h-7 w-7 text-primary/70" />
                     </div>
-                    <span className="text-[11px] font-semibold text-muted-foreground mt-2 tracking-wide uppercase">
+                    <span className="text-[11px] font-bold text-muted-foreground mt-2 tracking-wide uppercase">
                       Barangay Daine MSME
                     </span>
                   </div>
@@ -445,37 +450,48 @@ function DirectoryRoute() {
                 {/* Floating Category Badge (Top-left) */}
                 <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 pointer-events-none z-10">
                   <span
-                    className={`inline-flex text-[11px] font-semibold px-2.5 py-0.5 rounded-full shadow-2xs backdrop-blur-md ${badgeClass}`}
+                    className={`inline-flex text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-xs backdrop-blur-md ${badgeClass}`}
                   >
                     {business.category}
                   </span>
                 </div>
 
-                {/* Floating Barangay Scope & Real-time Open Status Badges (Top-right) */}
+                {/* Floating Barangay Scope & Real-time Live Open/Closed Status Badges (Top-right) */}
                 <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5 pointer-events-none z-10">
                   <span
-                    className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-2xs backdrop-blur-md ${
+                    className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs backdrop-blur-md ${
                       isDaine2
-                        ? 'bg-purple-900/90 text-purple-100 border border-purple-400/40'
-                        : 'bg-blue-900/90 text-blue-100 border border-blue-400/40'
+                        ? 'bg-purple-900/90 text-purple-100 border border-purple-400/50'
+                        : 'bg-[#0038A8]/90 text-blue-100 border border-blue-400/50'
                     }`}
                   >
                     <Building2 className="h-3 w-3" />
                     {isDaine2 ? 'Daine 2' : 'Daine 1'}
                   </span>
+
+                  {/* Pulsing Live Open Status Badge */}
                   <span
-                    className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-2xs backdrop-blur-md border ${openStatus.badgeClass}`}
+                    className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-xs backdrop-blur-md border ${openStatus.badgeClass}`}
                   >
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${
-                        openStatus.label === 'Open Now' || openStatus.label === 'Open 24/7'
-                          ? 'bg-emerald-500 animate-pulse'
-                          : openStatus.label === 'Closed Now'
-                            ? 'bg-rose-500'
-                            : 'bg-muted-foreground/60'
-                      }`}
-                    />
-                    {openStatus.label}
+                    {openStatus.label === 'Open Now' || openStatus.label === 'Open 24/7' ? (
+                      <>
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-200"></span>
+                        </span>
+                        <span>{openStatus.label === 'Open 24/7' ? 'Open 24/7' : 'Open Now'}</span>
+                      </>
+                    ) : openStatus.label === 'Closed Now' ? (
+                      <>
+                        <span className="h-2 w-2 rounded-full bg-rose-200 inline-block"></span>
+                        <span>Closed Now</span>
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="h-3 w-3 text-slate-300" />
+                        <span>Hours Not Listed</span>
+                      </>
+                    )}
                   </span>
                 </div>
               </Link>
@@ -487,7 +503,7 @@ function DirectoryRoute() {
                   params={{ businessId: business.id }}
                   className="hover:text-primary transition-colors"
                 >
-                  <CardTitle className="text-base font-bold leading-snug line-clamp-1 group-hover:text-primary transition-colors">
+                  <CardTitle className="text-base sm:text-lg font-extrabold leading-snug line-clamp-1 group-hover:text-primary transition-colors">
                     {business.name}
                   </CardTitle>
                 </Link>
@@ -496,10 +512,10 @@ function DirectoryRoute() {
               <CardContent className="flex-1 px-5 pb-3 space-y-2.5 text-xs sm:text-sm text-muted-foreground">
                 {/* Purok & Address */}
                 <div className="flex items-start gap-2">
-                  <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0 text-primary" />
+                  <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
                   <div className="line-clamp-2">
                     {business.purok && (
-                      <span className="font-semibold text-foreground mr-1">
+                      <span className="font-bold text-foreground mr-1">
                         {business.purok} •
                       </span>
                     )}
@@ -510,8 +526,8 @@ function DirectoryRoute() {
                 {/* Operating Hours */}
                 {business.hours && (
                   <div className="flex items-center gap-2 text-xs">
-                    <Clock className="h-3.5 w-3.5 shrink-0 text-primary/70" />
-                    <span className="line-clamp-1">{business.hours}</span>
+                    <Clock className="h-3.5 w-3.5 shrink-0 text-primary/80" />
+                    <span className="line-clamp-1 font-medium">{business.hours}</span>
                   </div>
                 )}
 
@@ -520,11 +536,11 @@ function DirectoryRoute() {
                   Array.isArray(business.payment_methods) &&
                   business.payment_methods.length > 0 && (
                     <div className="flex items-center gap-1.5 pt-1 flex-wrap">
-                      <CreditCard className="h-3 w-3 text-muted-foreground shrink-0" />
+                      <CreditCard className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                       {business.payment_methods.map((method: string) => (
                         <span
                           key={method}
-                          className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border"
+                          className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border"
                         >
                           {method}
                         </span>
@@ -534,12 +550,12 @@ function DirectoryRoute() {
               </CardContent>
 
               {/* Fixed 3-Action Footer on every card */}
-              <CardFooter className="pt-2 pb-4 px-5 flex items-center gap-2 border-t bg-muted/10">
+              <CardFooter className="pt-2.5 pb-4 px-4 sm:px-5 flex items-center gap-2 border-t bg-muted/15 mt-auto">
                 {/* 📞 Call Button */}
                 {business.phone ? (
                   <a
                     href={`tel:${business.phone.replace(/[^0-9+]/g, '')}`}
-                    className="bg-emerald-700 hover:bg-emerald-800 text-white min-h-[40px] flex-1 font-bold rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
+                    className="bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white min-h-[44px] flex-1 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors btn-tactile"
                     title={`Call ${business.phone}`}
                     aria-label={`Call ${business.name} at ${business.phone}`}
                   >
@@ -550,11 +566,11 @@ function DirectoryRoute() {
                   <button
                     type="button"
                     disabled
-                    className="bg-muted text-muted-foreground/60 border border-border cursor-not-allowed min-h-[40px] flex-1 font-bold rounded-lg text-xs flex items-center justify-center gap-1.5"
+                    className="bg-muted text-muted-foreground/60 border border-border cursor-not-allowed min-h-[44px] flex-1 font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5"
                     title="No phone number provided"
                     aria-label={`Phone number unavailable for ${business.name}`}
                   >
-                    <Phone className="h-3.5 w-3.5 shrink-0" />
+                    <Phone className="h-3.5 w-3.5 shrink-0 opacity-50" />
                     <span>Call</span>
                   </button>
                 )}
@@ -565,7 +581,7 @@ function DirectoryRoute() {
                     href={messengerUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-sky-700 hover:bg-sky-800 text-white min-h-[40px] flex-1 font-bold rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
+                    className="bg-sky-700 hover:bg-sky-800 active:bg-sky-900 text-white min-h-[44px] flex-1 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors btn-tactile"
                     title="Chat on Messenger"
                     aria-label={`Chat with ${business.name} on Messenger`}
                   >
@@ -576,21 +592,21 @@ function DirectoryRoute() {
                   <button
                     type="button"
                     disabled
-                    className="bg-muted text-muted-foreground/60 border border-border cursor-not-allowed min-h-[40px] flex-1 font-bold rounded-lg text-xs flex items-center justify-center gap-1.5"
+                    className="bg-muted text-muted-foreground/60 border border-border cursor-not-allowed min-h-[44px] flex-1 font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5"
                     title="No Messenger link provided"
                     aria-label={`Messenger unavailable for ${business.name}`}
                   >
-                    <MessageCircle className="h-3.5 w-3.5 shrink-0" />
+                    <MessageCircle className="h-3.5 w-3.5 shrink-0 opacity-50" />
                     <span>Messenger</span>
                   </button>
                 )}
 
-                {/* View Details */}
+                {/* Details → Button */}
                 <Button
                   variant="outline"
                   size="sm"
                   asChild
-                  className="min-h-[40px] px-3 font-semibold rounded-lg text-xs flex items-center justify-center gap-1 shrink-0"
+                  className="min-h-[44px] px-3.5 font-bold rounded-xl text-xs flex items-center justify-center gap-1 shrink-0 border-border hover:border-primary/40 hover:bg-accent/15 hover:text-accent-foreground btn-tactile"
                 >
                   <Link
                     to="/directory/$businessId"
@@ -623,15 +639,15 @@ function DirectoryRoute() {
                 .
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3 justify-center">
               <Button
                 variant="outline"
                 onClick={handleReset}
-                className="min-h-[44px] gap-2 font-semibold"
+                className="min-h-[44px] gap-2 font-bold rounded-xl btn-tactile"
               >
                 <RotateCcw className="h-4 w-4" /> Reset Filters
               </Button>
-              <Button asChild className="min-h-[44px] font-semibold">
+              <Button asChild className="min-h-[44px] font-bold rounded-xl btn-tactile">
                 <Link to="/businesses/new">
                   <Store className="h-4 w-4 mr-2" /> Register Your Business
                 </Link>

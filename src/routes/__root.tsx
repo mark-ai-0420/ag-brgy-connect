@@ -50,6 +50,10 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: '#0038A8',
       },
       {
+        name: 'mobile-web-app-capable',
+        content: 'yes',
+      },
+      {
         name: 'apple-mobile-web-app-capable',
         content: 'yes',
       },
@@ -76,19 +80,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
     ],
     links: [
-      {
-        rel: 'preconnect',
-        href: 'https://fonts.googleapis.com',
-      },
-      {
-        rel: 'preconnect',
-        href: 'https://fonts.gstatic.com',
-        crossOrigin: 'anonymous',
-      },
-      {
-        rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap',
-      },
       {
         rel: 'stylesheet',
         href: appCss,
@@ -133,7 +124,7 @@ function RootComponent() {
       <BarangayScopeProvider>
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring min-h-[48px] min-w-[48px]"
         >
           Skip to main content
         </a>
@@ -154,7 +145,7 @@ function RootComponent() {
 
 function RootDocument({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className="h-full" suppressHydrationWarning>
       <head>
         <HeadContent />
         <script
@@ -175,7 +166,7 @@ function RootDocument({ children }: { children: ReactNode }) {
           }}
         />
       </head>
-      <body className="h-full flex flex-col antialiased">
+      <body className="h-full flex flex-col antialiased" suppressHydrationWarning>
         {children}
         
         <Toaster richColors position="top-right" />

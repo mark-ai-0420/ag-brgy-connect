@@ -28,7 +28,7 @@ export const Route = createFileRoute('/_authenticated/notifications')({
   component: NotificationsPage,
 })
 
-export function NotificationsPage() {
+function NotificationsPage() {
   const initialData = Route.useLoaderData()
   const [notifications, setNotifications] = useState<AppNotification[]>(
     initialData?.notifications ?? []

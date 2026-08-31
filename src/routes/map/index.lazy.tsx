@@ -1,9 +1,42 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import {
-  MapPin, ShieldAlert, Building2, Store, Phone, Navigation, Search, Users, Flame, Stethoscope, Radio,
-  Layers, Compass, Maximize2, RefreshCw, Droplets, GraduationCap, Recycle, Trophy,
-  WifiOff, Clock, MessageSquare, ExternalLink, Filter, CheckCircle2, AlertTriangle, ShieldCheck, Siren, X
+  MapPin,
+  ShieldAlert,
+  Building2,
+  Store,
+  Phone,
+  Navigation,
+  Search,
+  Users,
+  Flame,
+  Stethoscope,
+  Radio,
+  Layers,
+  Compass,
+  Maximize2,
+  RefreshCw,
+  Droplets,
+  GraduationCap,
+  Recycle,
+  Trophy,
+  WifiOff,
+  Clock,
+  MessageSquare,
+  ExternalLink,
+  Filter,
+  CheckCircle2,
+  AlertTriangle,
+  ShieldCheck,
+  Siren,
+  X,
+  Locate,
+  ChevronUp,
+  ChevronDown,
+  Sparkles,
+  Ambulance,
+  HeartPulse,
+  Share2,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '#/components/ui/card'
 import { Button } from '#/components/ui/button'
@@ -13,8 +46,9 @@ import { Tabs, TabsList, TabsTrigger } from '#/components/ui/tabs'
 import { useBarangayScope, type BarangayScope } from '#/hooks/useBarangayScope'
 import { useNetworkStatus } from '#/hooks/useNetworkStatus'
 import { cn } from '#/lib/utils'
+import { toast } from 'sonner'
 
-import { Route as MapRoute } from './index'
+import { Route as MapRoute, type MapBusiness } from './index'
 
 function escapeHtml(unsafe: any): string {
   if (unsafe === undefined || unsafe === null) return ''
@@ -26,7 +60,7 @@ function escapeHtml(unsafe: any): string {
     .replace(/'/g, '&#039;')
 }
 
-function formatMessengerUrl(link?: string): string | null {
+function formatMessengerUrl(link?: string | null): string | null {
   if (!link || !link.trim()) return null
   const trimmed = link.trim()
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
@@ -78,21 +112,21 @@ export interface OpenStatusResult {
 }
 
 export const DAINE_1_CENTER = { lat: 14.1955, lng: 120.8798, zoom: 16 }
-export const DAINE_2_CENTER = { lat: 14.1970, lng: 120.8860, zoom: 16 }
+export const DAINE_2_CENTER = { lat: 14.197, lng: 120.886, zoom: 16 }
 export const ALL_DAINE_CENTER = { lat: 14.1962, lng: 120.8829, zoom: 15 }
 
 export const PUROK_ANCHORS = {
   daine_1: {
     purok_1: { lat: 14.1962, lng: 120.8785, label: 'Daine 1 - Purok 1' },
     purok_2: { lat: 14.1955, lng: 120.8798, label: 'Daine 1 - Purok 2 (Hall / Covered Court)' },
-    purok_3: { lat: 14.1942, lng: 120.8810, label: 'Daine 1 - Purok 3 (Elementary School)' },
+    purok_3: { lat: 14.1942, lng: 120.881, label: 'Daine 1 - Purok 3 (Elementary School)' },
     purok_4: { lat: 14.1925, lng: 120.8802, label: 'Daine 1 - Purok 4 (Tanod Outpost)' },
   },
   daine_2: {
     purok_1: { lat: 14.1982, lng: 120.8845, label: 'Daine 2 - Purok 1 / Sitio Ilaya' },
-    purok_2: { lat: 14.1970, lng: 120.8860, label: 'Daine 2 - Purok 2 / Daine 2 Hall' },
+    purok_2: { lat: 14.197, lng: 120.886, label: 'Daine 2 - Purok 2 / Daine 2 Hall' },
     purok_3: { lat: 14.1958, lng: 120.8875, label: 'Daine 2 - Purok 3 / Sitio Ibaba' },
-    purok_4: { lat: 14.1945, lng: 120.8890, label: 'Daine 2 - Purok 4 / Boundary' },
+    purok_4: { lat: 14.1945, lng: 120.889, label: 'Daine 2 - Purok 4 / Boundary' },
   },
 }
 
@@ -178,10 +212,6 @@ export function computeOpenStatus(hours?: string): OpenStatusResult {
 
     if (endAmPm === 'pm' && endHour < 12) endHour += 12
     if (endAmPm === 'am' && endHour === 12) endHour = 0
-
-    if (!startAmPm && endAmPm === 'pm' && startHour < 12 && startHour <= endHour - 12) {
-      // e.g. 8 - 5 PM -> 8 AM
-    }
 
     const startTotal = startHour * 60 + startMin
     const endTotal = endHour * 60 + endMin
@@ -289,12 +319,12 @@ export function resolveSpotCoordinates(
   const idStr = String(business.id || business.name || `biz-${index}`)
   let hash = 5381
   for (let i = 0; i < idStr.length; i++) {
-    hash = ((hash << 5) + hash) + idStr.charCodeAt(i)
+    hash = (hash << 5) + hash + idStr.charCodeAt(i)
     hash = hash & hash
   }
   const absHash = Math.abs(hash)
   const angle = ((absHash % 360) * Math.PI) / 180
-  const dist = 0.00020 + ((absHash >> 4) % 35) * 0.00001
+  const dist = 0.0002 + ((absHash >> 4) % 35) * 0.00001
 
   return {
     lat: anchor.lat + Math.sin(angle) * dist,
@@ -303,7 +333,7 @@ export function resolveSpotCoordinates(
 }
 
 // Haversine formula to compute distance in km
-function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+export function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371
   const dLat = ((lat2 - lat1) * Math.PI) / 180
   const dLon = ((lon2 - lon1) * Math.PI) / 180
@@ -346,7 +376,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     scope: 'daine_1',
     purok: 'Purok 3',
     lat: 14.1942,
-    lng: 120.8810,
+    lng: 120.881,
     address: 'School Road, Purok 3, Brgy. Daine 1, Indang, Cavite',
     phone: '0917-123-0001',
     capacity: 850,
@@ -444,7 +474,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     categoryTag: '♻️ Material Recovery Facility (MRF)',
     scope: 'daine_1',
     purok: 'Purok 4',
-    lat: 14.1920,
+    lat: 14.192,
     lng: 120.8795,
     address: 'Eco-Park Area, Purok 4, Brgy. Daine 1, Indang, Cavite',
     amenities: ['Biodegradable Composting Pit', 'Plastic Shredder & Baler', 'Recyclables Segregation Bay', 'Eco-Brick Production Desk'],
@@ -460,7 +490,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     scope: 'daine_1',
     purok: 'Purok 1',
     lat: 14.1965,
-    lng: 120.8780,
+    lng: 120.878,
     address: 'Purok 1 Sports Grounds, Brgy. Daine 1, Indang, Cavite',
     amenities: ['Full Covered Basketball Court', 'SK Youth Desk', 'Night Floodlights', 'Secondary Evacuation Ready'],
     status: 'Youth Center & Multi-Purpose Covered Court',
@@ -476,8 +506,8 @@ export const STATIC_SPOTS: MapSpot[] = [
     categoryTag: '🚨 Evacuation Center',
     scope: 'daine_2',
     purok: 'Purok 2',
-    lat: 14.1970,
-    lng: 120.8860,
+    lat: 14.197,
+    lng: 120.886,
     address: 'Purok 2 (Barangay Center), Brgy. Daine 2, Indang, Cavite',
     phone: '0917-123-0002',
     messenger_link: 'https://m.me/BrgyDaine2Cavite',
@@ -494,8 +524,8 @@ export const STATIC_SPOTS: MapSpot[] = [
     categoryTag: '🏛️ Barangay Hall & Ops',
     scope: 'daine_2',
     purok: 'Purok 2',
-    lat: 14.1970,
-    lng: 120.8860,
+    lat: 14.197,
+    lng: 120.886,
     address: 'Main Road, Purok 2, Brgy. Daine 2, Indang, Cavite',
     phone: '0917-123-0002',
     messenger_link: 'https://m.me/BrgyDaine2Cavite',
@@ -577,7 +607,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     scope: 'daine_2',
     purok: 'Purok 4',
     lat: 14.1945,
-    lng: 120.8890,
+    lng: 120.889,
     address: 'Purok 4 Boundary Road, Brgy. Daine 2, Indang, Cavite',
     amenities: ['Waste Segregation Bays', 'Compost Fertilizer Shed', 'Bottle & Can Compactor', 'Community Herbal Garden'],
     status: 'Ecological Solid Waste Operations',
@@ -592,7 +622,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     scope: 'daine_2',
     purok: 'Purok 3',
     lat: 14.1955,
-    lng: 120.8880,
+    lng: 120.888,
     address: 'Sitio Ibaba Sports Area, Brgy. Daine 2, Indang, Cavite',
     amenities: ['Multi-Purpose Court', 'Community Staging Stage', 'Night Lighting', 'Relief Distribution Point'],
     status: 'Youth Center & Multi-Purpose Covered Court',
@@ -633,6 +663,22 @@ export const STATIC_SPOTS: MapSpot[] = [
     description: 'Philippine National Police rapid response and mobile patrol unit serving both Daine 1 and Daine 2.',
     hours: 'Open 24/7',
   },
+  {
+    id: 'emerg-mdrrmo',
+    name: 'MDRRMO Indang Emergency Rescue Sub-Station',
+    category: 'emergency',
+    categoryTag: '🚑 Disaster & Medical Rescue (MDRRMO)',
+    scope: 'both',
+    purok: 'Provincial Highway',
+    lat: 14.195,
+    lng: 120.8825,
+    address: 'Provincial Highway Junction, Indang, Cavite',
+    phone: '0998-555-0100',
+    amenities: ['Emergency Medical Ambulance', 'High-Water Rescue Boats', 'Trauma Responders', 'Satellite Comms'],
+    status: '24/7 Calamity Dispatch',
+    description: 'Municipal Disaster Risk Reduction and Management Office emergency paramedic dispatch and severe typhoon rescue.',
+    hours: 'Open 24/7',
+  },
 ]
 
 export const Route = createLazyFileRoute('/map/')({
@@ -640,23 +686,27 @@ export const Route = createLazyFileRoute('/map/')({
 })
 
 function MapRouteComponent() {
-  const loadedBusinesses = MapRoute.useLoaderData()
+  const loadedBusinesses = MapRoute.useLoaderData() as MapBusiness[] | undefined
   const { scope, setScope } = useBarangayScope()
-  const { isOffline, isOnline } = useNetworkStatus()
+  const { isOffline } = useNetworkStatus()
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'map' | 'list'>('map')
+  const [isMobileDrawerExpanded, setIsMobileDrawerExpanded] = useState(false)
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const [isLocating, setIsLocating] = useState(false)
 
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
   const markersRef = useRef<Record<string, any>>({})
+  const userMarkerRef = useRef<any>(null)
   const [leafletLoaded, setLeafletLoaded] = useState(false)
 
   // Merge static authentic civic spots + dynamic database businesses
   const allSpots: MapSpot[] = useMemo(() => {
-    const businessSpots: MapSpot[] = (loadedBusinesses || []).map((b: any, index: number) => {
+    const businessSpots: MapSpot[] = (loadedBusinesses || []).map((b: MapBusiness, index: number) => {
       const coords = resolveSpotCoordinates(b, index)
       const isDaine2 =
         (b.barangay && (b.barangay === 'daine_2' || b.barangay.toLowerCase().includes('2'))) ||
@@ -669,7 +719,7 @@ function MapRouteComponent() {
         id: `biz-${b.id || index}`,
         name: b.name,
         category: 'business' as SpotCategory,
-        categoryTag: `🏪 ${b.category || 'Local Business'}`,
+        categoryTag: `🏪 ${b.category || 'Local MSME'}`,
         scope: spotScope,
         purok: b.purok || undefined,
         lat: coords.lat,
@@ -722,6 +772,14 @@ function MapRouteComponent() {
     })
   }, [scopeFilteredSpots, selectedCategory, searchQuery])
 
+  // Active reference center for distance calculation (uses user GPS when available)
+  const referenceCenter = useMemo(() => {
+    if (userLocation) return userLocation
+    if (scope === 'daine1') return DAINE_1_CENTER
+    if (scope === 'daine2') return DAINE_2_CENTER
+    return ALL_DAINE_CENTER
+  }, [userLocation, scope])
+
   // Stats calculation based on current scope
   const totalEvacCapacity = useMemo(() => {
     return scopeFilteredSpots
@@ -745,28 +803,46 @@ function MapRouteComponent() {
     return scopeFilteredSpots.filter((s) => s.category === 'business').length
   }, [scopeFilteredSpots])
 
-  // Active reference center for distance calculation
-  const referenceCenter = useMemo(() => {
-    if (scope === 'daine1') return DAINE_1_CENTER
-    if (scope === 'daine2') return DAINE_2_CENTER
-    return ALL_DAINE_CENTER
-  }, [scope])
+  // Nearest evacuation shelter calculation
+  const nearestEvacShelter = useMemo(() => {
+    const evacSpots = scopeFilteredSpots.filter((s) => s.category === 'evacuation')
+    if (evacSpots.length === 0) return null
 
-  // Smoothly fly to scope center on scope change
-  const handleScopeChange = useCallback((newScope: BarangayScope) => {
-    setScope(newScope)
-    setSelectedSpotId(null)
+    let bestSpot = evacSpots[0]
+    let minDistance = calculateDistanceKm(referenceCenter.lat, referenceCenter.lng, bestSpot.lat, bestSpot.lng)
 
-    if (mapInstanceRef.current) {
-      if (newScope === 'daine1') {
-        mapInstanceRef.current.flyTo([DAINE_1_CENTER.lat, DAINE_1_CENTER.lng], DAINE_1_CENTER.zoom, { duration: 1.2 })
-      } else if (newScope === 'daine2') {
-        mapInstanceRef.current.flyTo([DAINE_2_CENTER.lat, DAINE_2_CENTER.lng], DAINE_2_CENTER.zoom, { duration: 1.2 })
-      } else {
-        mapInstanceRef.current.flyTo([ALL_DAINE_CENTER.lat, ALL_DAINE_CENTER.lng], ALL_DAINE_CENTER.zoom, { duration: 1.0 })
+    for (let i = 1; i < evacSpots.length; i++) {
+      const dist = calculateDistanceKm(referenceCenter.lat, referenceCenter.lng, evacSpots[i].lat, evacSpots[i].lng)
+      if (dist < minDistance) {
+        minDistance = dist
+        bestSpot = evacSpots[i]
       }
     }
-  }, [setScope])
+
+    return {
+      spot: bestSpot,
+      distanceKm: minDistance,
+    }
+  }, [scopeFilteredSpots, referenceCenter])
+
+  // Smoothly fly to scope center on scope change
+  const handleScopeChange = useCallback(
+    (newScope: BarangayScope) => {
+      setScope(newScope)
+      setSelectedSpotId(null)
+
+      if (mapInstanceRef.current) {
+        if (newScope === 'daine1') {
+          mapInstanceRef.current.flyTo([DAINE_1_CENTER.lat, DAINE_1_CENTER.lng], DAINE_1_CENTER.zoom, { duration: 1.2 })
+        } else if (newScope === 'daine2') {
+          mapInstanceRef.current.flyTo([DAINE_2_CENTER.lat, DAINE_2_CENTER.lng], DAINE_2_CENTER.zoom, { duration: 1.2 })
+        } else {
+          mapInstanceRef.current.flyTo([ALL_DAINE_CENTER.lat, ALL_DAINE_CENTER.lng], ALL_DAINE_CENTER.zoom, { duration: 1.0 })
+        }
+      }
+    },
+    [setScope]
+  )
 
   // Initialize Leaflet map on client-side
   useEffect(() => {
@@ -807,41 +883,98 @@ function MapRouteComponent() {
       mapInstanceRef.current = map
       markersRef.current = {}
 
+      // Add user location marker if GPS is active
+      if (userLocation) {
+        const userIcon = L.divIcon({
+          className: 'user-gps-pin',
+          html: `
+            <div class="relative flex items-center justify-center">
+              <div class="absolute w-8 h-8 rounded-full bg-blue-500/30 animate-ping"></div>
+              <div class="w-5 h-5 rounded-full bg-blue-600 border-2 border-white shadow-lg flex items-center justify-center text-white text-[9px] font-black">
+                ●
+              </div>
+            </div>
+          `,
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
+        })
+
+        const uMarker = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
+          .addTo(map)
+          .bindPopup(`
+            <div class="p-1 font-sans text-xs">
+              <strong class="text-blue-600 dark:text-blue-400">📍 Your Current GPS Location</strong>
+              <p class="text-slate-600 dark:text-slate-400 text-[11px] mt-0.5">Calculated nearest emergency shelters from here.</p>
+            </div>
+          `)
+        userMarkerRef.current = uMarker
+      }
+
       // Add markers for filtered spots
       filteredSpots.forEach((spot) => {
         const getMarkerConfig = (cat: SpotCategory) => {
           switch (cat) {
             case 'evacuation':
-              return { bg: 'bg-red-600 border-red-950 text-white shadow-red-500/50', emoji: '🚨' }
+              return {
+                bg: 'bg-red-600 border-red-950 text-white shadow-red-500/50 ring-2 ring-red-400/40',
+                emoji: '🚨',
+              }
             case 'government':
-              return { bg: 'bg-blue-600 border-blue-950 text-white shadow-blue-500/50', emoji: '🏛️' }
+              return {
+                bg: 'bg-blue-600 border-blue-950 text-white shadow-blue-500/50 ring-2 ring-blue-400/40',
+                emoji: '🏛️',
+              }
             case 'health':
-              return { bg: 'bg-teal-600 border-teal-950 text-white shadow-teal-500/50', emoji: '🏥' }
+              return {
+                bg: 'bg-teal-600 border-teal-950 text-white shadow-teal-500/50 ring-2 ring-teal-400/40',
+                emoji: '🏥',
+              }
             case 'emergency':
-              return { bg: 'bg-indigo-600 border-indigo-950 text-white shadow-indigo-500/50', emoji: '🛡️' }
+              return {
+                bg: 'bg-indigo-600 border-indigo-950 text-white shadow-indigo-500/50 ring-2 ring-indigo-400/40',
+                emoji: '🛡️',
+              }
             case 'water':
-              return { bg: 'bg-cyan-600 border-cyan-950 text-white shadow-cyan-500/50', emoji: '🚰' }
+              return {
+                bg: 'bg-cyan-600 border-cyan-950 text-white shadow-cyan-500/50 ring-2 ring-cyan-400/40',
+                emoji: '🚰',
+              }
             case 'education':
-              return { bg: 'bg-emerald-600 border-emerald-950 text-white shadow-emerald-500/50', emoji: '🏫' }
+              return {
+                bg: 'bg-emerald-600 border-emerald-950 text-white shadow-emerald-500/50 ring-2 ring-emerald-400/40',
+                emoji: '🏫',
+              }
             case 'mrf':
-              return { bg: 'bg-lime-600 border-lime-950 text-white shadow-lime-500/50', emoji: '♻️' }
+              return {
+                bg: 'bg-lime-600 border-lime-950 text-white shadow-lime-500/50 ring-2 ring-lime-400/40',
+                emoji: '♻️',
+              }
             case 'sports':
-              return { bg: 'bg-purple-600 border-purple-950 text-white shadow-purple-500/50', emoji: '🏀' }
+              return {
+                bg: 'bg-purple-600 border-purple-950 text-white shadow-purple-500/50 ring-2 ring-purple-400/40',
+                emoji: '🏀',
+              }
             case 'business':
             default:
-              return { bg: 'bg-amber-500 border-amber-950 text-amber-950 shadow-amber-500/50', emoji: '🏪' }
+              return {
+                bg: 'bg-amber-500 border-amber-950 text-amber-950 shadow-amber-500/50 ring-2 ring-amber-400/40',
+                emoji: '🏪',
+              }
           }
         }
 
         const markerConfig = getMarkerConfig(spot.category)
+        const isSelected = selectedSpotId === spot.id
 
         const customIcon = L.divIcon({
           className: 'custom-leaflet-pin',
           html: `
-            <div class="relative group cursor-pointer flex flex-col items-center">
+            <div class="relative group cursor-pointer flex flex-col items-center ${
+              isSelected ? 'scale-125 z-50 animate-bounce' : 'transition-transform hover:scale-115'
+            }">
               <div class="w-10 h-10 rounded-full flex items-center justify-center text-base font-bold shadow-lg border-2 ${
                 markerConfig.bg
-              } transition-transform hover:scale-115">
+              }">
                 ${markerConfig.emoji}
               </div>
               <div class="w-2.5 h-2.5 ${markerConfig.bg.split(' ')[0]} rotate-45 -mt-1.5 shadow-sm"></div>
@@ -942,7 +1075,7 @@ function MapRouteComponent() {
               <a href="${directionUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 no-underline col-span-${
                 phoneBtn && messengerBtn ? '1' : !phoneBtn && !messengerBtn ? '3' : '2'
               }">
-                🗺️ Maps
+                🗺️ Directions
               </a>
               ${phoneBtn}
               ${messengerBtn}
@@ -967,7 +1100,7 @@ function MapRouteComponent() {
         mapInstanceRef.current = null
       }
     }
-  }, [filteredSpots, scope])
+  }, [filteredSpots, scope, selectedSpotId, userLocation])
 
   // Center map on spot selection
   const handleSpotClick = (spot: MapSpot) => {
@@ -987,11 +1120,14 @@ function MapRouteComponent() {
     return allSpots.find((s) => s.id === selectedSpotId) || null
   }, [allSpots, selectedSpotId])
 
+  // Find Nearest Evacuation Shelter action
   const handleFindNearestEvacuation = useCallback(() => {
     const evacSpots = scopeFilteredSpots.filter((s) => s.category === 'evacuation')
-    if (evacSpots.length === 0) return
+    if (evacSpots.length === 0) {
+      toast.error('No evacuation shelters found in the current scope.')
+      return
+    }
 
-    // Find nearest evacuation shelter relative to current scope center
     let nearestSpot = evacSpots[0]
     let minDistance = calculateDistanceKm(referenceCenter.lat, referenceCenter.lng, nearestSpot.lat, nearestSpot.lng)
 
@@ -1007,14 +1143,56 @@ function MapRouteComponent() {
     setSelectedSpotId(nearestSpot.id)
     setActiveTab('map')
 
+    const distLabel = minDistance < 1 ? `${Math.round(minDistance * 1000)}m` : `${minDistance.toFixed(1)}km`
+    toast.success(`Nearest Evacuation Shelter: ${nearestSpot.name} (${distLabel} away)`, {
+      duration: 4000,
+    })
+
     if (mapInstanceRef.current) {
       mapInstanceRef.current.flyTo([nearestSpot.lat, nearestSpot.lng], 17, { duration: 1.5 })
       const marker = markersRef.current[nearestSpot.id]
       if (marker) {
-        marker.openPopup()
+        setTimeout(() => {
+          marker.openPopup()
+        }, 1500)
       }
     }
   }, [scopeFilteredSpots, referenceCenter])
+
+  // User Geolocation (Locate Me)
+  const handleLocateMe = useCallback(() => {
+    if (!('geolocation' in navigator)) {
+      toast.error('Geolocation is not supported by your browser.')
+      return
+    }
+
+    setIsLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setIsLocating(false)
+        const userCoords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        }
+        setUserLocation(userCoords)
+        toast.success('Location found! Updating distance measurements...')
+
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.flyTo([userCoords.lat, userCoords.lng], 16, { duration: 1.5 })
+        }
+      },
+      (error) => {
+        setIsLocating(false)
+        console.warn('Geolocation error:', error)
+        toast.error('Could not retrieve your location. Showing barangay reference centers.')
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000,
+      }
+    )
+  }, [])
 
   const handleResetView = () => {
     setSelectedCategory('all')
@@ -1026,18 +1204,95 @@ function MapRouteComponent() {
     }
   }
 
+  // Categories list with count and tactile touch targets
+  const CATEGORIES = [
+    { key: 'all', label: 'All Spots', icon: '📍', count: scopeFilteredSpots.length, color: 'hover:bg-primary/10' },
+    {
+      key: 'evacuation',
+      label: 'Evacuation Shelters',
+      icon: '🚨',
+      count: scopeFilteredSpots.filter((s) => s.category === 'evacuation').length,
+      color: 'hover:bg-red-50 text-red-700 border-red-200 dark:hover:bg-red-950/40 dark:text-red-300',
+      activeColor: 'bg-red-600 hover:bg-red-700 text-white',
+    },
+    {
+      key: 'water',
+      label: 'Potable Water Stations',
+      icon: '🚰',
+      count: scopeFilteredSpots.filter((s) => s.category === 'water').length,
+      color: 'hover:bg-cyan-50 text-cyan-700 border-cyan-200 dark:hover:bg-cyan-950/40 dark:text-cyan-300',
+      activeColor: 'bg-cyan-600 hover:bg-cyan-700 text-white',
+    },
+    {
+      key: 'government',
+      label: 'Barangay Halls & Ops',
+      icon: '🏛️',
+      count: scopeFilteredSpots.filter((s) => s.category === 'government').length,
+      color: 'hover:bg-blue-50 text-blue-700 border-blue-200 dark:hover:bg-blue-950/40 dark:text-blue-300',
+      activeColor: 'bg-blue-600 hover:bg-blue-700 text-white',
+    },
+    {
+      key: 'health',
+      label: 'Health & Birthing',
+      icon: '🏥',
+      count: scopeFilteredSpots.filter((s) => s.category === 'health').length,
+      color: 'hover:bg-teal-50 text-teal-700 border-teal-200 dark:hover:bg-teal-950/40 dark:text-teal-300',
+      activeColor: 'bg-teal-600 hover:bg-teal-700 text-white',
+    },
+    {
+      key: 'education',
+      label: 'Day Care Centers',
+      icon: '🏫',
+      count: scopeFilteredSpots.filter((s) => s.category === 'education').length,
+      color: 'hover:bg-emerald-50 text-emerald-700 border-emerald-200 dark:hover:bg-emerald-950/40 dark:text-emerald-300',
+      activeColor: 'bg-emerald-600 hover:bg-emerald-700 text-white',
+    },
+    {
+      key: 'emergency',
+      label: 'Security & Fire',
+      icon: '🛡️',
+      count: scopeFilteredSpots.filter((s) => s.category === 'emergency').length,
+      color: 'hover:bg-indigo-50 text-indigo-700 border-indigo-200 dark:hover:bg-indigo-950/40 dark:text-indigo-300',
+      activeColor: 'bg-indigo-600 hover:bg-indigo-700 text-white',
+    },
+    {
+      key: 'mrf',
+      label: 'MRF / Eco-Park',
+      icon: '♻️',
+      count: scopeFilteredSpots.filter((s) => s.category === 'mrf').length,
+      color: 'hover:bg-lime-50 text-lime-800 border-lime-200 dark:hover:bg-lime-950/40 dark:text-lime-300',
+      activeColor: 'bg-lime-600 hover:bg-lime-700 text-white',
+    },
+    {
+      key: 'sports',
+      label: 'Covered Courts',
+      icon: '🏀',
+      count: scopeFilteredSpots.filter((s) => s.category === 'sports').length,
+      color: 'hover:bg-purple-50 text-purple-700 border-purple-200 dark:hover:bg-purple-950/40 dark:text-purple-300',
+      activeColor: 'bg-purple-600 hover:bg-purple-700 text-white',
+    },
+    {
+      key: 'business',
+      label: 'Local MSMEs',
+      icon: '🏪',
+      count: scopeFilteredSpots.filter((s) => s.category === 'business').length,
+      color: 'hover:bg-amber-50 text-amber-800 border-amber-200 dark:hover:bg-amber-950/40 dark:text-amber-300',
+      activeColor: 'bg-amber-600 hover:bg-amber-700 text-white',
+    },
+  ]
+
   return (
     <div className="container mx-auto py-6 px-4 md:px-6 max-w-7xl">
       {/* Offline Alert Banner */}
       {isOffline && (
         <div className="mb-6 p-4 rounded-2xl bg-amber-500/15 border-2 border-amber-500/40 text-amber-950 dark:text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md animate-in fade-in duration-300">
           <div className="flex items-start gap-3">
-            <div className="p-2 rounded-xl bg-amber-500 text-slate-950 shrink-0 mt-0.5">
+            <div className="p-2.5 rounded-xl bg-amber-500 text-slate-950 shrink-0 mt-0.5 shadow-sm">
               <WifiOff className="h-5 w-5 animate-pulse" />
             </div>
             <div>
               <h4 className="text-sm font-extrabold text-amber-900 dark:text-amber-100 flex items-center gap-2">
-                ⚡ Offline Mode — Showing cached emergency shelters and nearby purok hotlines.
+                ⚡ Offline Mode Active — Cached Emergency Shelters & Purok Hotlines Ready
               </h4>
               <p className="text-xs text-amber-800/90 dark:text-amber-300/90 mt-0.5 leading-relaxed">
                 Map tiles cannot download without active internet. All evacuation capacities, Purok anchor coordinates, and emergency hotlines below remain 100% accessible offline.
@@ -1048,9 +1303,9 @@ function MapRouteComponent() {
             <Button
               size="sm"
               onClick={() => setActiveTab('list')}
-              className="text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white w-full sm:w-auto"
+              className="text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white w-full sm:w-auto min-h-[44px]"
             >
-              <Layers className="h-3.5 w-3.5 mr-1" /> View Offline Spot Directory
+              <Layers className="h-4 w-4 mr-1.5" /> View Offline Spot Directory
             </Button>
           </div>
         </div>
@@ -1063,36 +1318,41 @@ function MapRouteComponent() {
 
         <div className="relative z-10 space-y-6">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div className="space-y-2 max-w-2xl">
+            <div className="space-y-2.5 max-w-2xl">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge className="bg-[#FCD116] text-[#0038A8] hover:bg-[#FCD116]/90 font-extrabold px-3 py-1 text-xs border border-amber-300">
-                  <Compass className="h-3.5 w-3.5 mr-1" /> Interactive GIS Map & Civic Infrastructure
+                <Badge className="bg-[#FCD116] text-[#0038A8] hover:bg-[#FCD116]/90 font-black px-3 py-1 text-xs border border-amber-300 shadow-xs">
+                  <Compass className="h-3.5 w-3.5 mr-1" /> Interactive GIS Map & Civic Horizon
                 </Badge>
-                <Badge variant="outline" className="text-white border-white/30 text-xs">
+                <Badge variant="outline" className="text-white border-white/30 text-xs backdrop-blur-xs">
                   Indang, Cavite
                 </Badge>
+                {userLocation && (
+                  <Badge className="bg-emerald-500 text-white font-bold text-xs border border-emerald-400">
+                    📍 GPS Live Active
+                  </Badge>
+                )}
               </div>
-              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white flex items-center gap-2">
+              <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white flex items-center gap-2">
                 Emergency Evacuation & GIS Directory
               </h1>
-              <p className="text-white/80 text-sm sm:text-base leading-relaxed">
-                Locate emergency shelters, potable water hubs, health centers, early learning day care, MRF eco-facilities, and verified local businesses across Barangay Daine 1 and Daine 2.
+              <p className="text-white/80 text-xs sm:text-sm leading-relaxed">
+                Locate emergency evacuation shelters, potable water refill hubs, health clinics, ECCD daycare centers, MRF eco-facilities, and verified local MSMEs across Barangay Daine 1 and Daine 2.
               </p>
             </div>
 
-            {/* High-Contrast Dual-Barangay Scope Switcher */}
-            <div className="bg-slate-950/80 p-2 rounded-2xl border border-white/20 backdrop-blur-md shadow-2xl flex flex-col gap-2 shrink-0">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-amber-300 px-2 flex items-center gap-1.5">
+            {/* High-Contrast Dual-Barangay Scope Switcher with Min 44px Touch Targets */}
+            <div className="bg-slate-950/85 p-2.5 rounded-2xl border border-white/20 backdrop-blur-md shadow-2xl flex flex-col gap-2 shrink-0">
+              <div className="text-[11px] font-extrabold uppercase tracking-wider text-amber-300 px-2 flex items-center gap-1.5">
                 <Building2 className="h-3.5 w-3.5" /> Select Barangay Scope:
               </div>
-              <div className="grid grid-cols-3 gap-1.5">
+              <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => handleScopeChange('all')}
                   className={cn(
-                    'px-3 py-2 rounded-xl text-xs font-extrabold transition-all text-center flex flex-col items-center justify-center gap-0.5',
+                    'min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-black transition-all text-center flex flex-col items-center justify-center gap-0.5 cursor-pointer',
                     scope === 'all'
-                      ? 'bg-[#FCD116] text-[#0038A8] shadow-lg ring-2 ring-white/50 scale-102'
+                      ? 'bg-[#FCD116] text-[#0038A8] shadow-lg ring-2 ring-white/60 scale-102'
                       : 'bg-white/10 text-white hover:bg-white/20 hover:text-white'
                   )}
                 >
@@ -1104,9 +1364,9 @@ function MapRouteComponent() {
                   type="button"
                   onClick={() => handleScopeChange('daine1')}
                   className={cn(
-                    'px-3 py-2 rounded-xl text-xs font-extrabold transition-all text-center flex flex-col items-center justify-center gap-0.5',
+                    'min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-black transition-all text-center flex flex-col items-center justify-center gap-0.5 cursor-pointer',
                     scope === 'daine1'
-                      ? 'bg-blue-500 text-white shadow-lg ring-2 ring-white/50 scale-102'
+                      ? 'bg-blue-500 text-white shadow-lg ring-2 ring-white/60 scale-102'
                       : 'bg-white/10 text-white hover:bg-white/20 hover:text-white'
                   )}
                 >
@@ -1118,9 +1378,9 @@ function MapRouteComponent() {
                   type="button"
                   onClick={() => handleScopeChange('daine2')}
                   className={cn(
-                    'px-3 py-2 rounded-xl text-xs font-extrabold transition-all text-center flex flex-col items-center justify-center gap-0.5',
+                    'min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-black transition-all text-center flex flex-col items-center justify-center gap-0.5 cursor-pointer',
                     scope === 'daine2'
-                      ? 'bg-amber-500 text-slate-950 shadow-lg ring-2 ring-white/50 scale-102'
+                      ? 'bg-amber-500 text-slate-950 shadow-lg ring-2 ring-white/60 scale-102'
                       : 'bg-white/10 text-white hover:bg-white/20 hover:text-white'
                   )}
                 >
@@ -1132,222 +1392,138 @@ function MapRouteComponent() {
           </div>
 
           {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2 border-t border-white/15">
-            <div className="bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/15 text-center">
-              <div className="text-xs text-white/70 font-medium flex items-center justify-center gap-1">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-3 border-t border-white/15">
+            <div className="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 text-center">
+              <div className="text-xs text-white/80 font-semibold flex items-center justify-center gap-1.5">
                 <Users className="h-3.5 w-3.5 text-amber-300" /> Evac Capacity
               </div>
-              <div className="text-xl font-black text-amber-300 mt-0.5">{totalEvacCapacity.toLocaleString()}</div>
-              <div className="text-[10px] text-white/60">Residents Shelter</div>
+              <div className="text-2xl font-black text-amber-300 mt-1">{totalEvacCapacity.toLocaleString()}</div>
+              <div className="text-[11px] text-white/70 font-medium">Residents Shelter</div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/15 text-center">
-              <div className="text-xs text-white/70 font-medium flex items-center justify-center gap-1">
+            <div className="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 text-center">
+              <div className="text-xs text-white/80 font-semibold flex items-center justify-center gap-1.5">
                 <ShieldAlert className="h-3.5 w-3.5 text-red-400" /> Relief Hubs
               </div>
-              <div className="text-xl font-black text-red-400 mt-0.5">{reliefStationsCount}</div>
-              <div className="text-[10px] text-white/60">Evac Centers</div>
+              <div className="text-2xl font-black text-red-400 mt-1">{reliefStationsCount}</div>
+              <div className="text-[11px] text-white/70 font-medium">Evac Centers</div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/15 text-center">
-              <div className="text-xs text-white/70 font-medium flex items-center justify-center gap-1">
-                <Droplets className="h-3.5 w-3.5 text-cyan-300" /> Water Stations
+            <div className="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 text-center">
+              <div className="text-xs text-white/80 font-semibold flex items-center justify-center gap-1.5">
+                <Droplets className="h-3.5 w-3.5 text-cyan-300" /> Water Hubs
               </div>
-              <div className="text-xl font-black text-cyan-300 mt-0.5">{waterStationsCount}</div>
-              <div className="text-[10px] text-white/60">Disaster Potable</div>
+              <div className="text-2xl font-black text-cyan-300 mt-1">{waterStationsCount}</div>
+              <div className="text-[11px] text-white/70 font-medium">Potable Supply</div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/15 text-center">
-              <div className="text-xs text-white/70 font-medium flex items-center justify-center gap-1">
+            <div className="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 text-center">
+              <div className="text-xs text-white/80 font-semibold flex items-center justify-center gap-1.5">
                 <Radio className="h-3.5 w-3.5 text-emerald-400" /> 24/7 Response
               </div>
-              <div className="text-xl font-black text-emerald-400 mt-0.5">{emergencyOutpostsCount}</div>
-              <div className="text-[10px] text-white/60">Security & Fire</div>
+              <div className="text-2xl font-black text-emerald-400 mt-1">{emergencyOutpostsCount}</div>
+              <div className="text-[11px] text-white/70 font-medium">Security & Fire</div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/15 text-center col-span-2 sm:col-span-1">
-              <div className="text-xs text-white/70 font-medium flex items-center justify-center gap-1">
-                <Store className="h-3.5 w-3.5 text-blue-300" /> Businesses
+            <div className="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 text-center col-span-2 sm:col-span-1">
+              <div className="text-xs text-white/80 font-semibold flex items-center justify-center gap-1.5">
+                <Store className="h-3.5 w-3.5 text-blue-300" /> MSMEs
               </div>
-              <div className="text-xl font-black text-blue-300 mt-0.5">{businessesCount}</div>
-              <div className="text-[10px] text-white/60">Verified Pinned</div>
+              <div className="text-2xl font-black text-blue-300 mt-1">{businessesCount}</div>
+              <div className="text-[11px] text-white/70 font-medium">Verified Pinned</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Filter Badges & Search Top Bar */}
-      <div className="flex flex-col gap-4 mb-6 bg-card p-4 rounded-2xl border shadow-sm">
+      <div className="flex flex-col gap-4 mb-6 bg-card p-4 sm:p-5 rounded-2xl border shadow-sm">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search spots, Purok anchor, hotlines, services..."
+              placeholder="Search evacuation shelters, purok anchors, potable water, hotlines, MSMEs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-xs sm:text-sm h-10 rounded-xl"
+              className="pl-10 text-xs sm:text-sm h-11 rounded-xl"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
-          {(selectedCategory !== 'all' || searchQuery !== '' || selectedSpotId !== null) && (
+
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={handleResetView}
-              className="h-10 text-xs font-semibold gap-1.5 rounded-xl shrink-0"
+              onClick={handleLocateMe}
+              disabled={isLocating}
+              className="h-11 min-h-[44px] text-xs font-bold gap-1.5 rounded-xl shrink-0 px-3.5 cursor-pointer"
             >
-              <RefreshCw className="h-3.5 w-3.5" /> Reset Filters
+              <Locate className={cn('h-4 w-4 text-blue-600', isLocating && 'animate-spin')} />
+              <span>{isLocating ? 'Locating...' : 'Locate Me (GPS)'}</span>
             </Button>
-          )}
+
+            {(selectedCategory !== 'all' || searchQuery !== '' || selectedSpotId !== null) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleResetView}
+                className="h-11 min-h-[44px] text-xs font-bold gap-1.5 rounded-xl shrink-0 cursor-pointer"
+              >
+                <RefreshCw className="h-3.5 w-3.5" /> Reset Filters
+              </Button>
+            )}
+          </div>
         </div>
 
-        {/* Category Badges Filter */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-1 overflow-x-auto pb-1">
-          <Button
-            variant={selectedCategory === 'all' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSelectedCategory('all')}
-            className="rounded-full text-xs font-semibold h-8"
-          >
-            All Spots ({scopeFilteredSpots.length})
-          </Button>
-
-          <Button
-            variant={selectedCategory === 'evacuation' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSelectedCategory('evacuation')}
-            className={cn(
-              'rounded-full text-xs font-semibold h-8',
-              selectedCategory === 'evacuation'
-                ? 'bg-red-600 hover:bg-red-700 text-white'
-                : 'hover:bg-red-50 text-red-700 border-red-200 dark:hover:bg-red-950/40 dark:text-red-300'
-            )}
-          >
-            🚨 Evacuation Centers ({scopeFilteredSpots.filter((s) => s.category === 'evacuation').length})
-          </Button>
-
-          <Button
-            variant={selectedCategory === 'government' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSelectedCategory('government')}
-            className={cn(
-              'rounded-full text-xs font-semibold h-8',
-              selectedCategory === 'government'
-                ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                : 'hover:bg-blue-50 text-blue-700 border-blue-200 dark:hover:bg-blue-950/40 dark:text-blue-300'
-            )}
-          >
-            🏛️ Barangay Hall & Ops ({scopeFilteredSpots.filter((s) => s.category === 'government').length})
-          </Button>
-
-          <Button
-            variant={selectedCategory === 'health' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSelectedCategory('health')}
-            className={cn(
-              'rounded-full text-xs font-semibold h-8',
-              selectedCategory === 'health'
-                ? 'bg-teal-600 hover:bg-teal-700 text-white'
-                : 'hover:bg-teal-50 text-teal-700 border-teal-200 dark:hover:bg-teal-950/40 dark:text-teal-300'
-            )}
-          >
-            🏥 Health & Birthing ({scopeFilteredSpots.filter((s) => s.category === 'health').length})
-          </Button>
-
-          <Button
-            variant={selectedCategory === 'emergency' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSelectedCategory('emergency')}
-            className={cn(
-              'rounded-full text-xs font-semibold h-8',
-              selectedCategory === 'emergency'
-                ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                : 'hover:bg-indigo-50 text-indigo-700 border-indigo-200 dark:hover:bg-indigo-950/40 dark:text-indigo-300'
-            )}
-          >
-            🛡️ Security & Fire ({scopeFilteredSpots.filter((s) => s.category === 'emergency').length})
-          </Button>
-
-          <Button
-            variant={selectedCategory === 'water' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSelectedCategory('water')}
-            className={cn(
-              'rounded-full text-xs font-semibold h-8',
-              selectedCategory === 'water'
-                ? 'bg-cyan-600 hover:bg-cyan-700 text-white'
-                : 'hover:bg-cyan-50 text-cyan-700 border-cyan-200 dark:hover:bg-cyan-950/40 dark:text-cyan-300'
-            )}
-          >
-            🚰 Water Stations ({scopeFilteredSpots.filter((s) => s.category === 'water').length})
-          </Button>
-
-          <Button
-            variant={selectedCategory === 'education' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSelectedCategory('education')}
-            className={cn(
-              'rounded-full text-xs font-semibold h-8',
-              selectedCategory === 'education'
-                ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                : 'hover:bg-emerald-50 text-emerald-700 border-emerald-200 dark:hover:bg-emerald-950/40 dark:text-emerald-300'
-            )}
-          >
-            🏫 Day Care Centers ({scopeFilteredSpots.filter((s) => s.category === 'education').length})
-          </Button>
-
-          <Button
-            variant={selectedCategory === 'mrf' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSelectedCategory('mrf')}
-            className={cn(
-              'rounded-full text-xs font-semibold h-8',
-              selectedCategory === 'mrf'
-                ? 'bg-lime-600 hover:bg-lime-700 text-white'
-                : 'hover:bg-lime-50 text-lime-800 border-lime-200 dark:hover:bg-lime-950/40 dark:text-lime-300'
-            )}
-          >
-            ♻️ MRF / Eco-Park ({scopeFilteredSpots.filter((s) => s.category === 'mrf').length})
-          </Button>
-
-          <Button
-            variant={selectedCategory === 'sports' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSelectedCategory('sports')}
-            className={cn(
-              'rounded-full text-xs font-semibold h-8',
-              selectedCategory === 'sports'
-                ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                : 'hover:bg-purple-50 text-purple-700 border-purple-200 dark:hover:bg-purple-950/40 dark:text-purple-300'
-            )}
-          >
-            🏀 Covered Courts ({scopeFilteredSpots.filter((s) => s.category === 'sports').length})
-          </Button>
-
-          <Button
-            variant={selectedCategory === 'business' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSelectedCategory('business')}
-            className={cn(
-              'rounded-full text-xs font-semibold h-8',
-              selectedCategory === 'business'
-                ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                : 'hover:bg-amber-50 text-amber-800 border-amber-200 dark:hover:bg-amber-950/40 dark:text-amber-300'
-            )}
-          >
-            🏪 Local MSMEs ({scopeFilteredSpots.filter((s) => s.category === 'business').length})
-          </Button>
+        {/* Category Badges Filter with Min 44px Touch Targets and Tactile Feedback */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 scrollbar-thin">
+          {CATEGORIES.map((cat) => {
+            const isActive = selectedCategory === cat.key
+            return (
+              <button
+                key={cat.key}
+                type="button"
+                onClick={() => setSelectedCategory(cat.key)}
+                className={cn(
+                  'min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 shrink-0 border cursor-pointer select-none active:scale-95',
+                  isActive
+                    ? cat.activeColor || 'bg-primary text-primary-foreground border-primary shadow-md ring-2 ring-primary/30'
+                    : `bg-card ${cat.color || 'border-border text-foreground'}`
+                )}
+              >
+                <span className="text-sm">{cat.icon}</span>
+                <span>{cat.label}</span>
+                <span
+                  className={cn(
+                    'text-[11px] px-1.5 py-0.5 rounded-md font-bold',
+                    isActive ? 'bg-white/20 text-current' : 'bg-muted text-muted-foreground'
+                  )}
+                >
+                  {cat.count}
+                </span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
       {/* Main Layout: Split Screen on Desktop, Tabs on Mobile */}
       <div className="block lg:hidden mb-4">
         <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as 'map' | 'list')}>
-          <TabsList className="grid grid-cols-2 w-full h-11 p-1 bg-muted rounded-xl">
-            <TabsTrigger value="map" className="text-xs font-bold rounded-lg">
+          <TabsList className="grid grid-cols-2 w-full h-12 p-1 bg-muted rounded-xl">
+            <TabsTrigger value="map" className="text-xs font-bold rounded-lg min-h-[40px]">
               🗺️ GIS Map View
             </TabsTrigger>
-            <TabsTrigger value="list" className="text-xs font-bold rounded-lg">
+            <TabsTrigger value="list" className="text-xs font-bold rounded-lg min-h-[40px]">
               📋 Spot List ({filteredSpots.length})
             </TabsTrigger>
           </TabsList>
@@ -1357,68 +1533,85 @@ function MapRouteComponent() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Map Container Column */}
         <div className={`lg:col-span-8 ${activeTab === 'list' ? 'hidden lg:block' : 'block'}`}>
-          <Card className="overflow-hidden border shadow-md relative rounded-2xl">
-            <CardHeader className="p-4 bg-muted/30 border-b flex flex-row items-center justify-between gap-2">
+          <Card className="overflow-hidden border shadow-md relative rounded-3xl">
+            <CardHeader className="p-4 sm:p-5 bg-muted/30 border-b flex flex-row items-center justify-between gap-2">
               <div>
-                <CardTitle className="text-base font-bold flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-primary" />{' '}
+                <CardTitle className="text-base sm:text-lg font-black flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-primary" />{' '}
                   {scope === 'daine1'
                     ? 'Barangay Daine 1 GIS Map'
                     : scope === 'daine2'
                     ? 'Barangay Daine 2 GIS Map'
                     : 'Barangay Daine (1 & 2) Interactive GIS Map'}
                 </CardTitle>
-                <CardDescription className="text-xs">
-                  Click any marker or list card to fly to coordinates, check Open/Closed status, or open Messenger.
+                <CardDescription className="text-xs sm:text-sm mt-0.5">
+                  Click any marker or card to pan coordinates, inspect Open/Closed hours, evacuation capacity, or launch turn-by-turn directions.
                 </CardDescription>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleResetView}
-                className="text-xs h-8 gap-1 hidden sm:flex rounded-lg"
-              >
-                <Maximize2 className="h-3.5 w-3.5" /> Recenter Map
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleResetView}
+                  className="text-xs h-9 min-h-[36px] gap-1.5 hidden sm:flex rounded-xl font-bold cursor-pointer"
+                >
+                  <Maximize2 className="h-3.5 w-3.5" /> Recenter Map
+                </Button>
+              </div>
             </CardHeader>
 
             <CardContent className="p-0 relative">
               <div
                 ref={mapContainerRef}
-                className="w-full h-[60dvh] min-h-[460px] max-h-[680px] sm:h-[580px] lg:h-[630px] z-10 bg-slate-100 dark:bg-slate-900 rounded-b-2xl overflow-hidden"
+                className="w-full h-[62dvh] min-h-[480px] max-h-[720px] sm:h-[600px] lg:h-[650px] z-10 bg-slate-100 dark:bg-slate-900 rounded-b-3xl overflow-hidden"
               />
 
               {!leafletLoaded && (
                 <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-20">
-                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                    <RefreshCw className="h-6 w-6 animate-spin text-primary" />
-                    <span className="text-xs font-semibold">Loading Barangay Daine GIS Tiles...</span>
+                  <div className="flex flex-col items-center gap-2.5 text-muted-foreground">
+                    <RefreshCw className="h-7 w-7 animate-spin text-primary" />
+                    <span className="text-xs sm:text-sm font-bold">Loading Barangay Daine GIS Tiles...</span>
                   </div>
                 </div>
               )}
 
-              {/* Floating "🚨 Nearest Evacuation Shelter" Action Button */}
+              {/* Floating "🚨 Nearest Evacuation Shelter" FAB Button with Min 44px Target */}
               <button
                 type="button"
                 onClick={handleFindNearestEvacuation}
                 className={cn(
-                  'absolute bottom-4 right-4 z-20 bg-red-600 hover:bg-red-700 text-white font-bold text-xs sm:text-sm px-3.5 py-2.5 rounded-xl shadow-xl flex items-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer',
+                  'absolute bottom-4 right-4 z-20 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-black text-xs sm:text-sm px-4 py-3 min-h-[48px] rounded-2xl shadow-2xl flex items-center gap-2.5 transition-all hover:scale-105 cursor-pointer ring-4 ring-red-500/30',
                   selectedSpot ? 'hidden md:flex' : 'flex'
                 )}
+                title="Calculate nearest evacuation shelter"
               >
-                <Siren className="h-4 w-4 animate-pulse" />
-                <span>Nearest Evacuation Shelter</span>
+                <Siren className="h-5 w-5 animate-pulse text-amber-300" />
+                <div className="flex flex-col items-start text-left">
+                  <span className="leading-tight">Nearest Evacuation Shelter</span>
+                  {nearestEvacShelter && (
+                    <span className="text-[10px] opacity-90 font-medium">
+                      {nearestEvacShelter.distanceKm < 1
+                        ? `${Math.round(nearestEvacShelter.distanceKm * 1000)}m away`
+                        : `${nearestEvacShelter.distanceKm.toFixed(1)}km away`}
+                    </span>
+                  )}
+                </div>
               </button>
 
-              {/* Responsive Mobile Selected Spot Bottom Drawer (for < 768px / mobile viewports) */}
+              {/* Slide-Up Bottom Sheet on Mobile (< 768px) with High-Contrast Highlight */}
               {selectedSpot && (
-                <div className="absolute bottom-2 left-2 right-2 z-30 bg-card/95 backdrop-blur-md border border-border shadow-2xl rounded-2xl p-4 animate-in slide-in-from-bottom-5 duration-200 block md:hidden max-h-[82%] overflow-y-auto">
-                  {/* Header */}
-                  <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-border/50">
-                    <div className="flex flex-wrap items-center gap-1.5">
+                <div
+                  className={cn(
+                    'absolute bottom-2 left-2 right-2 z-30 bg-card/95 backdrop-blur-md border border-border shadow-2xl rounded-3xl p-4 sm:p-5 animate-in slide-in-from-bottom-5 duration-200 block md:hidden transition-all',
+                    isMobileDrawerExpanded ? 'max-h-[85%] overflow-y-auto' : 'max-h-[55%] overflow-y-auto'
+                  )}
+                >
+                  {/* Top Drag Handle & Toggle */}
+                  <div className="flex items-center justify-between gap-2 mb-2.5 pb-2 border-b border-border/50">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <span
                         className={cn(
-                          'text-[10px] font-extrabold px-2 py-0.5 rounded border uppercase tracking-wider',
+                          'text-[10px] font-black px-2.5 py-1 rounded-lg border uppercase tracking-wider',
                           selectedSpot.category === 'evacuation'
                             ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300'
                             : selectedSpot.category === 'government'
@@ -1456,55 +1649,66 @@ function MapRouteComponent() {
                         )
                       })()}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedSpotId(null)}
-                      className="p-1 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shrink-0"
-                      aria-label="Close details"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setIsMobileDrawerExpanded(!isMobileDrawerExpanded)}
+                        className="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
+                        aria-label="Expand or collapse bottom drawer"
+                      >
+                        {isMobileDrawerExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedSpotId(null)}
+                        className="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
+                        aria-label="Close details"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Body */}
-                  <div className="space-y-1.5">
-                    <h3 className="font-bold text-sm sm:text-base text-foreground leading-snug">
+                  {/* Body Content */}
+                  <div className="space-y-2">
+                    <h3 className="font-black text-base sm:text-lg text-foreground leading-snug">
                       {selectedSpot.name}
                     </h3>
-                    <p className="text-xs text-muted-foreground flex items-start gap-1">
-                      <MapPin className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                    <p className="text-xs text-muted-foreground flex items-start gap-1.5">
+                      <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                       <span>
-                        {selectedSpot.purok ? <strong className="text-foreground/80">{selectedSpot.purok} • </strong> : null}
+                        {selectedSpot.purok ? <strong className="text-foreground">{selectedSpot.purok} • </strong> : null}
                         {selectedSpot.address}
                       </span>
                     </p>
 
                     {selectedSpot.hours && (
-                      <p className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium">
-                        <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
+                      <p className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
+                        <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                         <span>{selectedSpot.hours}</span>
                       </p>
                     )}
 
                     {selectedSpot.capacity && (
-                      <div className="p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-xs font-semibold text-red-700 dark:text-red-400 flex items-center gap-1.5">
-                        <Users className="h-3.5 w-3.5 shrink-0" />
-                        <span>Evacuation Capacity: {selectedSpot.capacity.toLocaleString()} persons</span>
+                      <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-xs font-bold text-red-700 dark:text-red-400 flex items-center gap-2">
+                        <Users className="h-4 w-4 shrink-0" />
+                        <span>Evacuation Shelter Capacity: {selectedSpot.capacity.toLocaleString()} persons</span>
                       </div>
                     )}
 
                     {selectedSpot.description && (
-                      <p className="text-[11px] text-muted-foreground/85 line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-muted-foreground leading-relaxed">
                         {selectedSpot.description}
                       </p>
                     )}
 
                     {selectedSpot.amenities && selectedSpot.amenities.length > 0 && (
-                      <div className="flex flex-wrap gap-1 pt-0.5">
+                      <div className="flex flex-wrap gap-1.5 pt-1">
                         {selectedSpot.amenities.map((item, idx) => (
                           <span
                             key={idx}
-                            className="text-[10px] bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md font-medium"
+                            className="text-[11px] bg-secondary text-secondary-foreground px-2.5 py-1 rounded-lg font-semibold"
                           >
                             ✓ {item}
                           </span>
@@ -1513,14 +1717,14 @@ function MapRouteComponent() {
                     )}
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="grid grid-cols-3 gap-2 mt-3 pt-2 border-t border-border/50">
+                  {/* Action Buttons with Min 44px Touch Targets */}
+                  <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-border/50">
                     <a
                       href={`https://www.google.com/maps/dir/?api=1&destination=${selectedSpot.lat},${selectedSpot.lng}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={cn(
-                        'inline-flex items-center justify-center gap-1 text-xs px-2.5 py-2 rounded-xl bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity no-underline shadow-xs',
+                        'min-h-[44px] inline-flex items-center justify-center gap-1.5 text-xs px-3 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all no-underline shadow-xs cursor-pointer',
                         selectedSpot.phone && formatMessengerUrl(selectedSpot.messenger_link)
                           ? 'col-span-1'
                           : !selectedSpot.phone && !formatMessengerUrl(selectedSpot.messenger_link)
@@ -1528,15 +1732,15 @@ function MapRouteComponent() {
                           : 'col-span-2'
                       )}
                     >
-                      <Navigation className="h-3.5 w-3.5" /> Directions
+                      <Navigation className="h-4 w-4" /> Directions
                     </a>
 
                     {selectedSpot.phone && (
                       <a
                         href={`tel:${selectedSpot.phone}`}
-                        className="inline-flex items-center justify-center gap-1 text-xs px-2.5 py-2 rounded-xl bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 font-semibold border border-emerald-300 no-underline shadow-xs"
+                        className="min-h-[44px] inline-flex items-center justify-center gap-1.5 text-xs px-3 py-2.5 rounded-xl bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 font-bold border border-emerald-300 no-underline shadow-xs cursor-pointer"
                       >
-                        <Phone className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> Call
+                        <Phone className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> Call
                       </a>
                     )}
 
@@ -1545,9 +1749,9 @@ function MapRouteComponent() {
                         href={formatMessengerUrl(selectedSpot.messenger_link)!}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-1 text-xs px-2.5 py-2 rounded-xl bg-sky-50 text-sky-800 hover:bg-sky-100 dark:bg-sky-950/60 dark:text-sky-300 font-semibold border border-sky-300 no-underline shadow-xs"
+                        className="min-h-[44px] inline-flex items-center justify-center gap-1.5 text-xs px-3 py-2.5 rounded-xl bg-sky-50 text-sky-800 hover:bg-sky-100 dark:bg-sky-950/60 dark:text-sky-300 font-bold border border-sky-300 no-underline shadow-xs cursor-pointer"
                       >
-                        <MessageSquare className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" /> Messenger
+                        <MessageSquare className="h-4 w-4 text-sky-600 dark:text-sky-400" /> Chat
                       </a>
                     )}
                   </div>
@@ -1557,35 +1761,40 @@ function MapRouteComponent() {
           </Card>
         </div>
 
-        {/* Location List Panel Column */}
+        {/* Location List Panel Column (Responsive Side Panel on Desktop 1280px+) */}
         <div className={`lg:col-span-4 ${activeTab === 'map' ? 'hidden lg:block' : 'block'}`}>
-          <Card className="border shadow-md h-[600px] lg:h-[700px] flex flex-col rounded-2xl">
-            <CardHeader className="p-4 border-b bg-muted/30 shrink-0">
+          <Card className="border shadow-md h-[640px] lg:h-[730px] flex flex-col rounded-3xl">
+            <CardHeader className="p-4 sm:p-5 border-b bg-muted/30 shrink-0">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base font-bold flex items-center gap-2">
-                    <Layers className="h-4 w-4 text-primary" /> Evacuation & Civic Spot Directory
+                  <CardTitle className="text-base sm:text-lg font-black flex items-center gap-2">
+                    <Layers className="h-5 w-5 text-primary" /> Evacuation & Civic Spot Directory
                   </CardTitle>
-                  <CardDescription className="text-xs">
+                  <CardDescription className="text-xs mt-0.5">
                     Showing {filteredSpots.length} location{filteredSpots.length === 1 ? '' : 's'} in{' '}
-                    {scope === 'daine1' ? 'Daine 1' : scope === 'daine2' ? 'Daine 2' : 'Daine 1 & 2'}
+                    {scope === 'daine1' ? 'Barangay Daine 1' : scope === 'daine2' ? 'Barangay Daine 2' : 'All Daine (1 & 2)'}
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
 
-            <CardContent className="p-3 overflow-y-auto flex-1 space-y-3">
+            <CardContent className="p-3.5 overflow-y-auto flex-1 space-y-3 scrollbar-thin">
               {filteredSpots.length === 0 ? (
-                <div className="text-center py-12 px-4 space-y-3">
-                  <div className="p-3 bg-muted rounded-full w-12 h-12 mx-auto flex items-center justify-center">
-                    <Search className="h-6 w-6 text-muted-foreground" />
+                <div className="text-center py-14 px-4 space-y-3.5">
+                  <div className="p-3.5 bg-muted rounded-2xl w-14 h-14 mx-auto flex items-center justify-center shadow-xs">
+                    <Search className="h-7 w-7 text-muted-foreground" />
                   </div>
-                  <h4 className="text-sm font-semibold">No spots matching your filter</h4>
-                  <p className="text-xs text-muted-foreground">
-                    Try adjusting your search query, switching scopes, or changing categories.
+                  <h4 className="text-sm font-black">No spots matching your filter</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Try clearing your search query, switching barangay scopes, or selecting another category layer.
                   </p>
-                  <Button variant="outline" size="sm" onClick={handleResetView} className="text-xs rounded-xl">
-                    Reset Filters
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleResetView}
+                    className="text-xs rounded-xl min-h-[44px] font-bold px-4 cursor-pointer"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Reset Filters
                   </Button>
                 </div>
               ) : (
@@ -1611,17 +1820,18 @@ function MapRouteComponent() {
                     <div
                       key={spot.id}
                       onClick={() => handleSpotClick(spot)}
-                      className={`p-3.5 rounded-2xl border transition-all cursor-pointer ${
+                      className={cn(
+                        'p-4 rounded-2xl border transition-all cursor-pointer select-none',
                         isSelected
-                          ? 'border-primary ring-2 ring-primary/20 bg-primary/5 shadow-md'
+                          ? 'border-primary ring-2 ring-primary/20 bg-primary/5 shadow-md scale-101'
                           : 'bg-card hover:border-primary/50 hover:bg-accent/40 shadow-xs'
-                      }`}
+                      )}
                     >
-                      <div className="flex items-start justify-between gap-1.5 mb-1.5">
-                        <div className="flex flex-wrap items-center gap-1">
+                      <div className="flex items-start justify-between gap-1.5 mb-2">
+                        <div className="flex flex-wrap items-center gap-1.5">
                           <span
                             className={cn(
-                              'text-[10px] font-extrabold px-2 py-0.5 rounded border uppercase tracking-wider',
+                              'text-[10px] font-black px-2 py-0.5 rounded-md border uppercase tracking-wider',
                               spot.category === 'evacuation'
                                 ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300'
                                 : spot.category === 'government'
@@ -1648,32 +1858,32 @@ function MapRouteComponent() {
                           </span>
                         </div>
 
-                        <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1 bg-muted px-2 py-0.5 rounded shrink-0">
+                        <span className="text-[10px] font-black text-muted-foreground flex items-center gap-1 bg-muted px-2 py-0.5 rounded shrink-0">
                           <Navigation className="h-3 w-3 text-primary" />{' '}
                           {distKm < 1 ? `${Math.round(distKm * 1000)}m` : `${distKm.toFixed(1)}km`}
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <h3 className="font-bold text-sm tracking-tight text-foreground leading-snug">
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <h3 className="font-black text-sm tracking-tight text-foreground leading-snug">
                           {spot.name}
                         </h3>
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border shrink-0 ${openStatus.badgeClass}`}>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border shrink-0 ${openStatus.badgeClass}`}>
                           {openStatus.label}
                         </span>
                       </div>
 
-                      <p className="text-xs text-muted-foreground flex items-start gap-1 mb-1.5">
+                      <p className="text-xs text-muted-foreground flex items-start gap-1.5 mb-2">
                         <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
                         <span>
-                          {spot.purok ? <strong className="text-foreground/80">{spot.purok} • </strong> : null}
+                          {spot.purok ? <strong className="text-foreground">{spot.purok} • </strong> : null}
                           {spot.address}
                         </span>
                       </p>
 
                       {/* Hours info if available */}
                       {spot.hours && (
-                        <p className="text-[11px] text-muted-foreground/90 flex items-center gap-1 mb-2 font-medium">
+                        <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 mb-2 font-medium">
                           <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
                           <span>{spot.hours}</span>
                         </p>
@@ -1681,26 +1891,26 @@ function MapRouteComponent() {
 
                       {/* Capacity badge for Evacuation Centers */}
                       {spot.capacity && (
-                        <div className="mb-2 p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-xs font-semibold text-red-700 dark:text-red-400 flex items-center gap-1.5">
-                          <Users className="h-3.5 w-3.5 shrink-0" />
-                          <span>Evacuation Capacity: {spot.capacity.toLocaleString()} persons</span>
+                        <div className="mb-2 p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-xs font-bold text-red-700 dark:text-red-400 flex items-center gap-1.5">
+                          <Users className="h-4 w-4 shrink-0" />
+                          <span>Evacuation Shelter Capacity: {spot.capacity.toLocaleString()} persons</span>
                         </div>
                       )}
 
                       {/* Description / civic role */}
                       {spot.description && (
-                        <p className="text-[11px] text-muted-foreground/80 mb-2 line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-muted-foreground mb-2.5 line-clamp-2 leading-relaxed">
                           {spot.description}
                         </p>
                       )}
 
                       {/* Amenities pills */}
                       {spot.amenities && spot.amenities.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mb-2.5">
+                        <div className="flex flex-wrap gap-1 mb-3">
                           {spot.amenities.map((item, idx) => (
                             <span
                               key={idx}
-                              className="text-[10px] bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md font-medium"
+                              className="text-[10px] bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md font-semibold"
                             >
                               ✓ {item}
                             </span>
@@ -1708,28 +1918,28 @@ function MapRouteComponent() {
                         </div>
                       )}
 
-                      {/* Action buttons */}
-                      <div className="grid grid-cols-3 gap-1.5 pt-2 border-t border-border/50">
+                      {/* Action buttons with Min 44px Touch Targets */}
+                      <div className="grid grid-cols-3 gap-2 pt-2.5 border-t border-border/50">
                         <a
                           href={`https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
                           className={cn(
-                            'inline-flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-xl bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity',
+                            'min-h-[44px] inline-flex items-center justify-center gap-1.5 text-xs px-2.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all no-underline shadow-xs cursor-pointer',
                             spot.phone && messengerUrl ? 'col-span-1' : !spot.phone && !messengerUrl ? 'col-span-3' : 'col-span-2'
                           )}
                         >
-                          <Navigation className="h-3 w-3" /> Maps
+                          <Navigation className="h-3.5 w-3.5" /> Directions
                         </a>
 
                         {spot.phone && (
                           <a
                             href={`tel:${spot.phone}`}
                             onClick={(e) => e.stopPropagation()}
-                            className="inline-flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 font-semibold border border-emerald-300"
+                            className="min-h-[44px] inline-flex items-center justify-center gap-1 text-xs px-2.5 py-2 rounded-xl bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 font-bold border border-emerald-300 no-underline shadow-xs cursor-pointer"
                           >
-                            <Phone className="h-3 w-3 text-emerald-600 dark:text-emerald-400" /> Call
+                            <Phone className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> Call
                           </a>
                         )}
 
@@ -1739,9 +1949,9 @@ function MapRouteComponent() {
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="inline-flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-xl bg-sky-50 text-sky-800 hover:bg-sky-100 dark:bg-sky-950/60 dark:text-sky-300 font-semibold border border-sky-300"
+                            className="min-h-[44px] inline-flex items-center justify-center gap-1 text-xs px-2.5 py-2 rounded-xl bg-sky-50 text-sky-800 hover:bg-sky-100 dark:bg-sky-950/60 dark:text-sky-300 font-bold border border-sky-300 no-underline shadow-xs cursor-pointer"
                           >
-                            <MessageSquare className="h-3 w-3 text-sky-600 dark:text-sky-400" /> Chat
+                            <MessageSquare className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" /> Chat
                           </a>
                         )}
                       </div>

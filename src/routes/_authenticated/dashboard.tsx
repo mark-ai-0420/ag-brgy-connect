@@ -12,6 +12,7 @@ import {
   Store,
   Clock,
   CheckCircle,
+  CheckCircle2,
   XCircle,
   AlertCircle,
   Info,
@@ -26,6 +27,11 @@ import {
   Sparkles,
   Edit,
   ChevronRight,
+  ArrowRight,
+  FileCheck,
+  UserCheck,
+  MapPin,
+  Flame,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { CertificatePrintModal } from '#/components/documents/CertificatePrintModal'
@@ -38,8 +44,8 @@ const DOC_TYPE_LABELS: Record<string, string> = {
   barangay_id: 'Barangay ID',
   certificate_of_residency: 'Certificate of Residency',
   certificate_of_indigency: 'Certificate of Indigency',
-  business_permit: 'Business Permit',
-  other: 'Other Document',
+  business_permit: 'Barangay Business Permit',
+  other: 'Barangay Certificate',
 }
 
 const getMyResidentProfile = createServerFn({ method: 'GET' })
@@ -129,30 +135,42 @@ export const Route = createFileRoute('/_authenticated/dashboard')({
 
 function StatusBadge({ status }: { status: string }) {
   const s = status?.toLowerCase() || 'pending'
-  if (s === 'completed' || s === 'ready') {
+  if (s === 'ready') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 capitalize whitespace-nowrap">
-        <CheckCircle className="h-3.5 w-3.5" /> {s === 'ready' ? 'Ready for Pickup' : 'Completed'}
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40 shadow-xs animate-pulse whitespace-nowrap">
+        <Sparkles className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+        Ready for Pickup
+      </span>
+    )
+  }
+  if (s === 'completed') {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 whitespace-nowrap">
+        <CheckCircle className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+        Completed
       </span>
     )
   }
   if (s === 'rejected') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-rose-950/80 dark:text-rose-300 border border-red-300 dark:border-rose-800 whitespace-nowrap">
-        <XCircle className="h-3.5 w-3.5" /> Rejected
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-300 dark:border-rose-800 whitespace-nowrap">
+        <XCircle className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
+        Rejected
       </span>
     )
   }
-  if (s === 'in_review') {
+  if (s === 'in_review' || s === 'processing') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-300 dark:border-blue-800 whitespace-nowrap">
-        <AlertCircle className="h-3.5 w-3.5" /> In Review
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-800 dark:bg-sky-950/80 dark:text-sky-300 border border-sky-300 dark:border-sky-800 whitespace-nowrap">
+        <AlertCircle className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+        In Review
       </span>
     )
   }
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800 whitespace-nowrap">
-      <Clock className="h-3.5 w-3.5" /> Pending
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800 whitespace-nowrap">
+      <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+      Pending Review
     </span>
   )
 }
@@ -161,35 +179,40 @@ function ComplaintStatusBadge({ status }: { status: string }) {
   const s = status?.toLowerCase() || 'pending'
   if (s === 'investigating') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-300 dark:border-blue-800 whitespace-nowrap">
-        <Search className="h-3.5 w-3.5" /> Under Investigation
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-800 dark:bg-sky-950/80 dark:text-sky-300 border border-sky-300 dark:border-sky-800 whitespace-nowrap">
+        <Search className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+        Under Investigation
       </span>
     )
   }
   if (s === 'scheduled_hearing') {
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 dark:bg-purple-950/80 dark:text-purple-300 border border-purple-300 dark:border-purple-800 whitespace-nowrap">
-        <Gavel className="h-3.5 w-3.5" /> Hearing Scheduled
+        <Gavel className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
+        Hearing Scheduled
       </span>
     )
   }
   if (s === 'resolved') {
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 whitespace-nowrap">
-        <CheckCircle className="h-3.5 w-3.5" /> Resolved
+        <CheckCircle className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+        Resolved
       </span>
     )
   }
   if (s === 'dismissed') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 dark:bg-slate-800 dark:text-slate-300 border border-gray-300 dark:border-slate-700 whitespace-nowrap">
-        <Ban className="h-3.5 w-3.5" /> Dismissed
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border border-slate-300 dark:border-slate-700 whitespace-nowrap">
+        <Ban className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+        Dismissed
       </span>
     )
   }
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800 whitespace-nowrap">
-      <Clock className="h-3.5 w-3.5" /> Pending Review
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800 whitespace-nowrap">
+      <Clock className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+      Pending Review
     </span>
   )
 }
@@ -199,27 +222,31 @@ function BusinessStatusBadge({ status }: { status: string }) {
   if (s === 'approved') {
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 whitespace-nowrap shadow-2xs">
-        <CheckCircle className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> Approved
+        <CheckCircle className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+        Verified & Live
       </span>
     )
   }
   if (s === 'rejected') {
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-300 dark:border-rose-800 whitespace-nowrap shadow-2xs">
-        <XCircle className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" /> Rejected
+        <XCircle className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
+        Needs Action
       </span>
     )
   }
   if (s === 'archived') {
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border border-slate-300 dark:border-slate-700 whitespace-nowrap">
-        <Info className="h-3.5 w-3.5" /> Archived
+        <Info className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+        Archived
       </span>
     )
   }
   return (
     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800 whitespace-nowrap shadow-2xs">
-      <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" /> Pending Review
+      <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+      Pending Review
     </span>
   )
 }
@@ -242,10 +269,11 @@ function DashboardRoute() {
   };
 
   // Metrics for Document Requests
-  const readyDocsCount = useMemo(
-    () => documents.filter(d => d.status === 'ready').length,
+  const readyDocs = useMemo(
+    () => documents.filter(d => d.status === 'ready'),
     [documents]
   );
+  const readyDocsCount = readyDocs.length;
   const activeDocsCount = useMemo(
     () => documents.filter(d => d.status === 'pending' || d.status === 'in_review' || d.status === 'processing').length,
     [documents]
@@ -299,29 +327,62 @@ function DashboardRoute() {
     }
   };
 
+  const isDaine2 = currentProfile?.barangay === 'daine_2';
+  const barangayLabel = isDaine2 ? 'Barangay Daine 2' : 'Barangay Daine 1';
+
   return (
-    <div className="container mx-auto py-10 px-4 md:px-6 space-y-8 max-w-6xl">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Resident Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
-            Official citizen ID, document requests, business listings, and barangay services.
-          </p>
+    <div className="container mx-auto py-8 sm:py-10 px-4 sm:px-6 md:px-8 space-y-8 max-w-6xl">
+      {/* Stitch Civic Horizon Header */}
+      <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-br from-card via-card to-muted/40 p-6 sm:p-8 shadow-sm">
+        {/* Philippine Flag Subtle Civic Accent Ribbon */}
+        <div className="absolute top-0 left-0 right-0 h-1.5 flex">
+          <div className="w-[45%] bg-[#0038A8]" />
+          <div className="w-[10%] bg-[#FCD116]" />
+          <div className="w-[45%] bg-[#CE1126]" />
         </div>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="outline" size="sm" className="min-h-[38px] text-xs font-semibold">
-            <Link to="/settings/profile">Edit Profile & Address</Link>
-          </Button>
-          <Button asChild size="sm" className="min-h-[38px] text-xs font-bold bg-primary">
-            <Link to="/documents/request">
-              <PlusCircle className="mr-1.5 h-3.5 w-3.5" /> Request Document
-            </Link>
-          </Button>
+
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pt-1">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold tracking-wider uppercase">
+              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+              Civic Citizen Portal • {barangayLabel}
+            </div>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">
+              Mabuhay, {currentProfile?.full_name?.split(' ')[0] || 'Resident'}!
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl leading-relaxed">
+              Access your official digital ID, fast-track barangay clearances and certifications, manage registered MSMEs, and file peace & order reports.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            <Button
+              asChild
+              variant="outline"
+              size="default"
+              className="min-h-[44px] px-4 rounded-xl text-sm font-semibold border-border/80 hover:bg-muted/80 transition-colors cursor-pointer"
+            >
+              <Link to="/settings/profile">
+                <UserCheck className="mr-2 h-4 w-4 text-primary" />
+                Profile & Address
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="default"
+              className="min-h-[44px] px-5 rounded-xl text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-md transition-all duration-200 cursor-pointer"
+            >
+              <Link to="/documents/request">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Request Document
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* 3 Citizen KPI Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* KPI Card 1: Document Requests */}
         <a
           href="#document-requests"
@@ -331,31 +392,42 @@ function DashboardRoute() {
           }}
           className="group block text-left focus:outline-hidden"
         >
-          <Card className="h-full border border-border/80 shadow-2xs hover:shadow-md hover:border-primary/50 hover:bg-muted/30 transition-all duration-200 cursor-pointer">
-            <CardContent className="p-5 flex flex-col justify-between h-full space-y-4">
+          <Card className="h-full rounded-2xl border border-border/80 shadow-xs hover:shadow-lg hover:border-sky-500/50 dark:hover:border-sky-400/50 hover:-translate-y-1 active:scale-[0.99] transition-all duration-300 cursor-pointer bg-gradient-to-br from-card to-sky-500/5">
+            <CardContent className="p-6 flex flex-col justify-between h-full space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-blue-500/10 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
-                    <FileText className="h-5 w-5" />
+                  <div className="p-3 rounded-2xl bg-sky-500/10 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 ring-1 ring-sky-500/20">
+                    <FileText className="h-6 w-6" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-foreground">Document Requests</h3>
+                    <h3 className="text-sm font-bold text-foreground group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
+                      Document Requests
+                    </h3>
                     <p className="text-xs text-muted-foreground">Barangay Certifications</p>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground/60 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                <div className="p-2 rounded-full bg-muted/60 group-hover:bg-sky-500/10 text-muted-foreground group-hover:text-sky-600 group-hover:translate-x-0.5 transition-all">
+                  <ChevronRight className="h-4 w-4" />
+                </div>
               </div>
 
               <div>
-                <div className="text-3xl font-extrabold tracking-tight text-foreground">
+                <div className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">
                   {documents.length}
                 </div>
-                <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                    {readyDocsCount} Ready for Pickup
-                  </span>
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                  {readyDocsCount > 0 ? (
+                    <span className="inline-flex items-center gap-1 font-bold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 animate-pulse">
+                      <Sparkles className="h-3 w-3 text-emerald-600" />
+                      {readyDocsCount} Ready for Pickup
+                    </span>
+                  ) : (
+                    <span className="font-semibold text-muted-foreground px-2 py-0.5 rounded-md bg-muted/40">
+                      0 Ready
+                    </span>
+                  )}
                   <span className="text-muted-foreground/60">•</span>
-                  <span className="text-muted-foreground">
+                  <span className="inline-flex items-center gap-1 font-medium text-sky-700 dark:text-sky-300 px-2 py-0.5 rounded-md bg-sky-500/10">
                     {activeDocsCount} In Progress
                   </span>
                 </div>
@@ -373,31 +445,36 @@ function DashboardRoute() {
           }}
           className="group block text-left focus:outline-hidden"
         >
-          <Card className="h-full border border-border/80 shadow-2xs hover:shadow-md hover:border-primary/50 hover:bg-muted/30 transition-all duration-200 cursor-pointer">
-            <CardContent className="p-5 flex flex-col justify-between h-full space-y-4">
+          <Card className="h-full rounded-2xl border border-border/80 shadow-xs hover:shadow-lg hover:border-amber-500/50 dark:hover:border-amber-400/50 hover:-translate-y-1 active:scale-[0.99] transition-all duration-300 cursor-pointer bg-gradient-to-br from-card to-amber-500/5">
+            <CardContent className="p-6 flex flex-col justify-between h-full space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-amber-500/10 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
-                    <Store className="h-5 w-5" />
+                  <div className="p-3 rounded-2xl bg-amber-500/10 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/20">
+                    <Store className="h-6 w-6" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-foreground">My Registered Businesses</h3>
-                    <p className="text-xs text-muted-foreground">Local MSME Growth Hub</p>
+                    <h3 className="text-sm font-bold text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                      My Businesses
+                    </h3>
+                    <p className="text-xs text-muted-foreground">MSME Growth & Directory</p>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground/60 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                <div className="p-2 rounded-full bg-muted/60 group-hover:bg-amber-500/10 text-muted-foreground group-hover:text-amber-600 group-hover:translate-x-0.5 transition-all">
+                  <ChevronRight className="h-4 w-4" />
+                </div>
               </div>
 
               <div>
-                <div className="text-3xl font-extrabold tracking-tight text-foreground">
+                <div className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">
                   {businesses.length}
                 </div>
-                <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                  <span className="inline-flex items-center gap-1 font-bold text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30">
+                    <CheckCircle className="h-3 w-3 text-emerald-600" />
                     {approvedBizCount} Verified Active
                   </span>
                   <span className="text-muted-foreground/60">•</span>
-                  <span className="text-muted-foreground">
+                  <span className="inline-flex items-center gap-1 font-medium text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-md bg-amber-500/10">
                     {pendingBizCount} Pending
                   </span>
                 </div>
@@ -415,31 +492,36 @@ function DashboardRoute() {
           }}
           className="group block text-left focus:outline-hidden"
         >
-          <Card className="h-full border border-border/80 shadow-2xs hover:shadow-md hover:border-primary/50 hover:bg-muted/30 transition-all duration-200 cursor-pointer">
-            <CardContent className="p-5 flex flex-col justify-between h-full space-y-4">
+          <Card className="h-full rounded-2xl border border-border/80 shadow-xs hover:shadow-lg hover:border-rose-500/50 dark:hover:border-rose-400/50 hover:-translate-y-1 active:scale-[0.99] transition-all duration-300 cursor-pointer bg-gradient-to-br from-card to-rose-500/5">
+            <CardContent className="p-6 flex flex-col justify-between h-full space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-rose-500/10 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400">
-                    <ShieldAlert className="h-5 w-5" />
+                  <div className="p-3 rounded-2xl bg-rose-500/10 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 ring-1 ring-rose-500/20">
+                    <ShieldAlert className="h-6 w-6" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-foreground">Filed Incident Reports</h3>
+                    <h3 className="text-sm font-bold text-foreground group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+                      Incident Reports
+                    </h3>
                     <p className="text-xs text-muted-foreground">Peace & Order Desk</p>
                   </div>
                 </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground/60 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                <div className="p-2 rounded-full bg-muted/60 group-hover:bg-rose-500/10 text-muted-foreground group-hover:text-rose-600 group-hover:translate-x-0.5 transition-all">
+                  <ChevronRight className="h-4 w-4" />
+                </div>
               </div>
 
               <div>
-                <div className="text-3xl font-extrabold tracking-tight text-foreground">
+                <div className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">
                   {complaints.length}
                 </div>
-                <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
-                  <span className="font-semibold text-amber-600 dark:text-amber-400">
-                    {pendingComplaintsCount} Under Review
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                  <span className="inline-flex items-center gap-1 font-bold text-amber-700 dark:text-amber-300 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30">
+                    <Clock className="h-3 w-3 text-amber-600" />
+                    {pendingComplaintsCount} Active Review
                   </span>
                   <span className="text-muted-foreground/60">•</span>
-                  <span className="text-muted-foreground">
+                  <span className="inline-flex items-center gap-1 font-medium text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md bg-emerald-500/10">
                     {resolvedComplaintsCount} Resolved
                   </span>
                 </div>
@@ -449,9 +531,19 @@ function DashboardRoute() {
         </a>
       </div>
 
-      {/* Prominent Digital Resident ID Card */}
+      {/* Holographic Digital Resident ID Section */}
       {currentProfile && (
-        <section className="space-y-3">
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <UserCheck className="h-5 w-5 text-primary" />
+              Digital Resident Identity Card
+            </h2>
+            <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              Secured with Cryptographic QR Verification
+            </div>
+          </div>
           <DigitalResidentID
             profile={currentProfile}
             onPhotoUpdated={handlePhotoUpdated}
@@ -459,38 +551,84 @@ function DashboardRoute() {
         </section>
       )}
 
+      {/* Main Grid: Document Requests & MSME Businesses */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Document Requests */}
-        <section id="document-requests" className="space-y-4 scroll-mt-20">
+        {/* Document Requests Section */}
+        <section id="document-requests" className="space-y-5 scroll-mt-20">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" /> Document Requests
-            </h2>
-            <Button asChild size="default" className="min-h-[44px] px-4 font-semibold shrink-0">
+            <div>
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
+                Document Requests
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Official certificates & clearances processed by the barangay
+              </p>
+            </div>
+            <Button
+              asChild
+              size="default"
+              className="min-h-[44px] px-4 font-bold rounded-xl shrink-0 cursor-pointer shadow-xs"
+            >
               <Link to="/documents/request">
-                <PlusCircle className="mr-2 h-4 w-4" /> Request Document
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Request Document
               </Link>
             </Button>
           </div>
 
-          {/* Segmented Filter Tabs */}
-          <div className="flex flex-wrap items-center gap-1.5 p-1 bg-muted/60 dark:bg-muted/30 rounded-xl border border-border/50">
+          {/* Highlighted Ready for Pickup Print Action Card */}
+          {readyDocs.length > 0 && (
+            <div className="relative overflow-hidden rounded-2xl border-2 border-emerald-500/60 bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-card p-5 sm:p-6 shadow-md ring-1 ring-emerald-500/30">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+              
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1.5">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-600 text-white shadow-xs">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Action Required • Ready for Pickup
+                  </div>
+                  <h3 className="text-base sm:text-lg font-black text-foreground">
+                    {DOC_TYPE_LABELS[readyDocs[0].document_type] ?? readyDocs[0].document_type}
+                  </h3>
+                  <p className="text-xs text-muted-foreground max-w-md leading-relaxed">
+                    Your official document has been validated and digitally signed. You may download and print the high-resolution certificate now or pick up the printed copy at the Barangay Hall.
+                  </p>
+                </div>
+
+                <Button
+                  size="default"
+                  onClick={() => {
+                    setSelectedDoc(readyDocs[0]);
+                    setPrintModalOpen(true);
+                  }}
+                  className="min-h-[44px] px-5 font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition-all duration-200 gap-2 shrink-0 cursor-pointer"
+                >
+                  <Printer className="h-4 w-4" />
+                  Print / Download Certificate
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Segmented Document Filter Tabs (Touch Target Compliant min-h 44px) */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1.5 bg-muted/60 dark:bg-muted/30 rounded-2xl border border-border/60">
             <button
               type="button"
               onClick={() => setDocFilter('all')}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-xs font-semibold cursor-pointer",
+                "min-h-[44px] flex items-center justify-center gap-2 px-3 py-2 rounded-xl transition-all text-xs font-bold cursor-pointer",
                 docFilter === 'all'
-                  ? "bg-background text-foreground shadow-xs border border-border/60"
-                  : "text-muted-foreground hover:text-foreground hover:bg-background/40"
+                  ? "bg-background text-foreground shadow-xs border border-border/80"
+                  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
               )}
             >
-              All
+              All Requests
               <span
                 className={cn(
-                  "px-1.5 py-0.2 rounded-full text-[10px]",
+                  "px-2 py-0.5 rounded-full text-[11px] font-extrabold",
                   docFilter === 'all'
-                    ? "bg-primary/15 text-primary font-bold"
+                    ? "bg-primary/15 text-primary"
                     : "bg-muted-foreground/15 text-muted-foreground"
                 )}
               >
@@ -502,18 +640,18 @@ function DashboardRoute() {
               type="button"
               onClick={() => setDocFilter('active')}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-xs font-semibold cursor-pointer",
+                "min-h-[44px] flex items-center justify-center gap-2 px-3 py-2 rounded-xl transition-all text-xs font-bold cursor-pointer",
                 docFilter === 'active'
-                  ? "bg-background text-foreground shadow-xs border border-border/60"
-                  : "text-muted-foreground hover:text-foreground hover:bg-background/40"
+                  ? "bg-background text-foreground shadow-xs border border-border/80"
+                  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
               )}
             >
               In Progress
               <span
                 className={cn(
-                  "px-1.5 py-0.2 rounded-full text-[10px]",
+                  "px-2 py-0.5 rounded-full text-[11px] font-extrabold",
                   docFilter === 'active'
-                    ? "bg-blue-500/15 text-blue-700 dark:text-blue-300 font-bold"
+                    ? "bg-sky-500/20 text-sky-700 dark:text-sky-300"
                     : "bg-muted-foreground/15 text-muted-foreground"
                 )}
               >
@@ -525,21 +663,19 @@ function DashboardRoute() {
               type="button"
               onClick={() => setDocFilter('ready')}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-xs font-semibold cursor-pointer",
+                "min-h-[44px] flex items-center justify-center gap-2 px-3 py-2 rounded-xl transition-all text-xs font-bold cursor-pointer",
                 docFilter === 'ready'
-                  ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-200 border border-emerald-500/30 shadow-xs font-bold"
-                  : "text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-500/5"
+                  ? "bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 border border-emerald-500/40 shadow-xs"
+                  : "text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-500/10"
               )}
             >
-              Ready for Pickup
+              Ready
               <span
                 className={cn(
-                  "px-1.5 py-0.2 rounded-full text-[10px]",
+                  "px-2 py-0.5 rounded-full text-[11px] font-extrabold",
                   readyDocsCount > 0
-                    ? "bg-emerald-600 text-white font-bold"
-                    : docFilter === 'ready'
-                      ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-bold"
-                      : "bg-muted-foreground/15 text-muted-foreground"
+                    ? "bg-emerald-600 text-white"
+                    : "bg-muted-foreground/15 text-muted-foreground"
                 )}
               >
                 {readyDocsCount}
@@ -550,18 +686,18 @@ function DashboardRoute() {
               type="button"
               onClick={() => setDocFilter('completed')}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-xs font-semibold cursor-pointer",
+                "min-h-[44px] flex items-center justify-center gap-2 px-3 py-2 rounded-xl transition-all text-xs font-bold cursor-pointer",
                 docFilter === 'completed'
-                  ? "bg-background text-foreground shadow-xs border border-border/60"
-                  : "text-muted-foreground hover:text-foreground hover:bg-background/40"
+                  ? "bg-background text-foreground shadow-xs border border-border/80"
+                  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
               )}
             >
               Completed
               <span
                 className={cn(
-                  "px-1.5 py-0.2 rounded-full text-[10px]",
+                  "px-2 py-0.5 rounded-full text-[11px] font-extrabold",
                   docFilter === 'completed'
-                    ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold"
+                    ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
                     : "bg-muted-foreground/15 text-muted-foreground"
                 )}
               >
@@ -570,29 +706,37 @@ function DashboardRoute() {
             </button>
           </div>
           
-          <div className="space-y-3">
+          {/* Document Requests List */}
+          <div className="space-y-4">
             {documents.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center text-muted-foreground space-y-3">
-                  <FileText className="h-10 w-10 mx-auto text-muted-foreground/50" />
-                  <p className="text-sm">You haven't requested any barangay documents yet.</p>
-                  <Button variant="outline" size="sm" asChild className="min-h-[40px]">
+              <Card className="rounded-2xl border border-dashed border-border/80">
+                <CardContent className="py-12 text-center text-muted-foreground space-y-4">
+                  <div className="p-3.5 rounded-2xl bg-primary/10 text-primary w-14 h-14 mx-auto flex items-center justify-center">
+                    <FileText className="h-7 w-7" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-base font-bold text-foreground">No Document Requests Yet</p>
+                    <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                      Need a Barangay Clearance, Certificate of Residency, or Indigency? Apply digitally in under 2 minutes.
+                    </p>
+                  </div>
+                  <Button variant="default" size="default" asChild className="min-h-[44px] px-5 rounded-xl font-bold">
                     <Link to="/documents/request">Submit First Request</Link>
                   </Button>
                 </CardContent>
               </Card>
             ) : filteredDocuments.length === 0 ? (
-              <Card>
+              <Card className="rounded-2xl border border-border/80">
                 <CardContent className="py-10 text-center text-muted-foreground space-y-3">
                   <FileText className="h-8 w-8 mx-auto text-muted-foreground/40" />
-                  <p className="text-sm">
+                  <p className="text-sm font-medium">
                     No {docFilter === 'active' ? 'in-progress' : docFilter === 'ready' ? 'ready for pickup' : docFilter === 'completed' ? 'completed' : ''} document requests found.
                   </p>
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    variant="outline"
+                    size="default"
                     onClick={() => setDocFilter('all')}
-                    className="min-h-[36px] text-xs font-semibold text-primary"
+                    className="min-h-[44px] px-4 rounded-xl text-xs font-semibold cursor-pointer"
                   >
                     View All Document Requests ({documents.length})
                   </Button>
@@ -605,23 +749,25 @@ function DashboardRoute() {
                   <Card
                     key={doc.id}
                     className={cn(
-                      "transition-all shadow-xs overflow-hidden",
+                      "rounded-2xl transition-all duration-200 shadow-xs overflow-hidden border",
                       isReady
-                        ? "border-emerald-500/40 dark:border-emerald-500/60 bg-emerald-50/20 dark:bg-emerald-950/20 ring-1 ring-emerald-500/20"
-                        : "hover:border-primary/40"
+                        ? "border-emerald-500/50 bg-emerald-500/5 ring-1 ring-emerald-500/30"
+                        : "border-border/80 hover:border-primary/40 hover:bg-muted/15"
                     )}
                   >
                     <CardHeader className="py-4 px-5 pb-3">
                       <div className="flex justify-between items-start gap-4">
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-base font-bold">
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <CardTitle className="text-base font-bold text-foreground">
                             {DOC_TYPE_LABELS[doc.document_type] ?? doc.document_type}
                           </CardTitle>
                           {doc.purpose && (
-                            <CardDescription className="text-xs mt-0.5 line-clamp-2">{doc.purpose}</CardDescription>
+                            <CardDescription className="text-xs text-muted-foreground line-clamp-2">
+                              {doc.purpose}
+                            </CardDescription>
                           )}
-                          <p className="text-xs text-muted-foreground/70 mt-1">
-                            Submitted {format(new Date(doc.created_at), 'MMM d, yyyy')}
+                          <p className="text-[11px] text-muted-foreground/80">
+                            Submitted {format(new Date(doc.created_at), 'MMMM d, yyyy • h:mm a')}
                           </p>
                         </div>
                         <StatusBadge status={doc.status} />
@@ -631,9 +777,11 @@ function DashboardRoute() {
                     {/* Staff Notes */}
                     {doc.notes && (
                       <CardContent className="pt-0 pb-3 px-5">
-                        <div className="flex items-start gap-2 p-2.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-xs text-blue-900 dark:text-blue-200">
-                          <Info className="h-3.5 w-3.5 mt-0.5 shrink-0 text-blue-600 dark:text-blue-400" />
-                          <span><span className="font-semibold">Barangay Staff:</span> {doc.notes}</span>
+                        <div className="flex items-start gap-2.5 p-3 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/60 text-xs text-sky-950 dark:text-sky-200">
+                          <Info className="h-4 w-4 mt-0.5 shrink-0 text-sky-600 dark:text-sky-400" />
+                          <div>
+                            <span className="font-bold">Barangay Secretariat Note:</span> {doc.notes}
+                          </div>
                         </div>
                       </CardContent>
                     )}
@@ -641,9 +789,11 @@ function DashboardRoute() {
                     {/* Ready for Pickup Banner */}
                     {isReady && (
                       <CardContent className="pt-0 pb-3 px-5">
-                        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-emerald-100/80 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800/80 text-xs text-emerald-950 dark:text-emerald-200">
-                          <Sparkles className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                          <span>Your official certificate has been signed & is ready for pickup or immediate digital printing!</span>
+                        <div className="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-950 dark:text-emerald-200">
+                          <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <span className="font-medium leading-relaxed">
+                            Official certificate has been verified & approved. Digital copy ready for instant high-res printing!
+                          </span>
                         </div>
                       </CardContent>
                     )}
@@ -652,27 +802,27 @@ function DashboardRoute() {
                     {(doc.status === 'ready' || doc.status === 'completed') && (
                       <CardFooter
                         className={cn(
-                          "pt-2 pb-4 px-5 flex items-center justify-between border-t",
+                          "pt-3 pb-4 px-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t",
                           isReady
-                            ? "bg-emerald-500/5 border-emerald-500/20"
+                            ? "bg-emerald-500/10 border-emerald-500/20"
                             : "bg-muted/10 border-border/60"
                         )}
                       >
-                        <div className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
+                        <div className="text-xs font-semibold flex items-center gap-1.5">
                           {isReady ? (
-                            <span className="text-emerald-700 dark:text-emerald-300 font-semibold flex items-center gap-1">
-                              <Sparkles className="h-3 w-3" /> Official document ready
+                            <span className="text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
+                              <Sparkles className="h-3.5 w-3.5 text-emerald-600" /> Official Document Ready
                             </span>
                           ) : (
-                            <span className="text-muted-foreground flex items-center gap-1">
-                              <CheckCircle className="h-3 w-3 text-emerald-600" /> Completed request
+                            <span className="text-muted-foreground flex items-center gap-1.5">
+                              <CheckCircle className="h-3.5 w-3.5 text-emerald-600" /> Completed Record
                             </span>
                           )}
                         </div>
                         <Button
-                          size="sm"
+                          size="default"
                           className={cn(
-                            "min-h-[40px] px-4 font-bold gap-2 shadow-xs cursor-pointer",
+                            "min-h-[44px] px-5 rounded-xl font-bold gap-2 shadow-xs cursor-pointer w-full sm:w-auto",
                             isReady
                               ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                               : "bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -683,7 +833,7 @@ function DashboardRoute() {
                           }}
                         >
                           <Printer className="h-4 w-4" />
-                          Download / Print Official Document
+                          Download / Print Certificate
                         </Button>
                       </CardFooter>
                     )}
@@ -695,32 +845,43 @@ function DashboardRoute() {
         </section>
 
         {/* My Registered Businesses (MSME Growth Hub) */}
-        <section id="my-businesses" className="space-y-4 scroll-mt-20">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <Store className="h-5 w-5 text-primary" /> My Registered Businesses
-            </h2>
-            <Button asChild size="default" className="min-h-[44px] px-4 font-semibold shadow-xs gap-1.5">
+        <section id="my-businesses" className="space-y-5 scroll-mt-20">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Store className="h-5 w-5 text-primary" />
+                My Registered Businesses
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Manage your local sari-sari store, carinderia, or services
+              </p>
+            </div>
+            <Button
+              asChild
+              size="default"
+              className="min-h-[44px] px-4 font-bold rounded-xl shadow-xs gap-2 shrink-0 cursor-pointer"
+            >
               <Link to="/businesses/new">
-                <PlusCircle className="h-4 w-4" /> Register New Business
+                <PlusCircle className="h-4 w-4" />
+                Register New Business
               </Link>
             </Button>
           </div>
           
           <div className="space-y-4">
             {businesses.length === 0 ? (
-              <Card className="border-dashed border-2">
-                <CardContent className="py-10 px-6 text-center space-y-4">
-                  <div className="p-4 bg-primary/10 rounded-2xl w-14 h-14 mx-auto flex items-center justify-center text-primary">
+              <Card className="rounded-2xl border-2 border-dashed border-border/80">
+                <CardContent className="py-12 px-6 text-center space-y-4">
+                  <div className="p-3.5 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 w-14 h-14 mx-auto flex items-center justify-center">
                     <Store className="h-7 w-7" />
                   </div>
-                  <div className="max-w-md mx-auto">
+                  <div className="max-w-md mx-auto space-y-1">
                     <h3 className="font-bold text-base text-foreground">No Registered Businesses Yet</h3>
-                    <p className="text-muted-foreground text-xs sm:text-sm mt-1 leading-relaxed">
+                    <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed">
                       Promote your sari-sari store, carinderia, water station, or local service across Barangay Daine 1 & 2 for free. Get verified and discovered by your neighbors!
                     </p>
                   </div>
-                  <Button asChild className="min-h-[44px] px-5 font-semibold">
+                  <Button asChild size="default" className="min-h-[44px] px-6 rounded-xl font-bold bg-primary hover:bg-primary/90">
                     <Link to="/businesses/new">
                       <Sparkles className="mr-2 h-4 w-4 text-amber-300" /> Register / List Your Business Free
                     </Link>
@@ -729,9 +890,9 @@ function DashboardRoute() {
               </Card>
             ) : (
               businesses.map(biz => {
-                const isDaine2 = biz.barangay === 'daine_2'
+                const isBizDaine2 = biz.barangay === 'daine_2'
                 return (
-                  <Card key={biz.id} className="hover:border-primary/40 transition-all shadow-xs overflow-hidden">
+                  <Card key={biz.id} className="rounded-2xl border border-border/80 hover:border-primary/40 transition-all shadow-xs overflow-hidden">
                     <CardHeader className="py-4 px-5 pb-3">
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                         <div className="flex items-start gap-3 min-w-0">
@@ -739,27 +900,27 @@ function DashboardRoute() {
                             <img
                               src={biz.photo_url}
                               alt={biz.name}
-                              className="w-14 h-14 rounded-xl object-cover border shrink-0"
+                              className="w-14 h-14 rounded-2xl object-cover border border-border/80 shrink-0"
                             />
                           ) : (
-                            <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center shrink-0 border text-muted-foreground">
+                            <div className="w-14 h-14 rounded-2xl bg-muted/60 flex items-center justify-center shrink-0 border border-border/60 text-muted-foreground">
                               <Store className="h-6 w-6" />
                             </div>
                           )}
-                          <div className="min-w-0">
-                            <CardTitle className="text-base font-bold truncate leading-tight">
+                          <div className="min-w-0 space-y-0.5">
+                            <CardTitle className="text-base font-bold truncate text-foreground">
                               {biz.name}
                             </CardTitle>
-                            <div className="flex flex-wrap items-center gap-1.5 mt-1 text-xs text-muted-foreground">
+                            <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                               <span className="font-semibold text-foreground">{biz.category}</span>
                               <span>•</span>
-                              <span className={`inline-flex items-center gap-0.5 font-semibold text-[10px] px-2 py-0.2 rounded-full ${
-                                isDaine2 
+                              <span className={`inline-flex items-center gap-1 font-bold text-[10px] px-2 py-0.5 rounded-full ${
+                                isBizDaine2 
                                   ? 'bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-300' 
                                   : 'bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-300'
                               }`}>
                                 <Building2 className="h-2.5 w-2.5" />
-                                {isDaine2 ? 'Daine 2' : 'Daine 1'}
+                                {isBizDaine2 ? 'Daine 2' : 'Daine 1'}
                               </span>
                               {biz.purok && (
                                 <>
@@ -768,7 +929,7 @@ function DashboardRoute() {
                                 </>
                               )}
                             </div>
-                            <p className="text-xs text-muted-foreground/70 mt-1 truncate max-w-sm">
+                            <p className="text-xs text-muted-foreground/70 truncate max-w-sm">
                               {biz.address}
                             </p>
                           </div>
@@ -786,15 +947,15 @@ function DashboardRoute() {
                     {/* Status Notice / Feedback Banner */}
                     {biz.status === 'approved' && (
                       <CardContent className="pt-0 pb-3 px-5">
-                        <div className="flex items-center justify-between p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs text-emerald-900 dark:text-emerald-200">
-                          <span className="flex items-center gap-1.5 font-medium">
+                        <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs text-emerald-900 dark:text-emerald-200">
+                          <span className="flex items-center gap-1.5 font-semibold">
                             <CheckCircle className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                             Live on Barangay Daine Directory
                           </span>
                           <Link
                             to="/directory/$businessId"
                             params={{ businessId: biz.id }}
-                            className="text-emerald-700 dark:text-emerald-300 hover:underline font-bold inline-flex items-center gap-0.5"
+                            className="min-h-[32px] inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-300 hover:underline font-bold"
                           >
                             View Listing <ExternalLink className="h-3 w-3" />
                           </Link>
@@ -804,8 +965,8 @@ function DashboardRoute() {
 
                     {biz.status === 'pending' && (
                       <CardContent className="pt-0 pb-3 px-5">
-                        <div className="flex items-center gap-2 p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200">
-                          <Clock className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                        <div className="flex items-center gap-2.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200">
+                          <Clock className="h-4 w-4 text-amber-600 shrink-0" />
                           <span>Under barangay review. Once verified by officials, your listing will become publicly visible.</span>
                         </div>
                       </CardContent>
@@ -813,25 +974,37 @@ function DashboardRoute() {
 
                     {biz.status === 'rejected' && biz.notes && (
                       <CardContent className="pt-0 pb-3 px-5">
-                        <div className="flex items-start gap-2 p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-xs text-rose-900 dark:text-rose-200">
-                          <AlertCircle className="h-3.5 w-3.5 mt-0.5 shrink-0 text-rose-600" />
-                          <span><span className="font-semibold">Review Notes:</span> {biz.notes}</span>
+                        <div className="flex items-start gap-2.5 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-xs text-rose-900 dark:text-rose-200">
+                          <AlertCircle className="h-4 w-4 mt-0.5 shrink-0 text-rose-600" />
+                          <div>
+                            <span className="font-bold">Review Notes:</span> {biz.notes}
+                          </div>
                         </div>
                       </CardContent>
                     )}
 
-                    {/* Footer Actions */}
-                    <CardFooter className="pt-2 pb-4 px-5 flex items-center justify-end gap-2.5 border-t bg-muted/10">
+                    {/* Footer Actions (Compliant 44px min-height touch targets) */}
+                    <CardFooter className="pt-3 pb-4 px-5 flex items-center justify-end gap-2.5 border-t border-border/60 bg-muted/10">
                       {biz.status === 'approved' && (
-                        <Button variant="ghost" size="sm" asChild className="min-h-[36px] px-3 text-xs font-semibold text-primary">
+                        <Button
+                          variant="ghost"
+                          size="default"
+                          asChild
+                          className="min-h-[44px] px-4 rounded-xl text-xs font-bold text-primary hover:bg-primary/10 cursor-pointer"
+                        >
                           <Link to="/directory/$businessId" params={{ businessId: biz.id }}>
-                            <ExternalLink className="h-3.5 w-3.5 mr-1" /> View Public Card
+                            <ExternalLink className="h-4 w-4 mr-1.5" /> View Public Card
                           </Link>
                         </Button>
                       )}
-                      <Button variant="outline" size="sm" asChild className="min-h-[36px] px-3.5 text-xs font-semibold gap-1">
+                      <Button
+                        variant="outline"
+                        size="default"
+                        asChild
+                        className="min-h-[44px] px-4 rounded-xl text-xs font-bold gap-1.5 border-border/80 hover:bg-muted/80 cursor-pointer"
+                      >
                         <Link to={`/businesses/${biz.id}/edit` as any}>
-                          <Edit className="h-3.5 w-3.5" /> Edit Business
+                          <Edit className="h-4 w-4" /> Edit Business
                         </Link>
                       </Button>
                     </CardFooter>
@@ -843,19 +1016,33 @@ function DashboardRoute() {
         </section>
       </div>
 
-      {/* Complaints / Incident Reports */}
-      <section id="incident-reports" className="space-y-4 mt-8 scroll-mt-20">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <ShieldAlert className="h-5 w-5 text-primary" /> My Incident Reports & Complaints
-          </h2>
+      {/* Complaints / Peace & Order Reports Section */}
+      <section id="incident-reports" className="space-y-5 pt-4 scroll-mt-20">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <ShieldAlert className="h-5 w-5 text-primary" />
+              My Incident Reports & Peace & Order
+            </h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Secure blotter tickets, mediation records, and incident reports
+            </p>
+          </div>
           <div className="flex items-center gap-3">
-            <Link to="/complaints" className="text-sm text-primary hover:underline font-medium">
-              View All →
+            <Link
+              to="/complaints"
+              className="min-h-[44px] inline-flex items-center text-sm text-primary hover:underline font-bold px-2"
+            >
+              View All Complaints →
             </Link>
-            <Button asChild size="default" variant="outline" className="min-h-[44px] px-4 font-semibold">
+            <Button
+              asChild
+              size="default"
+              variant="outline"
+              className="min-h-[44px] px-4 font-bold rounded-xl border-border/80 hover:bg-muted/80 cursor-pointer"
+            >
               <Link to="/complaints/new">
-                <PlusCircle className="mr-2 h-4 w-4" /> File Complaint
+                <PlusCircle className="mr-2 h-4 w-4" /> File Incident Report
               </Link>
             </Button>
           </div>
@@ -863,40 +1050,64 @@ function DashboardRoute() {
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {complaints.length === 0 ? (
-            <Card className="lg:col-span-2">
-              <CardContent className="py-12 text-center text-muted-foreground space-y-3">
-                <ShieldAlert className="h-10 w-10 mx-auto text-muted-foreground/50" />
-                <p className="text-sm">You haven't filed any complaints or incident reports.</p>
-                <Button variant="outline" size="sm" asChild className="min-h-[40px]">
-                  <Link to="/complaints/new">File a Complaint</Link>
+            <Card className="lg:col-span-2 rounded-2xl border border-dashed border-border/80">
+              <CardContent className="py-12 text-center text-muted-foreground space-y-4">
+                <div className="p-3.5 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 w-14 h-14 mx-auto flex items-center justify-center">
+                  <ShieldAlert className="h-7 w-7" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-base font-bold text-foreground">No Incident Reports Filed</p>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                    Report local disturbances, disputes, or security concerns directly to the Lupon Tagapamayapa & Barangay Tanod.
+                  </p>
+                </div>
+                <Button variant="outline" size="default" asChild className="min-h-[44px] px-5 rounded-xl font-bold">
+                  <Link to="/complaints/new">File an Incident Report</Link>
                 </Button>
               </CardContent>
             </Card>
           ) : (
             complaints.map((comp: any) => (
-              <Card key={comp.id} className="hover:border-primary/40 transition-colors">
+              <Card key={comp.id} className="rounded-2xl border border-border/80 hover:border-primary/40 transition-colors shadow-xs">
                 <CardHeader className="py-4 px-5 pb-3">
                   <div className="flex justify-between items-start gap-4">
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center gap-2">
                         <CardTitle className="text-base font-bold truncate">
-                          <Link to="/complaints/$complaintId" params={{ complaintId: comp.id }} className="hover:text-primary hover:underline transition-colors">
+                          <Link
+                            to="/complaints/$complaintId"
+                            params={{ complaintId: comp.id }}
+                            className="hover:text-primary hover:underline transition-colors min-h-[32px] inline-flex items-center"
+                          >
                             {comp.title}
                           </Link>
                         </CardTitle>
                         {comp.is_anonymous && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                             <EyeOff className="h-3 w-3" /> Anonymous
                           </span>
                         )}
                       </div>
-                      <CardDescription className="text-xs mt-1">
-                        <span className="font-semibold">{comp.category}</span>
-                        {comp.location && ` • ${comp.location}`}
-                        {comp.incident_date && ` • ${format(new Date(comp.incident_date), 'MMM d, yyyy')}`}
+                      <CardDescription className="text-xs text-muted-foreground flex flex-wrap items-center gap-1.5">
+                        <span className="font-semibold text-foreground">{comp.category}</span>
+                        {comp.location && (
+                          <>
+                            <span>•</span>
+                            <span className="inline-flex items-center gap-0.5">
+                              <MapPin className="h-3 w-3" />
+                              {comp.location}
+                            </span>
+                          </>
+                        )}
+                        {comp.incident_date && (
+                          <>
+                            <span>•</span>
+                            <span>{format(new Date(comp.incident_date), 'MMM d, yyyy')}</span>
+                          </>
+                        )}
                       </CardDescription>
-                      <p className="text-xs text-muted-foreground/70 mt-1">
-                        Filed {format(new Date(comp.created_at), 'MMM d, yyyy')}
+                      <p className="text-[11px] text-muted-foreground/70">
+                        Filed on {format(new Date(comp.created_at), 'MMMM d, yyyy')}
                       </p>
                     </div>
                     <ComplaintStatusBadge status={comp.status} />
@@ -904,18 +1115,33 @@ function DashboardRoute() {
                 </CardHeader>
                 {comp.admin_notes && (
                   <CardContent className="pt-0 pb-4 px-5">
-                    <div className="flex items-start gap-2 p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200">
-                      <Info className="h-3.5 w-3.5 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
-                      <span><span className="font-semibold">Staff Notes:</span> {comp.admin_notes}</span>
+                    <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-950 dark:text-amber-200">
+                      <Info className="h-4 w-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                      <div>
+                        <span className="font-bold">Barangay Action Update:</span> {comp.admin_notes}
+                      </div>
                     </div>
                   </CardContent>
                 )}
+                <CardFooter className="py-2.5 px-5 border-t border-border/60 flex justify-end">
+                  <Button
+                    asChild
+                    variant="ghost"
+                    size="default"
+                    className="min-h-[44px] px-3 text-xs font-bold text-primary hover:bg-primary/10 cursor-pointer"
+                  >
+                    <Link to="/complaints/$complaintId" params={{ complaintId: comp.id }}>
+                      View Details & Updates <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                    </Link>
+                  </Button>
+                </CardFooter>
               </Card>
             ))
           )}
         </div>
       </section>
 
+      {/* Official Certificate Print Modal */}
       <CertificatePrintModal
         open={printModalOpen}
         onOpenChange={setPrintModalOpen}

@@ -1,4 +1,4 @@
-import { useState, useRef, ChangeEvent } from 'react'
+import { useState, useRef, type ChangeEvent } from 'react'
 import { UploadCloud, X, Image as ImageIcon, Loader2 } from 'lucide-react'
 import { cn } from '#/lib/utils'
 
