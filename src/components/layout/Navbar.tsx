@@ -430,11 +430,11 @@ export function NavBar() {
               </div>
             )}
 
-            {/* Search (⌘K) */}
+            {/* Search (⌘K) - Accessible via mobile drawer & desktop header */}
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="inline-flex items-center gap-2 min-h-[44px] px-3 py-2 rounded-xl text-sm font-medium text-white bg-white/10 hover:bg-white/20 active:bg-white/25 border border-white/20 shadow-sm transition-all btn-tactile backdrop-blur-md cursor-pointer"
+              className="hidden sm:inline-flex items-center gap-2 min-h-[44px] px-3 py-2 rounded-xl text-sm font-medium text-white bg-white/10 hover:bg-white/20 active:bg-white/25 border border-white/20 shadow-sm transition-all btn-tactile backdrop-blur-md cursor-pointer"
               aria-label="Search portal (Command K)"
               title="Search (⌘K)"
             >
