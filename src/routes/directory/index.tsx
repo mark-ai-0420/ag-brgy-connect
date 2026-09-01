@@ -29,7 +29,7 @@ const getBusinesses = createServerFn({ method: 'GET' }).handler(async () => {
     const { data, error } = await supabase
       .from('businesses')
       .select(
-        'id, name, category, address, phone, hours, photo_url, menu_image_url, misc_image_url, description, map_url, barangay, purok, messenger_link, payment_methods'
+        'id, name, category, address, phone, hours, photo_url, menu_image_url, misc_image_url, description, map_url, barangay, purok, messenger_link, payment_methods, owner_id'
       )
       .eq('status', 'approved')
       .order('name')
@@ -447,13 +447,19 @@ function DirectoryRoute() {
                   </div>
                 )}
 
-                {/* Floating Category Badge (Top-left) */}
+                {/* Floating Category Badge & Claimable Pill (Top-left) */}
                 <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 pointer-events-none z-10">
                   <span
                     className={`inline-flex text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-xs backdrop-blur-md ${badgeClass}`}
                   >
                     {business.category}
                   </span>
+                  {!business.owner_id && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/95 text-amber-950 border border-amber-300 shadow-xs backdrop-blur-md">
+                      <Sparkles className="h-3 w-3" />
+                      Claimable
+                    </span>
+                  )}
                 </div>
 
                 {/* Floating Barangay Scope & Real-time Live Open/Closed Status Badges (Top-right) */}

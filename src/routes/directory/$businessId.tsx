@@ -29,13 +29,17 @@ import {
   CreditCard,
   CheckCircle2,
   UserCheck,
+  Sparkles,
 } from 'lucide-react'
 import { CATEGORY_COLORS, computeOpenStatus, getMessengerUrl } from './index'
+import { ClaimBusinessModal } from '#/components/businesses/ClaimBusinessModal'
 
 const getBusiness = createServerFn({ method: 'GET' })
   .validator((id: string) => z.string().min(1).parse(id))
   .handler(async ({ data: id }) => {
     const supabase = createSupabaseServerClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
     const { data, error } = await supabase
       .from('businesses')
       .select('id, name, category, description, address, phone, hours, status, photo_url, menu_image_url, misc_image_url, map_url, owner_id, barangay, purok, messenger_link, payment_methods, created_at')
@@ -55,7 +59,11 @@ const getBusiness = createServerFn({ method: 'GET' })
       }
     }
 
-    return { ...data, ownerBadge }
+    return {
+      ...data,
+      ownerBadge,
+      currentUser: user ? { id: user.id, email: user.email, user_metadata: user.user_metadata } : null,
+    }
   })
 
 export const Route = createFileRoute('/directory/$businessId')({
@@ -148,12 +156,45 @@ function BusinessDetail() {
   return (
     <div className="min-h-[100dvh] container mx-auto py-8 md:py-10 px-4 md:px-6 max-w-6xl pb-28 md:pb-10">
       {/* Back button */}
-      <Button variant="ghost" asChild className="mb-6 -ml-2 text-muted-foreground hover:text-foreground min-h-[44px] px-3 font-semibold rounded-xl">
-        <Link to="/directory">
-          <ArrowLeft className="mr-1.5 h-4 w-4" />
-          Back to Directory
-        </Link>
-      </Button>
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <Button variant="ghost" asChild className="-ml-2 text-muted-foreground hover:text-foreground min-h-[44px] px-3 font-semibold rounded-xl">
+          <Link to="/directory">
+            <ArrowLeft className="mr-1.5 h-4 w-4" />
+            Back to Directory
+          </Link>
+        </Button>
+
+        {!business.owner_id && (
+          <ClaimBusinessModal
+            business={business}
+            user={business.currentUser}
+            className="sm:inline-flex"
+          />
+        )}
+      </div>
+
+      {/* Unclaimed Business Alert Banner */}
+      {!business.owner_id && (
+        <Card className="mb-6 border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent rounded-2xl shadow-sm">
+          <CardContent className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-300 text-xs font-bold border border-amber-500/30">
+                <Sparkles className="h-3.5 w-3.5 text-amber-600" />
+                <span>Barangay-Curated Listing</span>
+              </div>
+              <h3 className="font-extrabold text-base text-foreground">Do you own or manage {business.name}?</h3>
+              <p className="text-xs text-muted-foreground">
+                This listing was curated by Barangay staff. Verified owners can claim this profile to update operating hours, price lists, photos, and payment methods.
+              </p>
+            </div>
+            <ClaimBusinessModal
+              business={business}
+              user={business.currentUser}
+              className="w-full sm:w-auto shrink-0 shadow-sm font-bold"
+            />
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main content */}

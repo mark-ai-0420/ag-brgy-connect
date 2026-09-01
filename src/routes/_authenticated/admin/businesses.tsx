@@ -40,13 +40,16 @@ import {
   Pill,
   HelpCircle,
   Archive,
-  Maximize2
+  Maximize2,
+  UserCheck,
+  FileCheck,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { format } from 'date-fns'
+import { getBusinessClaims, reviewBusinessClaim } from '#/server/businessClaims'
 
-const getBusinesses = createServerFn({ method: 'GET' }).handler(async () => {
+const getBusinessesData = createServerFn({ method: 'GET' }).handler(async () => {
   const supabase = createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
@@ -68,13 +71,17 @@ const getBusinesses = createServerFn({ method: 'GET' }).handler(async () => {
     query = query.eq('barangay', adminScope)
   }
 
-  const { data: businesses, error } = await query
+  const [{ data: businesses, error }, claimsResult] = await Promise.all([
+    query,
+    getBusinessClaims().catch(() => ({ claims: [] as any[], adminScope })),
+  ])
+
   if (error) {
     console.error('Error fetching businesses:', error)
-    return { businesses: [], adminScope }
+    return { businesses: [], claims: claimsResult.claims ?? [], adminScope }
   }
 
-  return { businesses: businesses ?? [], adminScope }
+  return { businesses: businesses ?? [], claims: claimsResult.claims ?? [], adminScope }
 })
 
 const updateBusinessStatus = createServerFn({ method: 'POST' })
@@ -104,7 +111,7 @@ const updateBusinessStatus = createServerFn({ method: 'POST' })
 
 export const Route = createFileRoute('/_authenticated/admin/businesses')({
   component: AdminBusinessesRoute,
-  loader: () => getBusinesses(),
+  loader: () => getBusinessesData(),
 })
 
 const CATEGORY_CONFIG: Record<string, { icon: any; color: string; bg: string; border: string }> = {
@@ -131,7 +138,7 @@ const COMMON_REJECTION_REASONS = [
 type BusinessItem = Awaited<ReturnType<typeof getBusinesses>>['businesses'][number]
 
 function AdminBusinessesRoute() {
-  const { businesses, adminScope } = Route.useLoaderData()
+  const { businesses, claims = [], adminScope } = Route.useLoaderData()
   const router = useRouter()
 
   // State
@@ -148,7 +155,12 @@ function AdminBusinessesRoute() {
   const [rejectionReason, setRejectionReason] = useState('')
   const [isSubmittingAction, setIsSubmittingAction] = useState(false)
 
-  // Filtering
+  // Claims Modal State
+  const [selectedClaim, setSelectedClaim] = useState<any | null>(null)
+  const [claimAdminNotes, setClaimAdminNotes] = useState('')
+  const [isSubmittingClaim, setIsSubmittingClaim] = useState(false)
+
+  // Filtering for businesses
   const filtered = businesses.filter((b: BusinessItem) => {
     const q = search.toLowerCase().trim()
     const matchesSearch =
@@ -166,11 +178,53 @@ function AdminBusinessesRoute() {
     return matchesSearch && matchesStatus && matchesBarangay && matchesCategory
   })
 
+  // Filtering for claims
+  const filteredClaims = claims.filter((c: any) => {
+    const q = search.toLowerCase().trim()
+    const bizName = c.businesses?.name?.toLowerCase() || ''
+    const claimant = c.claimant_name?.toLowerCase() || ''
+    const phone = c.claimant_phone?.toLowerCase() || ''
+    const matchesSearch = !q || bizName.includes(q) || claimant.includes(q) || phone.includes(q)
+
+    const matchesBarangay =
+      barangayFilter === 'all' ? true : c.businesses?.barangay === barangayFilter
+
+    return matchesSearch && matchesBarangay
+  })
+
   // Counters
   const pendingCount = businesses.filter((b: BusinessItem) => b.status === 'pending').length
   const approvedCount = businesses.filter((b: BusinessItem) => b.status === 'approved').length
   const rejectedCount = businesses.filter((b: BusinessItem) => b.status === 'rejected').length
   const archivedCount = businesses.filter((b: BusinessItem) => b.status === 'archived').length
+  const pendingClaimsCount = claims.filter((c: any) => c.status === 'pending').length
+
+  // Claim Review Handler
+  async function handleResolveClaim(status: 'approved' | 'rejected') {
+    if (!selectedClaim) return
+    setIsSubmittingClaim(true)
+    try {
+      await reviewBusinessClaim({
+        data: {
+          claimId: selectedClaim.id,
+          status,
+          adminNotes: claimAdminNotes.trim() || undefined,
+        },
+      })
+      toast.success(
+        status === 'approved'
+          ? `Claim approved! Ownership of "${selectedClaim.businesses?.name}" transferred to ${selectedClaim.claimant_name}.`
+          : `Claim rejected for "${selectedClaim.businesses?.name}".`
+      )
+      setSelectedClaim(null)
+      setClaimAdminNotes('')
+      router.invalidate()
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to resolve claim.')
+    } finally {
+      setIsSubmittingClaim(false)
+    }
+  }
 
   // Quick 1-click Approve
   async function handleQuickApprove(biz: BusinessItem) {
@@ -308,6 +362,7 @@ function AdminBusinessesRoute() {
           {[
             { key: 'all', label: 'All Listings', count: businesses.length },
             { key: 'pending', label: 'Pending Approval', count: pendingCount, highlight: true },
+            { key: 'claims', label: 'Ownership Claims', count: pendingClaimsCount, highlight: true },
             { key: 'approved', label: 'Approved', count: approvedCount },
             { key: 'rejected', label: 'Rejected', count: rejectedCount },
             { key: 'archived', label: 'Archived', count: archivedCount },
@@ -398,34 +453,158 @@ function AdminBusinessesRoute() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/30">
-                  <TableHead className="w-[280px]">Business & Storefront</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>GPS & Purok Verification</TableHead>
-                  <TableHead>Photos & Proof</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right w-[240px]">Actions (1-Click)</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                      <Store className="h-10 w-10 mx-auto mb-2 text-muted-foreground/30" />
-                      <p className="font-semibold text-foreground">No business listings match your criteria.</p>
-                      <p className="text-xs text-muted-foreground mt-1">Try changing filters or clearing your search term.</p>
-                    </TableCell>
+            {statusFilter === 'claims' ? (
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/30">
+                    <TableHead className="w-[280px]">Target Business</TableHead>
+                    <TableHead>Claimant & Role</TableHead>
+                    <TableHead>Ownership Statement & Proof</TableHead>
+                    <TableHead>Submitted</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right w-[200px]">Action</TableHead>
                   </TableRow>
-                ) : (
-                  filtered.map((biz: BusinessItem) => {
-                    const isDaine2 = biz.barangay === 'daine_2'
-                    const catStyle = CATEGORY_CONFIG[biz.category] ?? CATEGORY_CONFIG['Others']
-                    const CatIcon = catStyle.icon
-                    const hasPhotos = Boolean(biz.photo_url || biz.menu_image_url || biz.misc_image_url)
-                    const photoCount = [biz.photo_url, biz.menu_image_url, biz.misc_image_url].filter(Boolean).length
-                    const hasGps = Boolean(biz.latitude && biz.longitude)
+                </TableHeader>
+                <TableBody>
+                  {filteredClaims.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                        <Store className="h-10 w-10 mx-auto mb-2 text-muted-foreground/30" />
+                        <p className="font-semibold text-foreground">No ownership claims found.</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          When residents submit claims for unowned listings, they will appear here.
+                        </p>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredClaims.map((claim: any) => {
+                      const biz = claim.businesses
+                      const isPending = claim.status === 'pending'
+                      return (
+                        <TableRow key={claim.id} className="hover:bg-muted/30 transition-colors">
+                          <TableCell className="align-top py-3.5">
+                            <div className="flex items-start gap-2.5">
+                              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                                <Store className="h-5 w-5" />
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-bold text-sm text-foreground">{biz?.name || 'Unknown Business'}</span>
+                                  {biz?.id && (
+                                    <Link to="/directory/$businessId" params={{ businessId: biz.id }} target="_blank" className="text-muted-foreground hover:text-primary">
+                                      <ExternalLink className="h-3.5 w-3.5" />
+                                    </Link>
+                                  )}
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                  {biz?.category} &bull; {biz?.purok ? `Purok ${biz.purok}, ` : ''}{biz?.barangay === 'daine_2' ? 'Daine 2' : 'Daine 1'}
+                                </p>
+                              </div>
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="align-top py-3.5">
+                            <div className="space-y-0.5">
+                              <p className="font-bold text-xs text-foreground flex items-center gap-1">
+                                <UserCheck className="h-3.5 w-3.5 text-primary" />
+                                {claim.claimant_name}
+                              </p>
+                              <p className="text-xs text-muted-foreground">{claim.claimant_phone}</p>
+                              <Badge variant="outline" className="text-[10px] font-semibold bg-muted mt-1">
+                                Role: {claim.relationship}
+                              </Badge>
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="align-top py-3.5 max-w-[280px]">
+                            <p className="text-xs text-foreground font-medium line-clamp-2" title={claim.proof_notes}>
+                              {claim.proof_notes}
+                            </p>
+                            {claim.proof_image_url && (
+                              <a
+                                href={claim.proof_image_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-semibold mt-1"
+                              >
+                                <ExternalLink className="h-3 w-3" /> View Proof Document
+                              </a>
+                            )}
+                          </TableCell>
+
+                          <TableCell className="align-top py-3.5 text-xs text-muted-foreground">
+                            {format(new Date(claim.created_at), 'MMM d, yyyy h:mm a')}
+                          </TableCell>
+
+                          <TableCell className="align-top py-3.5">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${
+                                claim.status === 'approved'
+                                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                                  : claim.status === 'rejected'
+                                    ? 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300 border border-red-300 dark:border-red-800'
+                                    : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-800 animate-pulse'
+                              }`}
+                            >
+                              {claim.status}
+                            </span>
+                            {claim.admin_notes && (
+                              <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1" title={claim.admin_notes}>
+                                Note: {claim.admin_notes}
+                              </p>
+                            )}
+                          </TableCell>
+
+                          <TableCell className="align-top py-3.5 text-right">
+                            <Button
+                              size="sm"
+                              variant={isPending ? 'default' : 'outline'}
+                              className={`min-h-[44px] font-bold text-xs btn-tactile ${
+                                isPending ? 'bg-primary hover:bg-primary/90 text-primary-foreground' : ''
+                              }`}
+                              onClick={() => {
+                                setSelectedClaim(claim)
+                                setClaimAdminNotes(claim.admin_notes || '')
+                              }}
+                            >
+                              {isPending ? 'Review Claim' : 'View Resolution'}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/30">
+                    <TableHead className="w-[280px]">Business & Storefront</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>GPS & Purok Verification</TableHead>
+                    <TableHead>Photos & Proof</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right w-[240px]">Actions (1-Click)</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                        <Store className="h-10 w-10 mx-auto mb-2 text-muted-foreground/30" />
+                        <p className="font-semibold text-foreground">No business listings match your criteria.</p>
+                        <p className="text-xs text-muted-foreground mt-1">Try changing filters or clearing your search term.</p>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filtered.map((biz: BusinessItem) => {
+                      const isDaine2 = biz.barangay === 'daine_2'
+                      const catStyle = CATEGORY_CONFIG[biz.category] ?? CATEGORY_CONFIG['Others']
+                      const CatIcon = catStyle.icon
+                      const hasPhotos = Boolean(biz.photo_url || biz.menu_image_url || biz.misc_image_url)
+                      const photoCount = [biz.photo_url, biz.menu_image_url, biz.misc_image_url].filter(Boolean).length
+                      const hasGps = Boolean(biz.latitude && biz.longitude)
 
                     return (
                       <TableRow key={biz.id} className="hover:bg-muted/30 transition-colors">
@@ -670,6 +849,7 @@ function AdminBusinessesRoute() {
                 )}
               </TableBody>
             </Table>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -1073,6 +1253,129 @@ function AdminBusinessesRoute() {
                   </Button>
                 )}
               </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Ownership Claim Review Dialog */}
+      <Dialog open={Boolean(selectedClaim)} onOpenChange={(open) => !open && setSelectedClaim(null)}>
+        <DialogContent className="max-w-xl p-6">
+          <DialogHeader>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold w-fit mb-1 border border-primary/20">
+              <FileCheck className="h-3.5 w-3.5" />
+              <span>Ownership Claim Verification</span>
+            </div>
+            <DialogTitle className="text-xl font-black">
+              Review Claim for "{selectedClaim?.businesses?.name}"
+            </DialogTitle>
+            <DialogDescription>
+              Verify the claimant's identity and proof of ownership before transferring listing control.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedClaim && (
+            <div className="space-y-4 py-2 text-sm">
+              {/* Business Overview */}
+              <div className="p-3.5 rounded-xl bg-muted/60 border space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-foreground">{selectedClaim.businesses?.name}</span>
+                  <Badge variant="outline">{selectedClaim.businesses?.category}</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {selectedClaim.businesses?.purok ? `Purok ${selectedClaim.businesses.purok}, ` : ''}
+                  {selectedClaim.businesses?.barangay === 'daine_2' ? 'Barangay Daine 2' : 'Barangay Daine 1'}
+                </p>
+              </div>
+
+              {/* Claimant Information */}
+              <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl border bg-card">
+                <div>
+                  <p className="text-xs text-muted-foreground font-semibold">Claimant Full Name</p>
+                  <p className="font-bold text-foreground mt-0.5">{selectedClaim.claimant_name}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground font-semibold">Contact Phone</p>
+                  <p className="font-bold text-foreground mt-0.5">{selectedClaim.claimant_phone}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground font-semibold">Declared Relationship</p>
+                  <p className="font-bold text-foreground mt-0.5">{selectedClaim.relationship}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground font-semibold">Submitted On</p>
+                  <p className="font-bold text-foreground mt-0.5">{format(new Date(selectedClaim.created_at), 'MMM d, yyyy h:mm a')}</p>
+                </div>
+              </div>
+
+              {/* Proof Statement */}
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-foreground">Ownership Proof & Statement</p>
+                <div className="p-3 rounded-xl bg-muted/40 border text-xs text-foreground leading-relaxed">
+                  {selectedClaim.proof_notes}
+                </div>
+              </div>
+
+              {selectedClaim.proof_image_url && (
+                <div>
+                  <p className="text-xs font-bold text-foreground mb-1">Attached Document / Image</p>
+                  <a
+                    href={selectedClaim.proof_image_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" /> Open Proof File in New Tab
+                  </a>
+                </div>
+              )}
+
+              {/* Admin Feedback Notes */}
+              <div className="space-y-1 pt-1">
+                <Label htmlFor="claimAdminNotes" className="text-xs font-bold">
+                  Barangay Verification Notes / Resolution Reason
+                </Label>
+                <Textarea
+                  id="claimAdminNotes"
+                  value={claimAdminNotes}
+                  onChange={(e) => setClaimAdminNotes(e.target.value)}
+                  placeholder="e.g. Verified with Barangay Business Registry 2026 or Valid ID presented."
+                  className="min-h-[70px] text-xs"
+                />
+              </div>
+
+              <DialogFooter className="gap-2 pt-3 sm:space-x-0">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setSelectedClaim(null)}
+                  disabled={isSubmittingClaim}
+                  className="min-h-[44px]"
+                >
+                  Close
+                </Button>
+                {selectedClaim.status === 'pending' && (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="min-h-[44px] font-bold text-destructive border-destructive/30 hover:bg-destructive/10"
+                      onClick={() => handleResolveClaim('rejected')}
+                      disabled={isSubmittingClaim}
+                    >
+                      Reject Claim
+                    </Button>
+                    <Button
+                      type="button"
+                      className="min-h-[44px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white btn-tactile"
+                      onClick={() => handleResolveClaim('approved')}
+                      disabled={isSubmittingClaim}
+                    >
+                      Approve & Transfer Ownership
+                    </Button>
+                  </>
+                )}
+              </DialogFooter>
             </div>
           )}
         </DialogContent>
