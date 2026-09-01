@@ -7,6 +7,9 @@ tools:
   write: true
   terminal: false
   mcp: []
+skills:
+  - brandkit
+  - huashu-design
 handoff_in: Git commit hash on main + handoffs/<feature>/05_qa_verification_report.md
 handoff_out: handoffs/<feature>/06_release_post.md & Retrospective Loop
 ---

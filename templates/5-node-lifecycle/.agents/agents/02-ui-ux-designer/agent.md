@@ -13,8 +13,11 @@ skills:
   - impeccable
   - emil-design-eng
   - animate
+  - apple-design
   - ui-ux-pro-max
   - huashu-design
+  - modern-web-guidance
+  - a11y-debugging
 handoff_in: handoffs/<feature>/01_product_brief.md
 handoff_out: handoffs/<feature>/02_design_spec.md
 ---

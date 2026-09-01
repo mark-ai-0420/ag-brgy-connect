@@ -8,6 +8,12 @@ tools:
   terminal: true
   browser: true
   mcp: [chrome-devtools-mcp, supabase]
+skills:
+  - debug-optimize-lcp
+  - a11y-debugging
+  - ask-sonner
+  - modern-web-guidance
+  - chrome-devtools
 handoff_in: handoffs/<feature>/02_design_spec.md
 handoff_out: handoffs/<feature>/05_qa_verification_report.md
 ---
