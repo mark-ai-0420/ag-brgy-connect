@@ -22,9 +22,12 @@ Welcome to **BrgyConnect** (`ag-brgy-connect`). This document defines the operat
        GitPush -->|Release Broadcast| E_Live["Poster Publishes"]
        E_Live -->|Citizen Engagement Insights| A
    ```
-   - **Step 1 (Product -> UX)**: Product Strategist defines citizen problem, feature requirements, and handoff.
-   - **Step 2 (UX -> Engineering)**: UI/UX Designer reviews, specs out responsive UI/UX, validates usability with Product, and passes to Engineering Hub.
-   - **Step 3 (Engineering Execution)**: Engineering Hub fans out parallel builders **with explicit file-lock ownership**, validates build (`pnpm run build`), executes automated E2E browser tests, and captures high-res screenshots.
+   - **Step 1 (Product -> UX)**: Product Strategist defines citizen problem, feature requirements, and handoff (`01_product_brief.md`).
+   - **Step 2 (UX -> Engineering)**: UI/UX Designer reviews, specs out responsive UI/UX, validates usability with Product, and passes to Engineering Hub (`02_design_spec.md`).
+   - **Step 3 (Engineering Hub Execution & Engine Choice)**: Lead Architect (3A) selects the optimal execution engine:
+     - **Engine 1: Parallel Builder Fan-Out with File-Locking (Default)**: For iterative features, UI/UX polish, and targeted SSR changes. Spawns 2–6 Flash-tier builders with disjoint file locks.
+     - **Engine 2: `/teamwork-preview` Swarm Engine**: For massive greenfield subsystems, standalone microservices, or complex algorithms requiring a 10+ agent swarm.
+     - In both cases, **3C Independent QA Critic** executes unified build checks (`pnpm run build`), runs automated Puppeteer E2E tests, and verifies screenshots before proceeding.
    - **Step 4 (Conditional DBA Gate + Poster)**: If migration files were changed, DBA audit is mandatory and blocking. If UI-only, DBA is notified for awareness (non-blocking). Poster is always notified in parallel with screenshots.
    - **Step 5 (Git Gate)**: Engineering Hub prompts the user for explicit Git commit/push confirmation (after DBA sign-off if required).
    - **Step 6 (Release Broadcast)**: Once pushed to `main`, Poster finalizes and publishes community social media announcements.

@@ -55,12 +55,16 @@ echo ""
 
 mkdir -p "$TARGET_DIR/.agents/rules"
 mkdir -p "$TARGET_DIR/.agents/templates/subagents"
+mkdir -p "$TARGET_DIR/.agents/agents"
 mkdir -p "$TARGET_DIR/handoffs/template"
+mkdir -p "$TARGET_DIR/scripts"
 
-# Copy rules and templates
+# Copy rules, templates, and agents
 cp -r "$SOURCE_DIR/.agents/rules/"* "$TARGET_DIR/.agents/rules/"
 cp -r "$SOURCE_DIR/.agents/templates/subagents/"* "$TARGET_DIR/.agents/templates/subagents/"
+cp -r "$SOURCE_DIR/.agents/agents/"* "$TARGET_DIR/.agents/agents/"
 cp -r "$SOURCE_DIR/handoffs/template/"* "$TARGET_DIR/handoffs/template/"
+cp "$SOURCE_DIR/../../scripts/run_5node_flow.py" "$TARGET_DIR/scripts/run_5node_flow.py" 2>/dev/null || true
 
 # Process AGENTS.md with variable substitution
 sed -e "s|{{PROJECT_NAME}}|$PROJECT_NAME|g" \
@@ -73,6 +77,7 @@ sed -e "s|{{PROJECT_NAME}}|$PROJECT_NAME|g" \
 
 # Process subagent templates
 for file in "$TARGET_DIR/.agents/templates/subagents/"*.md; do
+  [ -f "$file" ] || continue
   sed -i '' -e "s|{{PROJECT_NAME}}|$PROJECT_NAME|g" \
             -e "s|{{BUILD_COMMAND}}|$BUILD_COMMAND|g" \
             -e "s|{{LOCAL_BUILD_COMMAND}}|$BUILD_COMMAND|g" \
@@ -82,18 +87,32 @@ for file in "$TARGET_DIR/.agents/templates/subagents/"*.md; do
                                           "$file"
 done
 
+# Process agent profiles
+find "$TARGET_DIR/.agents/agents" -name "*.md" -type f | while read -r file; do
+  sed -i '' -e "s|BrgyConnect|$PROJECT_NAME|g" "$file" 2>/dev/null || sed -i -e "s|BrgyConnect|$PROJECT_NAME|g" "$file"
+done
+
 echo "✅ Successfully exported 5-Node Lifecycle Flow to $TARGET_DIR!"
 echo ""
 echo "Files installed in target project:"
 echo "  ├── AGENTS.md"
 echo "  ├── .agents/"
+echo "  │   ├── agents/"
+echo "  │   │   ├── 01-product-strategist/"
+echo "  │   │   ├── 02-ui-ux-designer/"
+echo "  │   │   ├── 03-engineering-hub/ (subroles & rework rules)"
+echo "  │   │   ├── 04-dba-architect/"
+echo "  │   │   └── 05-community-poster/"
 echo "  │   ├── rules/"
 echo "  │   │   ├── tdd-workflow.md"
 echo "  │   │   ├── git-approval-gate.md"
 echo "  │   │   └── db-migration-gate.md"
 echo "  │   └── templates/subagents/"
 echo "  │       ├── builder_template.md"
-echo "  │       └── critic_qa_template.md"
+echo "  │       ├── critic_qa_template.md"
+echo "  │       └── ui_ux_designer_template.md"
+echo "  ├── scripts/"
+echo "  │   └── run_5node_flow.py"
 echo "  └── handoffs/"
 echo "      └── template/"
 echo "          ├── 01_product_brief.md"

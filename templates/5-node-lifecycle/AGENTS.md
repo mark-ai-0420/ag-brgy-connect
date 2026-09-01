@@ -25,7 +25,10 @@ Welcome to **{{PROJECT_NAME}}**. This document defines the operational protocol,
 
    - **Node 1 (Product -> UX)**: Product Strategist authors `handoffs/<feature>/01_product_brief.md` defining problem statement, requirements, and acceptance criteria.
    - **Node 2 (UX -> Engineering)**: UI/UX Designer authors `handoffs/<feature>/02_design_spec.md` with responsive layouts, visual tokens, interaction states, and file-lock assignments.
-   - **Node 3 (Engineering Execution)**: Engineering Hub authors `handoffs/<feature>/03_implementation_plan.md`, fans out parallel builder subagents with **explicit file-lock ownership**, runs builds, executes automated E2E browser tests, and captures verification screenshots.
+   - **Node 3 (Engineering Hub Execution & Engine Choice)**: Lead Architect (3A) authors `03_implementation_plan.md` and selects the optimal execution engine:
+     - **Engine 1: Parallel Builder Fan-Out with File-Locking (Default)**: For iterative features, UI/UX polish, and targeted code changes. Spawns 2–6 Flash-tier builders with disjoint file locks.
+     - **Engine 2: `/teamwork-preview` Swarm Engine**: For massive greenfield systems, standalone microservices, or complex parallel exploration requiring a 10+ agent swarm.
+     - In both cases, **3C Independent QA Critic** executes unified build checks (`{{BUILD_COMMAND}}`), runs automated E2E browser tests, and verifies screenshots before proceeding.
    - **Node 4 (Conditional DBA Gate)**: If database migrations or schema files changed (`supabase/migrations`, `prisma/schema.prisma`, `drizzle/`, etc.), DBA review and security sign-off is mandatory and blocking. If UI/logic only, DBA is notified for awareness (non-blocking).
    - **Node 5 (Git Gate)**: Engineering Hub prompts the user for explicit Git commit/push confirmation.
    - **Node 6 (Release Broadcast)**: Once pushed to `main`, Poster finalizes and publishes community/social media release announcements (`06_release_post.md`).
