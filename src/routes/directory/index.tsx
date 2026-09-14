@@ -309,10 +309,10 @@ function DirectoryRoute() {
             <Button
               asChild
               size="lg"
-              className="min-h-[48px] px-6 font-bold bg-amber-400 hover:bg-amber-300 active:bg-amber-500 text-slate-950 shadow-lg gap-2 text-sm sm:text-base btn-tactile rounded-xl border border-amber-300"
+              className="min-h-[48px] px-6 font-bold bg-amber-400 hover:bg-amber-300 active:bg-amber-500 text-amber-950 font-bold shadow-lg gap-2 text-sm sm:text-base btn-tactile rounded-xl border border-amber-300"
             >
               <Link to="/businesses/new">
-                <Store className="h-5 w-5 text-slate-950" />
+                <Store className="h-5 w-5 text-amber-950" />
                 Register / List Business
               </Link>
             </Button>

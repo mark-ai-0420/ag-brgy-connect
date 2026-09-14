@@ -3,30 +3,29 @@ import {
   Scripts,
   createRootRouteWithContext,
   Outlet,
-  Link,
-  useRouter,
   useRouterState,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
-import { useState, useEffect, type ReactNode } from 'react'
-import { Menu, X, Bell } from 'lucide-react'
+import { useEffect, type ReactNode } from 'react'
+import type { QueryClient } from '@tanstack/react-query'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
 import { Toaster } from '#/components/ui/sonner'
-import { ThemeToggle } from '#/components/common/ThemeToggle'
-
-import type { QueryClient } from '@tanstack/react-query'
+import { AuthProvider } from '#/hooks/useAuth'
+import { BarangayScopeProvider } from '#/hooks/useBarangayScope'
+import { NavBar } from '#/components/layout/Navbar'
+import { Footer } from '#/components/layout/Footer'
+import { EmergencySpeedDial } from '#/components/emergency/EmergencySpeedDial'
+import { KaDaineChatbot } from '#/components/chat/KaDaineChatbot'
+import { SessionTimeoutModal } from '#/components/auth/SessionTimeoutModal'
+import { OfflineIndicator } from '#/components/common/OfflineIndicator'
+import { PWAInstallBanner } from '#/components/common/PWAInstallBanner'
 
 interface MyRouterContext {
   queryClient: QueryClient
 }
-
-import { AuthProvider } from '#/hooks/useAuth'
-import { clearAuthCache } from '#/server/auth'
-import { useRealtimeNotifications } from '#/hooks/useRealtimeNotifications'
-import { BarangayScopeProvider } from '#/hooks/useBarangayScope'
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   head: () => ({
@@ -44,7 +43,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       {
         name: 'description',
         content:
-          "BrgyConnect — Official digital portal of Barangay Daine, Indang, Cavite for community services, document requests, announcements, and local business directory.",
+          "BrgyConnect: Official digital portal of Barangay Daine, Indang, Cavite for community services, document requests, announcements, and local business directory.",
       },
       {
         name: 'theme-color',
@@ -73,7 +72,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       {
         property: 'og:description',
         content:
-          "BrgyConnect — Official digital portal of Barangay Daine, Indang, Cavite for community services, document requests, announcements, and local business directory.",
+          "BrgyConnect: Official digital portal of Barangay Daine, Indang, Cavite for community services, document requests, announcements, and local business directory.",
       },
       {
         property: 'og:type',
@@ -81,6 +80,20 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
     ],
     links: [
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.googleapis.com',
+      },
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.gstatic.com',
+        crossOrigin: 'anonymous',
+      },
+      {
+        rel: 'stylesheet',
+        // impeccable-disable-next-line overused-font -- user-mandated brand typography
+        href: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap',
+      },
       {
         rel: 'stylesheet',
         href: appCss,
@@ -103,17 +116,12 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   component: RootComponent,
 })
 
-import { NavBar } from '#/components/layout/Navbar'
-import { Footer } from '#/components/layout/Footer'
-import { EmergencySpeedDial } from '#/components/emergency/EmergencySpeedDial'
-import { KaDaineChatbot } from '#/components/chat/KaDaineChatbot'
-import { SessionTimeoutModal } from '#/components/auth/SessionTimeoutModal'
-import { OfflineIndicator } from '#/components/common/OfflineIndicator'
-import { PWAInstallBanner } from '#/components/common/PWAInstallBanner'
-
 function RootComponent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
-  const isAuthRoute = pathname.startsWith('/auth')
+  const shouldSuppressFloating =
+    pathname.startsWith('/auth') ||
+    pathname.startsWith('/admin') ||
+    (pathname.startsWith('/directory/') && pathname !== '/directory')
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
@@ -139,8 +147,8 @@ function RootComponent() {
         </main>
         <Footer />
         <PWAInstallBanner />
-        {!isAuthRoute && <EmergencySpeedDial />}
-        {!isAuthRoute && <KaDaineChatbot />}
+        {!shouldSuppressFloating && <EmergencySpeedDial />}
+        {!shouldSuppressFloating && <KaDaineChatbot />}
         <SessionTimeoutModal />
       </BarangayScopeProvider>
     </AuthProvider>

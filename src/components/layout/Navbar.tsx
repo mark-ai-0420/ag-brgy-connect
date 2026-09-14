@@ -149,6 +149,8 @@ export function NavBar() {
             <div className="relative" ref={servicesRef}>
               <button
                 type="button"
+                aria-haspopup="menu"
+                aria-expanded={servicesOpen}
                 onClick={() => {
                   setServicesOpen((prev) => !prev)
                   setCommunityOpen(false)
@@ -289,6 +291,8 @@ export function NavBar() {
             <div className="relative" ref={communityRef}>
               <button
                 type="button"
+                aria-haspopup="menu"
+                aria-expanded={communityOpen}
                 onClick={() => {
                   setCommunityOpen((prev) => !prev)
                   setServicesOpen(false)
@@ -381,6 +385,8 @@ export function NavBar() {
               <div className="relative hidden sm:block" ref={scopeRef}>
                 <button
                   type="button"
+                  aria-haspopup="menu"
+                  aria-expanded={scopeOpen}
                   onClick={() => {
                     setScopeOpen((prev) => !prev)
                     setServicesOpen(false)
@@ -541,7 +547,7 @@ export function NavBar() {
               onClick={() => setIsOpen(!isOpen)}
               aria-expanded={isOpen}
               aria-controls="mobile-menu"
-              className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-xl hover:bg-white/15 active:bg-white/20 focus:outline-none transition-colors cursor-pointer"
+              className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-xl hover:bg-white/15 active:bg-white/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none transition-colors cursor-pointer"
               aria-label="Toggle navigation menu"
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}

@@ -42,7 +42,7 @@ export function OfflineIndicator() {
           <div className="container mx-auto flex items-center justify-center gap-2.5 text-center">
             <WifiOff className="h-4 w-4 shrink-0 animate-pulse text-amber-200" />
             <span>
-              <strong>Offline Mode Active</strong> — Naka-cache ang mga nakaraang records. Maaari pa ring tawagan ang emergency hotlines nang direkta.
+              <strong>Offline Mode Active:</strong> Naka-cache ang mga nakaraang records. Maaari pa ring tawagan ang emergency hotlines nang direkta.
             </span>
           </div>
           <button
@@ -66,7 +66,7 @@ export function OfflineIndicator() {
           <div className="flex items-center gap-2">
             <Wifi className="h-4 w-4 shrink-0 text-emerald-200" />
             <span>
-              <strong>Online Connection Restored</strong> — Lahat ng digital services at verification portals ay live na muli.
+              <strong>Online Connection Restored:</strong> Lahat ng digital services at verification portals ay live na muli.
             </span>
           </div>
         </div>

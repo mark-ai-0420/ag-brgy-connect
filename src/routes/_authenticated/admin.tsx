@@ -368,7 +368,7 @@ function AdminLayout() {
           <SheetTrigger asChild>
             <button
               type="button"
-              className="flex-1 min-h-[50px] flex flex-col items-center justify-center gap-1 py-1 rounded-xl text-muted-foreground text-[11px] font-semibold transition-all hover:text-foreground focus:outline-none touch-target cursor-pointer"
+              className="flex-1 min-h-[50px] flex flex-col items-center justify-center gap-1 py-1 rounded-xl text-muted-foreground text-[11px] font-semibold transition-all hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none touch-target cursor-pointer"
             >
               <div className="p-1 rounded-lg text-muted-foreground">
                 <MoreHorizontal className="h-5 w-5 shrink-0" />
@@ -380,13 +380,15 @@ function AdminLayout() {
           </SheetTrigger>
 
           {/* Radix Sheet / Slide-Over Drawer */}
-          <SheetContent side="bottom" className="rounded-t-3xl max-h-[88vh] overflow-y-auto p-4 pb-8 sm:max-w-xl sm:mx-auto border-t-2 border-primary/20">
+          <SheetContent side="bottom" className="rounded-t-3xl max-h-[88vh] overflow-y-auto p-4 pb-8 sm:max-w-xl sm:mx-auto">
             {/* Sheet Tricolor Ribbon */}
             <div className="absolute top-0 left-0 right-0 h-1.5 flex rounded-t-3xl overflow-hidden">
               <div className="w-[45%] bg-[#0038A8]" />
               <div className="w-[10%] bg-[#FCD116]" />
               <div className="w-[45%] bg-[#CE1126]" />
             </div>
+
+            <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30 mx-auto mb-4" />
 
             <SheetHeader className="p-0 pt-2 pb-2 text-left space-y-1">
               <div className="flex items-center justify-between">

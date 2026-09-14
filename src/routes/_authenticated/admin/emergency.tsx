@@ -168,7 +168,7 @@ function getHotlineCategory(name: string, label?: string | null) {
     return { icon: Zap, label: 'Power Utility', color: 'text-amber-700 bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800' }
   }
   if (text.includes('water') || text.includes('tubig')) {
-    return { icon: Droplets, label: 'Water Utility', color: 'text-cyan-700 bg-cyan-50 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800' }
+    return { icon: Droplets, label: 'Water Utility', color: 'text-blue-700 bg-blue-50 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800' }
   }
   return { icon: LifeBuoy, label: 'Public Assistance', color: 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800' }
 }
@@ -453,7 +453,7 @@ function AdminEmergencyRoute() {
 
       {/* Metrics Overview Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
-        <Card className="border-l-4 border-l-red-500 bg-red-50/20 dark:bg-red-950/10">
+        <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Hotlines</p>
@@ -465,11 +465,11 @@ function AdminEmergencyRoute() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-indigo-500 bg-indigo-50/20 dark:bg-indigo-950/10">
+        <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Dual Scope (All Daine)</p>
-              <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">{dualScopeCount}</p>
+              <p className="text-2xl font-bold text-foreground mt-0.5">{dualScopeCount}</p>
             </div>
             <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
               <Building2 className="h-5 w-5" />
@@ -477,7 +477,7 @@ function AdminEmergencyRoute() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-blue-500 bg-blue-50/20 dark:bg-blue-950/10">
+        <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Daine 1 Lines</p>
@@ -489,11 +489,11 @@ function AdminEmergencyRoute() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-purple-500 bg-purple-50/20 dark:bg-purple-950/10">
+        <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Daine 2 Lines</p>
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-0.5">{daine2Count}</p>
+              <p className="text-2xl font-bold text-foreground mt-0.5">{daine2Count}</p>
             </div>
             <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0">
               <LifeBuoy className="h-5 w-5" />
@@ -572,10 +572,11 @@ function AdminEmergencyRoute() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 min-h-[28px] min-w-[28px] rounded p-0 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                        className="min-h-[44px] min-w-[44px] p-2 flex items-center justify-center rounded text-muted-foreground hover:text-foreground disabled:opacity-30"
                         onClick={() => handleShiftOrder(index, 'up')}
                         disabled={isFirst}
                         title="Move Up in priority"
+                        aria-label="Move Up in priority"
                       >
                         <ArrowUp className="h-3.5 w-3.5" />
                       </Button>
@@ -588,10 +589,11 @@ function AdminEmergencyRoute() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 min-h-[28px] min-w-[28px] rounded p-0 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                        className="min-h-[44px] min-w-[44px] p-2 flex items-center justify-center rounded text-muted-foreground hover:text-foreground disabled:opacity-30"
                         onClick={() => handleShiftOrder(index, 'down')}
                         disabled={isLast}
                         title="Move Down in priority"
+                        aria-label="Move Down in priority"
                       >
                         <ArrowDown className="h-3.5 w-3.5" />
                       </Button>

@@ -144,11 +144,11 @@ function EventDetail() {
 
           {/* Full Hero Image (if present) */}
           {event.image_url && (
-            <div className="rounded-2xl overflow-hidden border border-border/80 shadow-md bg-muted/40 my-6">
+            <div className="rounded-2xl overflow-hidden border border-border/80 shadow-md bg-muted/40 my-6 aspect-[16/9]">
               <img
                 src={event.image_url}
                 alt={event.title}
-                className="w-full h-auto max-h-[500px] object-cover"
+                className="w-full h-full object-cover"
               />
             </div>
           )}

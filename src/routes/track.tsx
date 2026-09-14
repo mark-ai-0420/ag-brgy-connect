@@ -120,37 +120,37 @@ function getProgressInfo(status?: string) {
       return {
         percent: 25,
         percentLabel: '25%',
-        statusLabel: 'Stage 1 of 4 — Request Submitted & Pending Intake',
+        statusLabel: 'Stage 1 of 4: Request Submitted & Pending Intake',
         color: 'from-blue-600 via-blue-700 to-indigo-600',
         badgeColor: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/80 dark:text-blue-300 dark:border-blue-800',
-        estimator: 'Standard turnaround: 1–2 business days (Monday – Friday, 8:00 AM – 5:00 PM)',
+        estimator: 'Standard turnaround: 1-2 business days (Monday to Friday, 8:00 AM - 5:00 PM)',
       }
     case 'under_review':
     case 'in_review':
       return {
         percent: 50,
         percentLabel: '50%',
-        statusLabel: 'Stage 2 of 4 — Secretary Review & Requirements Check',
+        statusLabel: 'Stage 2 of 4: Secretary Review & Requirements Check',
         color: 'from-blue-600 via-indigo-600 to-violet-600',
         badgeColor: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/80 dark:text-blue-300 dark:border-blue-800',
-        estimator: 'Standard turnaround: 1–2 business days (In verification)',
+        estimator: 'Standard turnaround: 1-2 business days (In verification)',
       }
     case 'processing':
     case 'approved':
       return {
         percent: 75,
         percentLabel: '75%',
-        statusLabel: 'Stage 3 of 4 — Captain Approval & Official Seal Generation',
+        statusLabel: 'Stage 3 of 4: Captain Approval & Official Seal Generation',
         color: 'from-indigo-600 via-blue-600 to-teal-600',
         badgeColor: 'bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-950/80 dark:text-indigo-300 dark:border-indigo-800',
-        estimator: 'Standard turnaround: 1–2 business days (Awaiting final executive sign-off)',
+        estimator: 'Standard turnaround: 1-2 business days (Awaiting final executive sign-off)',
       }
     case 'ready_for_pickup':
     case 'ready':
       return {
         percent: 100,
         percentLabel: '100%',
-        statusLabel: 'Stage 4 of 4 — Ready for Immediate Hall Pickup & Digital Verification',
+        statusLabel: 'Stage 4 of 4: Ready for Immediate Hall Pickup & Digital Verification',
         color: 'from-emerald-500 via-emerald-600 to-teal-600',
         badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-800',
         estimator: 'Document Certified & Ready for Hall Pickup or Digital Verification',
@@ -160,7 +160,7 @@ function getProgressInfo(status?: string) {
       return {
         percent: 100,
         percentLabel: '100%',
-        statusLabel: 'Stage 4 of 4 — Document Issued & Released',
+        statusLabel: 'Stage 4 of 4: Document Issued & Released',
         color: 'from-emerald-500 via-teal-600 to-emerald-600',
         badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-800',
         estimator: 'Official Document Released & Verified in Civic Registry',
@@ -170,7 +170,7 @@ function getProgressInfo(status?: string) {
       return {
         percent: 100,
         percentLabel: '100%',
-        statusLabel: 'Requires Attention — Action Needed with Barangay Staff',
+        statusLabel: 'Requires Attention: Action Needed with Barangay Staff',
         color: 'from-red-500 via-rose-600 to-red-700',
         badgeColor: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-950/80 dark:text-red-300 dark:border-red-800',
         estimator: 'Requires Attention: Please contact or visit your Barangay Hall Receiving Desk',
@@ -179,10 +179,10 @@ function getProgressInfo(status?: string) {
       return {
         percent: 25,
         percentLabel: '25%',
-        statusLabel: 'Stage 1 of 4 — Request Submitted & Pending Intake',
+        statusLabel: 'Stage 1 of 4: Request Submitted & Pending Intake',
         color: 'from-blue-600 via-blue-700 to-indigo-600',
         badgeColor: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/80 dark:text-blue-300 dark:border-blue-800',
-        estimator: 'Standard turnaround: 1–2 business days (Monday – Friday, 8:00 AM – 5:00 PM)',
+        estimator: 'Standard turnaround: 1-2 business days (Monday to Friday, 8:00 AM - 5:00 PM)',
       }
   }
 }
@@ -452,7 +452,7 @@ function TrackDocumentRoute() {
                 onChange={(e) => setInputCode(e.target.value.toUpperCase())}
                 placeholder="Enter Reference Code (e.g. BD1-8F3A29D1 or Request ID)"
                 aria-label="Enter document tracking reference code"
-                className="pl-11 pr-4 min-h-[48px] h-12 text-sm sm:text-base font-mono uppercase tracking-wider rounded-xl bg-background border-input shadow-inner focus-visible:ring-[#0038A8]"
+                className="pl-11 pr-4 min-h-[48px] h-12 text-sm sm:text-base font-mono uppercase rounded-xl bg-background border-input shadow-inner focus-visible:ring-[#0038A8]"
                 autoCapitalize="characters"
                 autoComplete="off"
                 spellCheck="false"
@@ -730,8 +730,8 @@ function TrackDocumentRoute() {
                         className="w-full h-3 bg-muted rounded-full overflow-hidden p-0.5 border border-border/60"
                       >
                         <div
-                          className={`h-full transition-all duration-700 ease-out rounded-full bg-gradient-to-r ${progress.color}`}
-                          style={{ width: `${progress.percent}%` }}
+                          className={`h-full w-full transition-transform duration-500 ease-out rounded-full bg-gradient-to-r ${progress.color}`}
+                          style={{ transform: `scaleX(${progress.percent / 100})`, transformOrigin: 'left' }}
                         />
                       </div>
 

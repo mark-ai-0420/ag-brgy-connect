@@ -38,7 +38,7 @@ export function DefaultNotFoundComponent() {
   
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-sm border-t-4 border-t-[#0038A8]">
+      <Card className="w-full max-w-md shadow-sm border-t-4 border-t-primary">
         <CardContent className="pt-6 flex flex-col items-center text-center space-y-4">
           <div className="rounded-full bg-blue-50 p-4">
             <Search className="h-8 w-8 text-[#0038A8]" />

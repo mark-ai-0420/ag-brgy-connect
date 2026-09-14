@@ -65,8 +65,8 @@ function AnnouncementDetail() {
         {/* Badges */}
         <div className="flex flex-wrap items-center gap-2">
           {item.pinned && (
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-amber-400 text-slate-950 border border-amber-500/50 shadow-xs">
-              <Pin className="h-3.5 w-3.5 fill-slate-950" />
+            <span className="inline-flex items-center gap-1.5 text-xs font-black px-3 py-1 rounded-full bg-amber-400 text-amber-950 border border-amber-500/50 shadow-xs">
+              <Pin className="h-3.5 w-3.5 fill-amber-950 text-amber-950" />
               Pinned Notice
             </span>
           )}
@@ -105,11 +105,11 @@ function AnnouncementDetail() {
 
         {/* Full Hero Image (if present) */}
         {item.image_url && (
-          <div className="rounded-2xl overflow-hidden border border-border/80 shadow-md bg-muted/40 my-6">
+          <div className="rounded-2xl overflow-hidden border border-border/80 shadow-md bg-muted/40 my-6 aspect-[16/9]">
             <img
               src={item.image_url}
               alt={item.title}
-              className="w-full h-auto max-h-[550px] object-cover object-center"
+              className="w-full h-full object-cover object-center"
             />
           </div>
         )}

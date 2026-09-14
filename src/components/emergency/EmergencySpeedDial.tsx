@@ -17,14 +17,14 @@ export function EmergencySpeedDial() {
           role="dialog"
           aria-label="Emergency Hotline Contacts"
           aria-modal="true"
-          className="mb-3 w-80 bg-card text-card-foreground border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col glass-dock animate-in slide-in-from-bottom-3 fade-in-0 duration-200"
+          className="mb-3 w-[320px] max-w-[calc(100vw-2rem)] bg-card text-card-foreground border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col glass-dock animate-in slide-in-from-bottom-3 fade-in-0 duration-200"
         >
           {/* Header */}
           <div className="bg-gradient-to-r from-[#CE1126] to-[#a50e1e] text-white px-4 py-3.5 flex justify-between items-center shadow-sm">
             <div className="flex items-center gap-2.5">
               <div className="relative flex items-center justify-center">
                 <Siren className="w-5 h-5 text-yellow-300 animate-pulse" />
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-yellow-400 rounded-full animate-ping" />
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-yellow-400 rounded-full" />
               </div>
               <div>
                 <h3 className="font-extrabold text-sm leading-tight tracking-tight">Emergency Hotlines</h3>
@@ -33,7 +33,7 @@ export function EmergencySpeedDial() {
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="hover:bg-white/20 active:bg-white/30 p-1.5 rounded-full text-white transition-colors cursor-pointer"
+              className="hover:bg-white/20 active:bg-white/30 min-h-[40px] min-w-[40px] p-2 flex items-center justify-center rounded-full text-white transition-colors cursor-pointer"
               aria-label="Close emergency speed dial"
             >
               <X className="w-4 h-4" />
@@ -45,7 +45,7 @@ export function EmergencySpeedDial() {
             {(scope === 'all' || scope === 'daine1') && (
               <a
                 href="tel:09171230001"
-                className="flex items-center gap-3 p-2.5 hover:bg-muted active:bg-muted/80 rounded-xl transition-all group min-h-[48px] btn-tactile border border-transparent hover:border-border/60"
+                className="flex items-center gap-3 p-2.5 hover:bg-muted active:bg-muted/80 rounded-xl transition-transform duration-150 group min-h-[48px] btn-tactile border border-transparent hover:border-border/60"
                 aria-label="Call Brgy Daine 1 Ops Desk at 0917-123-0001"
               >
                 <div className="bg-blue-500/15 text-blue-600 dark:text-blue-400 p-2.5 rounded-xl group-hover:bg-[#0038A8] group-hover:text-white transition-colors shadow-xs">
@@ -62,7 +62,7 @@ export function EmergencySpeedDial() {
             {(scope === 'all' || scope === 'daine2') && (
               <a
                 href="tel:09171230002"
-                className="flex items-center gap-3 p-2.5 hover:bg-muted active:bg-muted/80 rounded-xl transition-all group min-h-[48px] btn-tactile border border-transparent hover:border-border/60"
+                className="flex items-center gap-3 p-2.5 hover:bg-muted active:bg-muted/80 rounded-xl transition-transform duration-150 group min-h-[48px] btn-tactile border border-transparent hover:border-border/60"
                 aria-label="Call Brgy Daine 2 Ops Desk at 0917-123-0002"
               >
                 <div className="bg-red-500/15 text-[#CE1126] dark:text-red-400 p-2.5 rounded-xl group-hover:bg-[#CE1126] group-hover:text-white transition-colors shadow-xs">
@@ -78,7 +78,7 @@ export function EmergencySpeedDial() {
             
             <a
               href="tel:0464150322"
-              className="flex items-center gap-3 p-2.5 hover:bg-muted active:bg-muted/80 rounded-xl transition-all group min-h-[48px] btn-tactile border border-transparent hover:border-border/60"
+              className="flex items-center gap-3 p-2.5 hover:bg-muted active:bg-muted/80 rounded-xl transition-transform duration-150 group min-h-[48px] btn-tactile border border-transparent hover:border-border/60"
               aria-label="Call BFP Indang Fire Station at (046) 415-0322"
             >
               <div className="bg-orange-500/15 text-orange-600 dark:text-orange-400 p-2.5 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-colors shadow-xs">
@@ -93,7 +93,7 @@ export function EmergencySpeedDial() {
             
             <a
               href="tel:0464150211"
-              className="flex items-center gap-3 p-2.5 hover:bg-muted active:bg-muted/80 rounded-xl transition-all group min-h-[48px] btn-tactile border border-transparent hover:border-border/60"
+              className="flex items-center gap-3 p-2.5 hover:bg-muted active:bg-muted/80 rounded-xl transition-transform duration-150 group min-h-[48px] btn-tactile border border-transparent hover:border-border/60"
               aria-label="Call PNP Indang Police at (046) 415-0211"
             >
               <div className="bg-blue-500/15 text-blue-600 dark:text-blue-400 p-2.5 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-xs">
@@ -108,7 +108,7 @@ export function EmergencySpeedDial() {
             
             <a
               href="tel:0464150102"
-              className="flex items-center gap-3 p-2.5 hover:bg-muted active:bg-muted/80 rounded-xl transition-all group min-h-[48px] btn-tactile border border-transparent hover:border-border/60"
+              className="flex items-center gap-3 p-2.5 hover:bg-muted active:bg-muted/80 rounded-xl transition-transform duration-150 group min-h-[48px] btn-tactile border border-transparent hover:border-border/60"
               aria-label="Call Rural Health and Ambulance at (046) 415-0102"
             >
               <div className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 p-2.5 rounded-xl group-hover:bg-emerald-600 group-hover:text-white transition-colors shadow-xs">
@@ -123,7 +123,7 @@ export function EmergencySpeedDial() {
 
             <a
               href="tel:09285550102"
-              className="flex items-center gap-3 p-2.5 hover:bg-muted active:bg-muted/80 rounded-xl transition-all group min-h-[48px] btn-tactile border border-transparent hover:border-border/60"
+              className="flex items-center gap-3 p-2.5 hover:bg-muted active:bg-muted/80 rounded-xl transition-transform duration-150 group min-h-[48px] btn-tactile border border-transparent hover:border-border/60"
               aria-label="Call Brgy Tanod Outpost at 0928-555-0102"
             >
               <div className="bg-amber-500/15 text-amber-600 dark:text-amber-400 p-2.5 rounded-xl group-hover:bg-amber-500 group-hover:text-white transition-colors shadow-xs">
@@ -175,7 +175,7 @@ export function EmergencySpeedDial() {
         ) : (
           <div className="relative flex items-center justify-center">
             <PhoneCall className="w-6 h-6 animate-pulse" />
-            <div className="absolute inset-0 rounded-full animate-ping bg-red-400/40 -z-10" />
+            <div className="absolute inset-0 rounded-full bg-red-400/40 -z-10" />
           </div>
         )}
       </button>

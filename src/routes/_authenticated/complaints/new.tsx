@@ -397,14 +397,14 @@ function NewComplaintRoute() {
                               role="switch"
                               aria-checked={field.value}
                               onClick={() => field.onChange(!field.value)}
-                              className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[28px] ${
+                              className={`relative inline-flex items-center h-8 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px] ${
                                 field.value ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700'
                               }`}
                             >
                               <span className="sr-only">Toggle Anonymous Whistleblowing Mode</span>
                               <span
                                 className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                                  field.value ? 'translate-x-5' : 'translate-x-0'
+                                  field.value ? 'translate-x-6' : 'translate-x-1'
                                 }`}
                               />
                             </button>

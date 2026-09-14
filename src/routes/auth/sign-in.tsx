@@ -26,7 +26,7 @@ const signInFnSchema = z.object({
   password: z.string().min(1),
 })
 
-// Server function — signs in and sets the session cookie server-side
+// Server function: signs in and sets the session cookie server-side
 const signInFn = createServerFn({ method: 'POST' })
   .validator(signInFnSchema)
   .handler(async ({ data }) => {

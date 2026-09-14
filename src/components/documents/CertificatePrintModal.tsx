@@ -136,7 +136,7 @@ export function CertificatePrintModal({ open, onOpenChange, request }: Certifica
   const monthYearFormatted = format(dateObj, 'MMMM, yyyy')
   const fullDateFormatted = `${dayFormatted} day of ${monthYearFormatted}`
 
-  /* Print via hidden iframe — high-fidelity single A4 sheet */
+  /* Print via hidden iframe: high-fidelity single A4 sheet */
   const handlePrint = () => {
     const cert = certRef.current
     if (!cert) return
@@ -488,7 +488,7 @@ ${headContent}
             <div className="relative z-10 pt-4">
               {/* Signatures Grid */}
               <div className="grid grid-cols-2 gap-12 pb-6 font-sans text-sm">
-                {/* Left — Barangay Secretary */}
+                {/* Left: Barangay Secretary */}
                 <div className="space-y-1 text-left">
                   <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">
                     Prepared &amp; Certified by:
@@ -504,7 +504,7 @@ ${headContent}
                   <p className="text-xs text-slate-600 font-medium">Barangay Secretary</p>
                 </div>
 
-                {/* Right — Punong Barangay */}
+                {/* Right: Punong Barangay */}
                 <div className="space-y-1 text-right">
                   <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">
                     Approved &amp; Issued by:

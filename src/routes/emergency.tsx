@@ -344,7 +344,7 @@ function EmergencyRoute() {
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                  <span className="text-[10px] font-extrabold uppercase tracking-widest bg-yellow-400 text-slate-950 px-2.5 py-0.5 rounded-full shadow-xs">
+                  <span className="text-[10px] uppercase tracking-widest bg-yellow-400 text-yellow-950 font-black px-2.5 py-0.5 rounded-full shadow-xs">
                     Civic Response Desk
                   </span>
                   <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 text-white px-2 py-0.5 rounded-full">
@@ -468,6 +468,7 @@ function EmergencyRoute() {
                     role="tab"
                     type="button"
                     aria-selected={isSelected}
+                    aria-controls={tab.id}
                     onClick={() => setScope(tab.id)}
                     className={`min-h-[44px] px-4 py-2 text-xs font-bold rounded-lg transition-all btn-tactile cursor-pointer ${
                       isSelected
@@ -509,7 +510,8 @@ function EmergencyRoute() {
 
       {/* Categorized Hotlines Section */}
       <main
-        id="hotlines-grid"
+        id={scope}
+        role="tabpanel"
         className="container mx-auto max-w-6xl py-6 px-4"
         aria-label="Categorized Emergency Hotlines Directory"
       >
@@ -540,13 +542,13 @@ function EmergencyRoute() {
               return (
                 <Card
                   key={idx}
-                  className={`border-l-4 ${section.borderColor} shadow-sm overflow-hidden bg-card transition-all hover:shadow-md border-border/80`}
+                  className="border border-border/80 shadow-sm overflow-hidden bg-card transition-all hover:shadow-md"
                 >
                   {/* High-Contrast Card Header */}
                   <CardHeader className="bg-slate-900 text-white dark:bg-slate-800/95 py-3.5 px-4 border-b border-border/40">
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="p-2 rounded-lg bg-white/10 text-white shrink-0 shadow-inner">
+                        <div className="p-2 rounded-lg bg-white/10 text-white shrink-0 shadow-inner ring-1 ring-white/10">
                           <Icon className="h-4 w-4" />
                         </div>
                         <CardTitle className="text-sm sm:text-base font-extrabold text-white tracking-tight leading-tight truncate">

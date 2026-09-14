@@ -425,7 +425,7 @@ function AnnouncementsRoute() {
                     key={tab.id}
                     onClick={() => setScope(tab.id as BarangayScope)}
                     type="button"
-                    className={`min-h-[36px] px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    className={`min-h-[40px] px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       isActive
                         ? tab.id === 'daine1'
                           ? 'bg-[#0038A8] text-white shadow-sm'
@@ -450,6 +450,7 @@ function AnnouncementsRoute() {
               placeholder="Search announcements..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
+              aria-label="Search announcements"
               className="w-full pl-9 pr-4 py-2 text-xs font-medium rounded-xl border border-input bg-background focus:outline-hidden focus:ring-2 focus:ring-primary min-h-[40px]"
             />
           </div>
@@ -466,7 +467,7 @@ function AnnouncementsRoute() {
                 variant={isSelected ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setSelectedCategory(cat)}
-                className={`rounded-full min-h-[38px] px-4 text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                className={`rounded-full min-h-[40px] px-4 text-xs font-bold transition-all shrink-0 cursor-pointer ${
                   isSelected
                     ? 'shadow-md bg-primary text-primary-foreground'
                     : 'bg-card text-muted-foreground hover:text-foreground hover:border-primary/50'

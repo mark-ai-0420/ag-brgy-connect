@@ -145,7 +145,7 @@ function NewBusinessRoute() {
               List Your Business &amp; Connect With Neighbors
             </h1>
             <p className="text-white/90 text-sm sm:text-base md:text-lg max-w-3xl leading-relaxed">
-              Empower your local enterprise with direct community reach across Barangay Daine 1 and Daine 2. From sari-sari stores and carenderias to repair shops, water stations, and home-based services — gain 24/7 visibility with all registered residents.
+              Empower your local enterprise with direct community reach across Barangay Daine 1 and Daine 2. From sari-sari stores and carenderias to repair shops, water stations, and home-based services, gain 24/7 visibility with all registered residents.
             </p>
           </div>
 
@@ -155,7 +155,7 @@ function NewBusinessRoute() {
             {/* Benefit 1: Free Community Listing */}
             <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 space-y-2 transition-all hover:bg-white/15">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-amber-400 text-slate-950 font-black shrink-0 shadow-xs">
+                <div className="p-2 rounded-xl bg-amber-400 text-amber-950 font-bold shrink-0 shadow-xs">
                   <BadgeCheck className="h-4 w-4" />
                 </div>
                 <h2 className="text-sm font-bold text-white leading-tight">100% Free Community Listing</h2>

@@ -360,7 +360,7 @@ function AdminUsersRoute() {
 
       {/* Metrics Overview Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-        <Card className="border-l-4 border-l-blue-500 bg-blue-50/20 dark:bg-blue-950/10">
+        <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Registered</p>
@@ -372,7 +372,7 @@ function AdminUsersRoute() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/10">
+        <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Verified Residents</p>
@@ -384,11 +384,11 @@ function AdminUsersRoute() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-indigo-500 bg-indigo-50/20 dark:bg-indigo-950/10">
+        <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">LGU Staff / Admins</p>
-              <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">{staffCount}</p>
+              <p className="text-2xl font-bold text-foreground mt-0.5">{staffCount}</p>
             </div>
             <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
               <Shield className="h-5 w-5" />
@@ -396,11 +396,11 @@ function AdminUsersRoute() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-purple-500 bg-purple-50/20 dark:bg-purple-950/10">
+        <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">MSME Merchants</p>
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-0.5">{msmeCount}</p>
+              <p className="text-2xl font-bold text-foreground mt-0.5">{msmeCount}</p>
             </div>
             <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0">
               <Store className="h-5 w-5" />
@@ -557,7 +557,7 @@ function AdminUsersRoute() {
                             <span
                               className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
                                 isDaine2
-                                  ? 'bg-purple-100 text-purple-900 border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800'
+                                  ? 'bg-emerald-50 text-emerald-900 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300'
                                   : 'bg-blue-100 text-blue-900 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800'
                               }`}
                             >

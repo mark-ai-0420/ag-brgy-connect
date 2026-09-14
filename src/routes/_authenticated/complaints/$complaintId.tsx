@@ -243,7 +243,7 @@ function ComplaintDetailPage() {
               </div>
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-bold text-purple-950 dark:text-purple-100">
+                  <h3 className="text-lg font-bold text-foreground">
                     Mediation Hearing Scheduled (Katarungang Pambarangay)
                   </h3>
                   <Badge className="bg-purple-600 text-white text-xs">Active Summon</Badge>

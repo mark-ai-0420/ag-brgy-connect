@@ -604,7 +604,7 @@ export function DigitalResidentID({
             size="sm"
             onClick={handleDownloadPNG}
             disabled={isDownloading}
-            className="min-h-[38px] text-xs font-bold gap-1.5 bg-[#0038A8] hover:bg-[#002675] text-white shadow-sm cursor-pointer rounded-xl"
+            className="min-h-[44px] text-xs font-bold gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm cursor-pointer rounded-xl btn-tactile"
           >
             <Download className="h-3.5 w-3.5" />
             {isDownloading ? 'Exporting...' : 'Download ID Card (PNG)'}
@@ -619,9 +619,9 @@ export function DigitalResidentID({
           <div className="relative overflow-hidden rounded-3xl border-2 border-amber-500/40 bg-gradient-to-br from-slate-950 via-slate-900 to-[#0A192F] text-white shadow-2xl transition-all duration-300">
             {/* Top Philippine Flag Tricolor Ribbon */}
             <div className="h-2 w-full flex">
-              <div className="w-[45%] bg-[#0038A8]" />
-              <div className="w-[10%] bg-[#FCD116]" />
-              <div className="w-[45%] bg-[#CE1126]" />
+              <div className="w-[45%] bg-primary" />
+              <div className="w-[10%] bg-accent" />
+              <div className="w-[45%] bg-destructive" />
             </div>
 
             {/* Holographic Subtle Background Rings */}
@@ -630,7 +630,7 @@ export function DigitalResidentID({
 
             <div className="p-5 sm:p-6 space-y-5">
               {/* Header Box */}
-              <div className="rounded-2xl bg-gradient-to-r from-[#0038A8]/90 via-[#002675]/95 to-[#1E3A8A]/90 p-3.5 border border-sky-400/30 text-center shadow-md relative overflow-hidden">
+              <div className="rounded-2xl bg-gradient-to-r from-primary via-primary/90 to-blue-900 p-3.5 border border-sky-400/30 text-center shadow-md relative overflow-hidden">
                 <div className="absolute top-0 right-0 left-0 h-0.5 bg-gradient-to-r from-transparent via-amber-300/60 to-transparent" />
                 <div className="flex items-center justify-between gap-2">
                   <img
@@ -707,8 +707,8 @@ export function DigitalResidentID({
                           </div>
                         ) : (
                           <div className="flex flex-col items-center gap-1 text-white">
-                            <div className="p-1.5 rounded-full bg-amber-400 text-slate-950 shadow-md">
-                              <Camera className="h-4 w-4" />
+                            <div className="p-1.5 rounded-full bg-amber-400 text-amber-950 shadow-md">
+                              <Camera className="h-4 w-4 text-amber-950" />
                             </div>
                             <span className="text-[9px] font-black tracking-wider uppercase text-amber-300 leading-tight">
                               {avatarUrl ? 'Change Photo' : 'Upload 2x2'}
@@ -802,9 +802,9 @@ export function DigitalResidentID({
           <div className="relative overflow-hidden rounded-3xl border-2 border-sky-500/40 bg-gradient-to-br from-slate-950 via-[#0A192F] to-slate-900 text-white shadow-2xl transition-all duration-300">
             {/* Top Stripe */}
             <div className="h-2 w-full flex">
-              <div className="w-[45%] bg-[#0038A8]" />
-              <div className="w-[10%] bg-[#FCD116]" />
-              <div className="w-[45%] bg-[#CE1126]" />
+              <div className="w-[45%] bg-primary" />
+              <div className="w-[10%] bg-accent" />
+              <div className="w-[45%] bg-destructive" />
             </div>
 
             <div className="p-5 sm:p-6 space-y-4">

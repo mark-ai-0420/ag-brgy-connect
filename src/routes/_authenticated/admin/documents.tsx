@@ -689,7 +689,7 @@ function AdminDocumentsRoute() {
             <span className="text-xs font-bold uppercase tracking-wider text-indigo-800 dark:text-indigo-300">
               Ready Pickup
             </span>
-            <p className="text-2xl font-black text-indigo-900 dark:text-indigo-200">{counts.ready ?? 0}</p>
+            <p className="text-2xl font-black text-foreground">{counts.ready ?? 0}</p>
             <span className="text-[11px] text-indigo-700/80 dark:text-indigo-400">At Hall desk</span>
           </CardContent>
         </Card>

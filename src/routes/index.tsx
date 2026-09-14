@@ -5,7 +5,6 @@ import { useBarangayScope } from '#/hooks/useBarangayScope'
 import { format, parseISO } from 'date-fns'
 import { useState, useMemo } from 'react'
 import {
-  Building2,
   Calendar,
   FileText,
   Phone,
@@ -25,7 +24,6 @@ import {
   X,
   Sparkles,
   FileCheck,
-  Flame,
   CheckCircle2,
 } from 'lucide-react'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '#/components/ui/card'
@@ -72,7 +70,7 @@ export const Route = createFileRoute('/')({
   head: () => ({
     meta: [
       {
-        title: 'BrgyConnect | Barangay Daine, Indang, Cavite — Unified Digital Portal',
+        title: 'BrgyConnect | Barangay Daine, Indang, Cavite: Unified Digital Portal',
       },
       {
         name: 'description',
@@ -81,7 +79,7 @@ export const Route = createFileRoute('/')({
       },
       {
         property: 'og:title',
-        content: 'BrgyConnect | Barangay Daine, Indang, Cavite — Unified Digital Portal',
+        content: 'BrgyConnect | Barangay Daine, Indang, Cavite: Unified Digital Portal',
       },
       {
         property: 'og:description',
@@ -297,7 +295,7 @@ function Home() {
                 Barangay Daine
                 <br />
                 <span className="text-[#FCD116] drop-shadow-[0_4px_24px_rgba(252,209,22,0.45)]">
-                  — Connected.
+                  Connected.
                 </span>
               </h1>
 

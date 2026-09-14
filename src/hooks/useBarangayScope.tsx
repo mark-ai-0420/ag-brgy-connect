@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useMemo, type ReactNode } from 'react'
 
 export type BarangayScope = 'all' | 'daine1' | 'daine2'
 
@@ -19,13 +19,15 @@ export function BarangayScopeProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const setScope = (newScope: BarangayScope) => {
+  const setScope = useCallback((newScope: BarangayScope) => {
     setScopeState(newScope)
     localStorage.setItem('barangay_scope', newScope)
-  }
+  }, [])
+
+  const value = useMemo(() => ({ scope, setScope }), [scope, setScope])
 
   return (
-    <BarangayScopeContext.Provider value={{ scope, setScope }}>
+    <BarangayScopeContext.Provider value={value}>
       {children}
     </BarangayScopeContext.Provider>
   )

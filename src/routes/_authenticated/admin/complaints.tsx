@@ -93,8 +93,8 @@ const STATUS_CONFIG: Record<
   scheduled_hearing: {
     label: 'Mediation Scheduled',
     badge:
-      'bg-purple-100 text-purple-950 border-purple-400 dark:bg-purple-950/70 dark:text-purple-200 dark:border-purple-700 font-bold',
-    dot: 'bg-purple-600',
+      'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-200 font-bold',
+    dot: 'bg-amber-500',
     icon: Gavel,
   },
   resolved: {
@@ -375,7 +375,7 @@ function SummonsModal({ complaint, open, onOpenChange }: SummonsModalProps) {
 
         <div class="parties">
           <div><strong>COMPLAINANT:</strong> ${complainantName}</div>
-          <div style="margin-left: 30px; font-style: italic; font-size: 12px;">— AGAINST —</div>
+          <div style="margin-left: 30px; font-style: italic; font-size: 12px;">- AGAINST -</div>
           <div><strong>RESPONDENT:</strong> ${respondentName}</div>
         </div>
 
@@ -1220,7 +1220,7 @@ function AdminComplaintsRoute() {
             <span className="text-xs font-bold uppercase tracking-wider text-purple-900 dark:text-purple-300">
               Hearings Set
             </span>
-            <p className="text-2xl font-black text-purple-950 dark:text-purple-200">
+            <p className="text-2xl font-black text-foreground">
               {counts.scheduled_hearing ?? 0}
             </p>
             <span className="text-[11px] text-purple-800/80 dark:text-purple-400">Scheduled sessions</span>

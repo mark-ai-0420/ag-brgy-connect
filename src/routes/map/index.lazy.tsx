@@ -1,5 +1,6 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import 'leaflet/dist/leaflet.css'
 import {
   MapPin,
   ShieldAlert,
@@ -364,7 +365,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     messenger_link: 'https://m.me/BrgyDaine1Cavite',
     capacity: 500,
     amenities: ['Standby 25kVA Generator', 'Medical Triage Bay', 'Restrooms & Showers', 'Potable Water Tank'],
-    status: 'Primary Evacuation Center — Ready & Operational',
+    status: 'Primary Evacuation Center: Ready & Operational',
     description: 'Central typhoon and calamity emergency shelter with emergency standby power, high-volume potable water bladder, and medical triage station.',
     hours: 'Open 24/7',
   },
@@ -513,7 +514,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     messenger_link: 'https://m.me/BrgyDaine2Cavite',
     capacity: 600,
     amenities: ['Standby Generator Unit', 'Comfort Rooms & Wash Stations', 'Mobile Kitchen Staging Area', 'Child-Friendly Space'],
-    status: 'Primary Evacuation Center — Ready & Operational',
+    status: 'Primary Evacuation Center: Ready & Operational',
     description: 'Central disaster shelter and relief staging grounds for Barangay Daine 2 residents during typhoons and calamities.',
     hours: 'Open 24/7',
   },
@@ -681,6 +682,181 @@ export const STATIC_SPOTS: MapSpot[] = [
   },
 ]
 
+export function getMarkerConfig(cat: SpotCategory) {
+  switch (cat) {
+    case 'evacuation':
+      return {
+        bg: 'bg-red-600 border-red-950 text-white shadow-red-500/50 ring-2 ring-red-400/40',
+        emoji: '🚨',
+      }
+    case 'government':
+      return {
+        bg: 'bg-blue-600 border-blue-950 text-white shadow-blue-500/50 ring-2 ring-blue-400/40',
+        emoji: '🏛️',
+      }
+    case 'health':
+      return {
+        bg: 'bg-teal-600 border-teal-950 text-white shadow-teal-500/50 ring-2 ring-teal-400/40',
+        emoji: '🏥',
+      }
+    case 'emergency':
+      return {
+        bg: 'bg-indigo-600 border-indigo-950 text-white shadow-indigo-500/50 ring-2 ring-indigo-400/40',
+        emoji: '🛡️',
+      }
+    case 'water':
+      return {
+        bg: 'bg-cyan-600 border-cyan-950 text-white shadow-cyan-500/50 ring-2 ring-cyan-400/40',
+        emoji: '🚰',
+      }
+    case 'education':
+      return {
+        bg: 'bg-emerald-600 border-emerald-950 text-white shadow-emerald-500/50 ring-2 ring-emerald-400/40',
+        emoji: '🏫',
+      }
+    case 'mrf':
+      return {
+        bg: 'bg-lime-600 border-lime-950 text-white shadow-lime-500/50 ring-2 ring-lime-400/40',
+        emoji: '♻️',
+      }
+    case 'sports':
+      return {
+        bg: 'bg-purple-600 border-purple-950 text-white shadow-purple-500/50 ring-2 ring-purple-400/40',
+        emoji: '🏀',
+      }
+    case 'business':
+    default:
+      return {
+        bg: 'bg-amber-500 border-amber-950 text-amber-950 shadow-amber-500/50 ring-2 ring-amber-400/40',
+        emoji: '🏪',
+      }
+  }
+}
+
+export function createSpotMarkerIcon(L: any, spot: MapSpot, isSelected: boolean) {
+  const markerConfig = getMarkerConfig(spot.category)
+  return L.divIcon({
+    className: 'custom-leaflet-pin',
+    html: `
+      <div class="relative group cursor-pointer flex flex-col items-center ${
+        isSelected
+          ? 'scale-115 ring-4 ring-primary/40 transition-transform duration-200 z-50 rounded-full'
+          : 'transition-transform hover:scale-115'
+      }">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center text-base font-bold shadow-lg border-2 ${
+          markerConfig.bg
+        }">
+          ${markerConfig.emoji}
+        </div>
+        <div class="w-2.5 h-2.5 ${markerConfig.bg.split(' ')[0]} rotate-45 -mt-1.5 shadow-sm"></div>
+      </div>
+    `,
+    iconSize: [40, 46],
+    iconAnchor: [20, 46],
+    popupAnchor: [0, -40],
+  })
+}
+
+export function createSpotPopupHtml(spot: MapSpot) {
+  const openStatus = computeOpenStatus(spot.hours)
+  const messengerUrl = formatMessengerUrl(spot.messenger_link)
+  const directionUrl = `https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}`
+
+  const scopeLabel =
+    spot.scope === 'daine_1'
+      ? 'Barangay Daine 1'
+      : spot.scope === 'daine_2'
+      ? 'Barangay Daine 2'
+      : 'Municipal / Indang'
+
+  const phoneBtn = spot.phone
+    ? `<a href="tel:${escapeHtml(
+        spot.phone
+      )}" class="inline-flex items-center justify-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 font-semibold no-underline" title="Call Hotline">
+        📞 Call
+      </a>`
+    : ''
+
+  const messengerBtn = messengerUrl
+    ? `<a href="${escapeHtml(
+        messengerUrl
+      )}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-sky-50 text-sky-800 hover:bg-sky-100 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-300 font-semibold no-underline" title="Chat on Messenger">
+        💬 Messenger
+      </a>`
+    : ''
+
+  const capacityBadge = spot.capacity
+    ? `<div class="text-[11px] font-bold text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40 px-2 py-1 rounded border border-red-200 mt-1.5 flex items-center gap-1">
+        👥 Evacuation Capacity: <strong>${spot.capacity.toLocaleString()} persons</strong>
+      </div>`
+    : ''
+
+  const hoursInfo = spot.hours
+    ? `<div class="text-[11px] text-slate-700 dark:text-slate-300 mt-1 flex items-center gap-1 font-medium">
+        🕒 ${escapeHtml(spot.hours)}
+      </div>`
+    : ''
+
+  const amenitiesHtml =
+    spot.amenities && spot.amenities.length > 0
+      ? `<div class="flex flex-wrap gap-1 mt-1.5">
+          ${spot.amenities
+            .slice(0, 3)
+            .map(
+              (a) =>
+                `<span class="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded font-medium">✓ ${escapeHtml(
+                  a
+                )}</span>`
+            )
+            .join('')}
+          ${
+            spot.amenities.length > 3
+              ? `<span class="text-[9px] text-slate-500 font-medium">+${spot.amenities.length - 3} more</span>`
+              : ''
+          }
+        </div>`
+      : ''
+
+  return `
+    <div class="p-1 max-w-[280px] font-sans text-slate-900 dark:text-slate-100">
+      <div class="flex items-center justify-between gap-1 mb-1">
+        <span class="text-xs font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
+          ${escapeHtml(spot.categoryTag)}
+        </span>
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${openStatus.badgeClass}">
+          ${escapeHtml(openStatus.label)}
+        </span>
+      </div>
+
+      <h3 class="font-bold text-sm text-slate-900 dark:text-slate-100 leading-snug mt-1 mb-0.5">
+        ${escapeHtml(spot.name)}
+      </h3>
+
+      <div class="text-[11px] text-blue-700 dark:text-blue-300 font-semibold flex items-center gap-1">
+        📍 ${escapeHtml(scopeLabel)}${spot.purok ? ` • ${escapeHtml(spot.purok)}` : ''}
+      </div>
+
+      <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 line-clamp-2 leading-relaxed">
+        ${escapeHtml(spot.address)}
+      </p>
+
+      ${hoursInfo}
+      ${capacityBadge}
+      ${amenitiesHtml}
+
+      <div class="grid grid-cols-3 gap-1.5 mt-3 pt-2 border-t border-slate-200 dark:border-slate-800">
+        <a href="${directionUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 no-underline col-span-${
+          phoneBtn && messengerBtn ? '1' : !phoneBtn && !messengerBtn ? '3' : '2'
+        }">
+          🗺️ Directions
+        </a>
+        ${phoneBtn}
+        ${messengerBtn}
+      </div>
+    </div>
+  `
+}
+
 export const Route = createLazyFileRoute('/map/')({
   component: MapRouteComponent,
 })
@@ -700,8 +876,11 @@ function MapRouteComponent() {
 
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
+  const markersLayerRef = useRef<any>(null)
   const markersRef = useRef<Record<string, any>>({})
   const userMarkerRef = useRef<any>(null)
+  const leafletRef = useRef<any>(null)
+  const prevSelectedSpotIdRef = useRef<string | null>(null)
   const [leafletLoaded, setLeafletLoaded] = useState(false)
 
   // Merge static authentic civic spots + dynamic database businesses
@@ -844,22 +1023,27 @@ function MapRouteComponent() {
     [setScope]
   )
 
-  // Initialize Leaflet map on client-side
+  // Center map on spot selection & open popup
+  const handleSpotClick = useCallback((spot: MapSpot) => {
+    setSelectedSpotId(spot.id)
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.flyTo([spot.lat, spot.lng], 17, { duration: 1.2 })
+      const marker = markersRef.current[spot.id]
+      if (marker && !marker.isPopupOpen()) {
+        marker.openPopup()
+      }
+    }
+    setActiveTab('map')
+  }, [])
+
+  // 1. Initialize Leaflet map once on client-side mount
   useEffect(() => {
     if (typeof window === 'undefined') return
     let isMounted = true
 
-    if (!document.getElementById('leaflet-css')) {
-      const link = document.createElement('link')
-      link.id = 'leaflet-css'
-      link.rel = 'stylesheet'
-      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
-      document.head.appendChild(link)
-    }
-
     import('leaflet').then((L) => {
       if (!isMounted || !mapContainerRef.current) return
-      setLeafletLoaded(true)
+      leafletRef.current = L
 
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove()
@@ -880,217 +1064,10 @@ function MapRouteComponent() {
         maxZoom: 19,
       }).addTo(map)
 
+      const markersLayer = L.layerGroup().addTo(map)
+      markersLayerRef.current = markersLayer
       mapInstanceRef.current = map
-      markersRef.current = {}
-
-      // Add user location marker if GPS is active
-      if (userLocation) {
-        const userIcon = L.divIcon({
-          className: 'user-gps-pin',
-          html: `
-            <div class="relative flex items-center justify-center">
-              <div class="absolute w-8 h-8 rounded-full bg-blue-500/30 animate-ping"></div>
-              <div class="w-5 h-5 rounded-full bg-blue-600 border-2 border-white shadow-lg flex items-center justify-center text-white text-[9px] font-black">
-                ●
-              </div>
-            </div>
-          `,
-          iconSize: [32, 32],
-          iconAnchor: [16, 16],
-        })
-
-        const uMarker = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
-          .addTo(map)
-          .bindPopup(`
-            <div class="p-1 font-sans text-xs">
-              <strong class="text-blue-600 dark:text-blue-400">📍 Your Current GPS Location</strong>
-              <p class="text-slate-600 dark:text-slate-400 text-[11px] mt-0.5">Calculated nearest emergency shelters from here.</p>
-            </div>
-          `)
-        userMarkerRef.current = uMarker
-      }
-
-      // Add markers for filtered spots
-      filteredSpots.forEach((spot) => {
-        const getMarkerConfig = (cat: SpotCategory) => {
-          switch (cat) {
-            case 'evacuation':
-              return {
-                bg: 'bg-red-600 border-red-950 text-white shadow-red-500/50 ring-2 ring-red-400/40',
-                emoji: '🚨',
-              }
-            case 'government':
-              return {
-                bg: 'bg-blue-600 border-blue-950 text-white shadow-blue-500/50 ring-2 ring-blue-400/40',
-                emoji: '🏛️',
-              }
-            case 'health':
-              return {
-                bg: 'bg-teal-600 border-teal-950 text-white shadow-teal-500/50 ring-2 ring-teal-400/40',
-                emoji: '🏥',
-              }
-            case 'emergency':
-              return {
-                bg: 'bg-indigo-600 border-indigo-950 text-white shadow-indigo-500/50 ring-2 ring-indigo-400/40',
-                emoji: '🛡️',
-              }
-            case 'water':
-              return {
-                bg: 'bg-cyan-600 border-cyan-950 text-white shadow-cyan-500/50 ring-2 ring-cyan-400/40',
-                emoji: '🚰',
-              }
-            case 'education':
-              return {
-                bg: 'bg-emerald-600 border-emerald-950 text-white shadow-emerald-500/50 ring-2 ring-emerald-400/40',
-                emoji: '🏫',
-              }
-            case 'mrf':
-              return {
-                bg: 'bg-lime-600 border-lime-950 text-white shadow-lime-500/50 ring-2 ring-lime-400/40',
-                emoji: '♻️',
-              }
-            case 'sports':
-              return {
-                bg: 'bg-purple-600 border-purple-950 text-white shadow-purple-500/50 ring-2 ring-purple-400/40',
-                emoji: '🏀',
-              }
-            case 'business':
-            default:
-              return {
-                bg: 'bg-amber-500 border-amber-950 text-amber-950 shadow-amber-500/50 ring-2 ring-amber-400/40',
-                emoji: '🏪',
-              }
-          }
-        }
-
-        const markerConfig = getMarkerConfig(spot.category)
-        const isSelected = selectedSpotId === spot.id
-
-        const customIcon = L.divIcon({
-          className: 'custom-leaflet-pin',
-          html: `
-            <div class="relative group cursor-pointer flex flex-col items-center ${
-              isSelected ? 'scale-125 z-50 animate-bounce' : 'transition-transform hover:scale-115'
-            }">
-              <div class="w-10 h-10 rounded-full flex items-center justify-center text-base font-bold shadow-lg border-2 ${
-                markerConfig.bg
-              }">
-                ${markerConfig.emoji}
-              </div>
-              <div class="w-2.5 h-2.5 ${markerConfig.bg.split(' ')[0]} rotate-45 -mt-1.5 shadow-sm"></div>
-            </div>
-          `,
-          iconSize: [40, 46],
-          iconAnchor: [20, 46],
-          popupAnchor: [0, -40],
-        })
-
-        const openStatus = computeOpenStatus(spot.hours)
-        const messengerUrl = formatMessengerUrl(spot.messenger_link)
-        const directionUrl = `https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}`
-
-        const scopeLabel =
-          spot.scope === 'daine_1'
-            ? 'Barangay Daine 1'
-            : spot.scope === 'daine_2'
-            ? 'Barangay Daine 2'
-            : 'Municipal / Indang'
-
-        const phoneBtn = spot.phone
-          ? `<a href="tel:${escapeHtml(
-              spot.phone
-            )}" class="inline-flex items-center justify-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 font-semibold no-underline" title="Call Hotline">
-              📞 Call
-            </a>`
-          : ''
-
-        const messengerBtn = messengerUrl
-          ? `<a href="${escapeHtml(
-              messengerUrl
-            )}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-sky-50 text-sky-800 hover:bg-sky-100 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-300 font-semibold no-underline" title="Chat on Messenger">
-              💬 Messenger
-            </a>`
-          : ''
-
-        const capacityBadge = spot.capacity
-          ? `<div class="text-[11px] font-bold text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40 px-2 py-1 rounded border border-red-200 mt-1.5 flex items-center gap-1">
-              👥 Evacuation Capacity: <strong>${spot.capacity.toLocaleString()} persons</strong>
-            </div>`
-          : ''
-
-        const hoursInfo = spot.hours
-          ? `<div class="text-[11px] text-slate-700 dark:text-slate-300 mt-1 flex items-center gap-1 font-medium">
-              🕒 ${escapeHtml(spot.hours)}
-            </div>`
-          : ''
-
-        const amenitiesHtml =
-          spot.amenities && spot.amenities.length > 0
-            ? `<div class="flex flex-wrap gap-1 mt-1.5">
-                ${spot.amenities
-                  .slice(0, 3)
-                  .map(
-                    (a) =>
-                      `<span class="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded font-medium">✓ ${escapeHtml(
-                        a
-                      )}</span>`
-                  )
-                  .join('')}
-                ${
-                  spot.amenities.length > 3
-                    ? `<span class="text-[9px] text-slate-500 font-medium">+${spot.amenities.length - 3} more</span>`
-                    : ''
-                }
-              </div>`
-            : ''
-
-        const popupContent = `
-          <div class="p-1 max-w-[280px] font-sans text-slate-900 dark:text-slate-100">
-            <div class="flex items-center justify-between gap-1 mb-1">
-              <span class="text-xs font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
-                ${escapeHtml(spot.categoryTag)}
-              </span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${openStatus.badgeClass}">
-                ${escapeHtml(openStatus.label)}
-              </span>
-            </div>
-
-            <h3 class="font-bold text-sm text-slate-900 dark:text-slate-100 leading-snug mt-1 mb-0.5">
-              ${escapeHtml(spot.name)}
-            </h3>
-
-            <div class="text-[11px] text-blue-700 dark:text-blue-300 font-semibold flex items-center gap-1">
-              📍 ${escapeHtml(scopeLabel)}${spot.purok ? ` • ${escapeHtml(spot.purok)}` : ''}
-            </div>
-
-            <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 line-clamp-2 leading-relaxed">
-              ${escapeHtml(spot.address)}
-            </p>
-
-            ${hoursInfo}
-            ${capacityBadge}
-            ${amenitiesHtml}
-
-            <div class="grid grid-cols-3 gap-1.5 mt-3 pt-2 border-t border-slate-200 dark:border-slate-800">
-              <a href="${directionUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 no-underline col-span-${
-                phoneBtn && messengerBtn ? '1' : !phoneBtn && !messengerBtn ? '3' : '2'
-              }">
-                🗺️ Directions
-              </a>
-              ${phoneBtn}
-              ${messengerBtn}
-            </div>
-          </div>
-        `
-
-        const marker = L.marker([spot.lat, spot.lng], { icon: customIcon }).addTo(map).bindPopup(popupContent)
-
-        marker.on('click', () => {
-          setSelectedSpotId(spot.id)
-        })
-
-        markersRef.current[spot.id] = marker
-      })
+      setLeafletLoaded(true)
     })
 
     return () => {
@@ -1099,21 +1076,101 @@ function MapRouteComponent() {
         mapInstanceRef.current.remove()
         mapInstanceRef.current = null
       }
+      markersLayerRef.current = null
     }
-  }, [filteredSpots, scope, selectedSpotId, userLocation])
+  }, [])
 
-  // Center map on spot selection
-  const handleSpotClick = (spot: MapSpot) => {
-    setSelectedSpotId(spot.id)
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.flyTo([spot.lat, spot.lng], 17, { duration: 1.2 })
-      const marker = markersRef.current[spot.id]
-      if (marker) {
-        marker.openPopup()
+  // 2. Add / update user location marker if GPS is active
+  useEffect(() => {
+    const L = leafletRef.current
+    const map = mapInstanceRef.current
+    if (!L || !map) return
+
+    if (userMarkerRef.current) {
+      userMarkerRef.current.remove()
+      userMarkerRef.current = null
+    }
+
+    if (userLocation) {
+      const userIcon = L.divIcon({
+        className: 'user-gps-pin',
+        html: `
+          <div class="relative flex items-center justify-center">
+            <div class="absolute w-8 h-8 rounded-full bg-blue-500/30 animate-ping"></div>
+            <div class="w-5 h-5 rounded-full bg-blue-600 border-2 border-white shadow-lg flex items-center justify-center text-white text-[9px] font-black">
+              ●
+            </div>
+          </div>
+        `,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+      })
+
+      const uMarker = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
+        .addTo(map)
+        .bindPopup(`
+          <div class="p-1 font-sans text-xs">
+            <strong class="text-blue-600 dark:text-blue-400">📍 Your Current GPS Location</strong>
+            <p class="text-slate-600 dark:text-slate-400 text-[11px] mt-0.5">Calculated nearest emergency shelters from here.</p>
+          </div>
+        `)
+      userMarkerRef.current = uMarker
+    }
+  }, [userLocation, leafletLoaded])
+
+  // 3. Populate / update markers on filteredSpots change without recreating the map
+  useEffect(() => {
+    const L = leafletRef.current
+    const layer = markersLayerRef.current
+    if (!L || !layer) return
+
+    layer.clearLayers()
+    markersRef.current = {}
+
+    filteredSpots.forEach((spot) => {
+      const isSelected = selectedSpotId === spot.id
+      const icon = createSpotMarkerIcon(L, spot, isSelected)
+      const popupContent = createSpotPopupHtml(spot)
+
+      const marker = L.marker([spot.lat, spot.lng], { icon })
+        .addTo(layer)
+        .bindPopup(popupContent)
+
+      marker.on('click', () => {
+        handleSpotClick(spot)
+      })
+
+      markersRef.current[spot.id] = marker
+    })
+  }, [filteredSpots, leafletLoaded, handleSpotClick])
+
+  // 4. Update active marker styling when selectedSpotId changes without recreating the map
+  useEffect(() => {
+    const L = leafletRef.current
+    if (!L) return
+
+    // Revert previously selected marker
+    if (prevSelectedSpotIdRef.current && prevSelectedSpotIdRef.current !== selectedSpotId) {
+      const prevMarker = markersRef.current[prevSelectedSpotIdRef.current]
+      const prevSpot = allSpots.find((s) => s.id === prevSelectedSpotIdRef.current)
+      if (prevMarker && prevSpot) {
+        prevMarker.setIcon(createSpotMarkerIcon(L, prevSpot, false))
+        prevMarker.setZIndexOffset(0)
       }
     }
-    setActiveTab('map')
-  }
+
+    // Apply active styling to newly selected marker
+    if (selectedSpotId) {
+      const currMarker = markersRef.current[selectedSpotId]
+      const currSpot = allSpots.find((s) => s.id === selectedSpotId)
+      if (currMarker && currSpot) {
+        currMarker.setIcon(createSpotMarkerIcon(L, currSpot, true))
+        currMarker.setZIndexOffset(1000)
+      }
+    }
+
+    prevSelectedSpotIdRef.current = selectedSpotId
+  }, [selectedSpotId, allSpots])
 
   const selectedSpot = useMemo(() => {
     if (!selectedSpotId) return null
@@ -1287,12 +1344,12 @@ function MapRouteComponent() {
       {isOffline && (
         <div className="mb-6 p-4 rounded-2xl bg-amber-500/15 border-2 border-amber-500/40 text-amber-950 dark:text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md animate-in fade-in duration-300">
           <div className="flex items-start gap-3">
-            <div className="p-2.5 rounded-xl bg-amber-500 text-slate-950 shrink-0 mt-0.5 shadow-sm">
+            <div className="p-2.5 rounded-xl bg-amber-500 text-amber-950 font-bold shrink-0 mt-0.5 shadow-sm">
               <WifiOff className="h-5 w-5 animate-pulse" />
             </div>
             <div>
               <h4 className="text-sm font-extrabold text-amber-900 dark:text-amber-100 flex items-center gap-2">
-                ⚡ Offline Mode Active — Cached Emergency Shelters & Purok Hotlines Ready
+                ⚡ Offline Mode Active: Cached Emergency Shelters &amp; Purok Hotlines Ready
               </h4>
               <p className="text-xs text-amber-800/90 dark:text-amber-300/90 mt-0.5 leading-relaxed">
                 Map tiles cannot download without active internet. All evacuation capacities, Purok anchor coordinates, and emergency hotlines below remain 100% accessible offline.
@@ -1380,7 +1437,7 @@ function MapRouteComponent() {
                   className={cn(
                     'min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-black transition-all text-center flex flex-col items-center justify-center gap-0.5 cursor-pointer',
                     scope === 'daine2'
-                      ? 'bg-amber-500 text-slate-950 shadow-lg ring-2 ring-white/60 scale-102'
+                      ? 'bg-amber-500 text-amber-950 font-black shadow-lg ring-2 ring-white/60 scale-102'
                       : 'bg-white/10 text-white hover:bg-white/20 hover:text-white'
                   )}
                 >
@@ -1602,8 +1659,8 @@ function MapRouteComponent() {
               {selectedSpot && (
                 <div
                   className={cn(
-                    'absolute bottom-2 left-2 right-2 z-30 bg-card/95 backdrop-blur-md border border-border shadow-2xl rounded-3xl p-4 sm:p-5 animate-in slide-in-from-bottom-5 duration-200 block md:hidden transition-all',
-                    isMobileDrawerExpanded ? 'max-h-[85%] overflow-y-auto' : 'max-h-[55%] overflow-y-auto'
+                    'absolute bottom-2 left-2 right-2 z-30 bg-card/95 backdrop-blur-md border border-border shadow-2xl rounded-3xl p-4 sm:p-5 animate-in slide-in-from-bottom-4 fade-in duration-200 block md:hidden will-change-transform overflow-y-auto',
+                    isMobileDrawerExpanded ? 'max-h-[85%]' : 'max-h-[55%]'
                   )}
                 >
                   {/* Top Drag Handle & Toggle */}

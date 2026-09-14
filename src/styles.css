@@ -229,7 +229,7 @@
     font-family: inherit;
   }
 
-  /* Subtle page background tint — a barely perceptible cool gradient */
+  /* Subtle page background tint: a barely perceptible cool gradient */
   body::before {
     content: '';
     position: fixed;
@@ -247,6 +247,15 @@
     outline: 2px solid var(--color-ring);
     outline-offset: 2px;
     border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
@@ -415,21 +424,6 @@
   @keyframes shimmer {
     from { background-position: -200% 0; }
     to   { background-position:  200% 0; }
-  }
-
-  /* Text gradient utility */
-  .text-gradient-blue {
-    background: linear-gradient(135deg, #0038A8, #1a52c8, #4a7dd4);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .text-gradient-flag {
-    background: linear-gradient(90deg, #0038A8 0%, #CE1126 50%, #FCD116 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
   }
 
   /* Mobile touch target minimum 44px */

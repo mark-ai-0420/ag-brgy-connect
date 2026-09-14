@@ -586,7 +586,7 @@ function BusinessDetail() {
             <DialogHeader className="p-4 bg-black/80 border-b border-white/10 flex flex-row items-center justify-between">
               <div>
                 <DialogTitle className="text-base font-bold text-white">
-                  {business.name} — {currentImage.label}
+                  {business.name} - {currentImage.label}
                 </DialogTitle>
                 <p className="text-xs text-white/70 mt-0.5">{currentImage.description}</p>
               </div>

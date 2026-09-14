@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Sparkles, Loader2 } from 'lucide-react';
 import { sendChatMessage } from '#/server/aiChat';
-import { Button } from '#/components/ui/button'; // Assuming standard Shadcn-like components exist, if not I will use simple html elements, but usually UI lib is present
-import { cn } from '#/lib/utils'; // standard shadcn utils, let's use raw tailwind just in case
 
 type Role = 'user' | 'model';
 
@@ -92,7 +90,7 @@ export function KaDaineChatbot() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="relative flex items-center justify-center w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-transform hover:scale-105 group focus:outline-none focus:ring-4 focus:ring-primary/30"
+          className="relative flex items-center justify-center w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-transform hover:scale-105 group focus:outline-none focus:ring-4 focus:ring-primary/30 cursor-pointer"
           title="Chat with Ka-Daine AI Resident Assistant"
           aria-label="Chat with Ka-Daine AI Resident Assistant"
           aria-expanded={false}
@@ -140,7 +138,7 @@ export function KaDaineChatbot() {
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-2 hover:bg-black/10 rounded-full transition-colors focus:outline-none"
+              className="min-h-[40px] min-w-[40px] flex items-center justify-center p-2 hover:bg-black/10 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none cursor-pointer"
               aria-label="Close chat"
             >
               <X className="w-5 h-5" />
@@ -163,7 +161,7 @@ export function KaDaineChatbot() {
                     <button
                       key={idx}
                       onClick={() => handleSend(prompt)}
-                      className="text-xs bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 px-3 py-1.5 rounded-full text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shadow-sm"
+                      className="min-h-[40px] inline-flex items-center text-xs bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 px-3.5 py-2 rounded-full text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shadow-sm cursor-pointer"
                     >
                       {prompt}
                     </button>
@@ -192,9 +190,9 @@ export function KaDaineChatbot() {
             {isLoading && (
               <div className="flex justify-start">
                 <div className="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                  <div className="w-2 h-2 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                  <div className="w-2 h-2 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-slate-400 dark:bg-slate-500 rounded-full animate-pulse [animation-delay:-0.3s]"></div>
+                  <div className="w-2 h-2 bg-slate-400 dark:bg-slate-500 rounded-full animate-pulse [animation-delay:-0.15s]"></div>
+                  <div className="w-2 h-2 bg-slate-400 dark:bg-slate-500 rounded-full animate-pulse"></div>
                 </div>
               </div>
             )}
@@ -223,7 +221,7 @@ export function KaDaineChatbot() {
               <button
                 type="submit"
                 disabled={!input.trim() || isLoading}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 disabled:opacity-50 disabled:hover:bg-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 min-h-[40px] min-w-[40px] flex items-center justify-center bg-primary text-primary-foreground rounded-full hover:bg-primary/90 disabled:opacity-50 disabled:hover:bg-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 cursor-pointer"
                 aria-label="Send message"
               >
                 {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}

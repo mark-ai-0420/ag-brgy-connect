@@ -19,7 +19,7 @@ export interface MapBusiness {
   photo_url: string | null
 }
 
-// Server function — fetches approved businesses for dynamic GIS mapping
+// Server function: fetches approved businesses for dynamic GIS mapping
 export const getMapBusinesses = createServerFn({ method: 'GET' }).handler(async (): Promise<MapBusiness[]> => {
   try {
     const supabase = createSupabaseServerClient()
