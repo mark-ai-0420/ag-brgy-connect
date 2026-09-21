@@ -1,0 +1,12 @@
+{
+  "memory-injector": {
+    "enabled": true,
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "node ~/.gemini/config/scripts/inject-memory.mjs",
+        "timeout": 5
+      }
+    ]
+  }
+}

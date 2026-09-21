@@ -52,8 +52,8 @@ const upsertEvent = createServerFn({ method: 'POST' })
   .validator((data: unknown) => z.object({ id: z.string().optional() }).merge(eventSchema).parse(data))
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
-    const { session } = await getAuthSession()
-    if (!session) throw new Error('Not authenticated')
+    const { session, role } = await getAuthSession()
+    if (!session || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
 
     if (data.id) {
       const { error } = await supabase.from('events')
@@ -88,6 +88,8 @@ const upsertEvent = createServerFn({ method: 'POST' })
 const deleteEvent = createServerFn({ method: 'POST' })
   .validator((id: unknown) => z.string().min(1).parse(id))
   .handler(async ({ data: id }) => {
+    const { session, role } = await getAuthSession()
+    if (!session || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
     const supabase = createSupabaseServerClient()
     const { error } = await supabase.from('events').delete().eq('id', id)
     if (error) throw new Error(error.message)

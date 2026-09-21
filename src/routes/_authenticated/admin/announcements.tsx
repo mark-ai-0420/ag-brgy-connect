@@ -7,17 +7,16 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '#/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '#/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '#/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#/components/ui/form'
 import { Input } from '#/components/ui/input'
 import { Textarea } from '#/components/ui/textarea'
 import { Badge } from '#/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select'
-import { Pin, PinOff, Pencil, Trash2, Plus, RefreshCw, Facebook, CheckCircle2, AlertTriangle, ShieldCheck } from 'lucide-react'
+import { Pin, PinOff, Pencil, Trash2, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
-import { syncLGUIndangAnnouncements, getLGUSyncStatus, toggleLGUSync } from '#/server/lguScraper'
 
 import { ImageUploader } from '#/components/common/ImageUploader'
 
@@ -55,8 +54,8 @@ const upsertAnnouncement = createServerFn({ method: 'POST' })
   .validator((data: unknown) => z.object({ id: z.string().optional() }).merge(announcementSchema).parse(data))
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
-    const { session } = await getAuthSession()
-    if (!session) throw new Error('Not authenticated')
+    const { session, role } = await getAuthSession()
+    if (!session || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
 
     if (data.id) {
       const { error } = await supabase.from('announcements')
@@ -90,6 +89,8 @@ const upsertAnnouncement = createServerFn({ method: 'POST' })
 const deleteAnnouncement = createServerFn({ method: 'POST' })
   .validator((id: unknown) => z.string().min(1).parse(id))
   .handler(async ({ data: id }) => {
+    const { session, role } = await getAuthSession()
+    if (!session || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
     const supabase = createSupabaseServerClient()
     const { error } = await supabase.from('announcements').delete().eq('id', id)
     if (error) throw new Error(error.message)
@@ -99,6 +100,8 @@ const deleteAnnouncement = createServerFn({ method: 'POST' })
 const togglePin = createServerFn({ method: 'POST' })
   .validator((data: unknown) => z.object({ id: z.string().min(1), pinned: z.boolean() }).parse(data))
   .handler(async ({ data }) => {
+    const { session, role } = await getAuthSession()
+    if (!session || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
     const supabase = createSupabaseServerClient()
     const { error } = await supabase.from('announcements')
       .update({ pinned: data.pinned, updated_at: new Date().toISOString() })
@@ -110,11 +113,8 @@ const togglePin = createServerFn({ method: 'POST' })
 export const Route = createFileRoute('/_authenticated/admin/announcements')({
   component: AdminAnnouncementsRoute,
   loader: async () => {
-    const [announcementsData, syncData] = await Promise.all([
-      getAnnouncements(),
-      getLGUSyncStatus().catch(() => ({ settings: { enabled: true, last_synced_at: null }, recentPosts: [] }))
-    ])
-    return { announcements: announcementsData.announcements, adminScope: announcementsData.adminScope, syncData }
+    const announcementsData = await getAnnouncements()
+    return { announcements: announcementsData.announcements, adminScope: announcementsData.adminScope }
   },
 })
 
@@ -244,40 +244,11 @@ function AnnouncementForm({
 }
 
 function AdminAnnouncementsRoute() {
-  const { announcements, adminScope, syncData } = Route.useLoaderData()
+  const { announcements, adminScope } = Route.useLoaderData()
   const router = useRouter()
   const [editItem, setEditItem] = useState<Announcement | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
-  const [isSyncing, setIsSyncing] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
-
-  async function handleSyncNow() {
-    try {
-      setIsSyncing(true)
-      toast.info('Checking LGU Indang Cavite Facebook Page...')
-      const res = await syncLGUIndangAnnouncements()
-      if (res.newSuspensions > 0) {
-        toast.success(`New Class Suspension found and posted! (${res.newSuspensions})`)
-      } else {
-        toast.success(`Checked LGU Indang page. Synced ${res.syncedCount} posts (no new class suspensions).`)
-      }
-      router.invalidate()
-    } catch {
-      toast.error('Sync failed. Please try again.')
-    } finally {
-      setIsSyncing(false)
-    }
-  }
-
-  async function handleToggleSync(enabled: boolean) {
-    try {
-      await toggleLGUSync({ data: enabled })
-      toast.success(`LGU Indang Auto-Sync ${enabled ? 'enabled' : 'disabled'}`)
-      router.invalidate()
-    } catch {
-      toast.error('Failed to update sync setting')
-    }
-  }
 
   async function handleDelete(id: string) {
     try {
@@ -294,8 +265,6 @@ function AdminAnnouncementsRoute() {
       router.invalidate()
     } catch { toast.error('Failed to update pin') }
   }
-
-  const syncSettings = syncData?.settings ?? { enabled: true, last_synced_at: null }
 
   return (
     <div className="space-y-6">
@@ -314,60 +283,6 @@ function AdminAnnouncementsRoute() {
           </DialogContent>
         </Dialog>
       </div>
-
-      {/* LGU Indang Auto-Sync Status Card */}
-      <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/20">
-        <CardHeader className="py-4 pb-2">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-blue-600 text-white p-2.5 rounded-xl shadow-sm">
-                <Facebook className="h-5 w-5" />
-              </div>
-              <div>
-                <CardTitle className="text-base font-bold flex items-center gap-2">
-                  LGU Indang Cavite Auto-Monitor
-                  <Badge variant={syncSettings.enabled ? 'default' : 'outline'} className="text-[10px]">
-                    {syncSettings.enabled ? 'Active' : 'Paused'}
-                  </Badge>
-                </CardTitle>
-                <CardDescription className="text-xs mt-0.5">
-                  Monitors @LGUIndangCavite for "Walang Pasok" / Class Suspension announcements via Gemini AI.
-                </CardDescription>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSyncNow}
-                disabled={isSyncing}
-                className="min-h-[40px] px-3 font-semibold bg-card shadow-sm border-blue-200"
-              >
-                <RefreshCw className={`h-3.5 w-3.5 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
-                {isSyncing ? 'Checking...' : 'Check FB Now'}
-              </Button>
-
-              <label className="relative inline-flex items-center cursor-pointer min-h-[44px] px-2">
-                <input
-                  type="checkbox"
-                  checked={syncSettings.enabled}
-                  onChange={(e) => handleToggleSync(e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-background after:content-[''] after:absolute after:top-[12px] after:left-[10px] after:bg-background after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-          </div>
-        </CardHeader>
-
-        {syncSettings.last_synced_at && (
-          <CardContent className="py-2 pt-0 text-xs text-muted-foreground flex items-center gap-2">
-            <ShieldCheck className="h-3.5 w-3.5 text-blue-600" />
-            Last checked: {format(new Date(syncSettings.last_synced_at), 'MMM d, yyyy h:mm a')}
-          </CardContent>
-        )}
-      </Card>
 
       <div className="space-y-3">
         {announcements.length === 0 ? (
@@ -415,7 +330,7 @@ function AdminAnnouncementsRoute() {
                     </DialogTrigger>
                     <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                       <DialogHeader><DialogTitle>Edit Announcement</DialogTitle></DialogHeader>
-                      <AnnouncementForm defaultValues={ann} onSuccess={() => { setEditItem(null); router.invalidate() }} />
+                      <AnnouncementForm adminScope={adminScope} defaultValues={ann} onSuccess={() => { setEditItem(null); router.invalidate() }} />
                     </DialogContent>
                   </Dialog>
                   <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px] text-destructive hover:text-destructive"

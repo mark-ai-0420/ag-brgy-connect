@@ -202,6 +202,11 @@ const updateUserRoleAndScope = createServerFn({ method: 'POST' })
         .parse(data)
   )
   .handler(async ({ data }) => {
+    const { user, role } = await getAuthSession()
+    if (!user || (role !== 'admin' && role !== 'moderator')) {
+      throw new Error('Unauthorized')
+    }
+
     const supabase = createSupabaseServerClient()
 
     // 1. Update user_roles table
@@ -457,7 +462,7 @@ function AdminUsersRoute() {
           </div>
 
           <div className="sm:col-span-3">
-            <Select value={verificationFilter} onValueChange={setVerificationFilter}>
+            <Select value={verificationFilter} onValueChange={(val) => setVerificationFilter(val as any)}>
               <SelectTrigger className="min-h-[44px] text-sm">
                 <SelectValue placeholder="Verification Status" />
               </SelectTrigger>

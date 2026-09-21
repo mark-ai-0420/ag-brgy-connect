@@ -1,6 +1,7 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
+import { getAuthSession } from '#/server/auth'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -47,17 +48,11 @@ const contactSchema = z.object({
 })
 
 const getContacts = createServerFn({ method: 'GET' }).handler(async () => {
+  const { user, role, admin_scope } = await getAuthSession()
+  if (!user || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+
+  const adminScope = admin_scope ?? 'both'
   const supabase = createSupabaseServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
-
-  const { data: roleData } = await supabase
-    .from('user_roles')
-    .select('role, barangay')
-    .eq('user_id', user.id)
-    .maybeSingle()
-
-  const adminScope = roleData?.barangay ?? 'both'
 
   let query = supabase
     .from('emergency_contacts')
@@ -80,6 +75,9 @@ const getContacts = createServerFn({ method: 'GET' }).handler(async () => {
 const upsertContact = createServerFn({ method: 'POST' })
   .validator((data: unknown) => z.object({ id: z.string().optional() }).merge(contactSchema).parse(data))
   .handler(async ({ data }) => {
+    const { user, role } = await getAuthSession()
+    if (!user || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+
     const supabase = createSupabaseServerClient()
     if (data.id) {
       const { error } = await supabase
@@ -124,6 +122,9 @@ const reorderContacts = createServerFn({ method: 'POST' })
         .parse(data)
   )
   .handler(async ({ data }) => {
+    const { user, role } = await getAuthSession()
+    if (!user || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+
     const supabase = createSupabaseServerClient()
     for (const item of data.items) {
       await supabase
@@ -137,6 +138,9 @@ const reorderContacts = createServerFn({ method: 'POST' })
 const deleteContact = createServerFn({ method: 'POST' })
   .validator((id: unknown) => z.string().min(1).parse(id))
   .handler(async ({ data: id }) => {
+    const { user, role } = await getAuthSession()
+    if (!user || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+
     const supabase = createSupabaseServerClient()
     const { error } = await supabase.from('emergency_contacts').delete().eq('id', id)
     if (error) throw new Error(error.message)

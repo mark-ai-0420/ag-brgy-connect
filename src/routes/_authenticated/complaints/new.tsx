@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
+import { getAuthSession } from '#/server/auth'
 import { useAuth } from '#/hooks/useAuth'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -119,14 +120,20 @@ const createComplaint = createServerFn({ method: 'POST' })
 const updateComplaintPhoto = createServerFn({ method: 'POST' })
   .validator((d: { id: string; photo_url: string }) => z.object({ id: z.string(), photo_url: z.string() }).parse(d))
   .handler(async ({ data }) => {
+    const { user } = await getAuthSession()
+    if (!user) throw new Error('Unauthorized')
+
     const supabase = createSupabaseServerClient()
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from('complaints')
       .update({ photo_url: data.photo_url })
       .eq('id', data.id)
+      .eq('complainant_id', user.id)
+      .select('id')
+      .single()
 
-    if (error) {
-      console.error('Photo update error:', error)
+    if (error || !updated) {
+      console.error('Photo update error or unauthorized:', error)
       throw new Error('Failed to attach evidence photo')
     }
   })
@@ -210,7 +217,7 @@ function NewComplaintRoute() {
   const [isUploading, setIsUploading] = useState(false)
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       title: '',
       category: 'Dispute / Blotter',

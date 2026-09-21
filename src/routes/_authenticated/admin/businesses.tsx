@@ -1,6 +1,7 @@
 import { createFileRoute, useRouter, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
+import { getAuthSession } from '#/server/auth'
 import { useState } from 'react'
 import { PageHeader } from '#/components/common/PageHeader'
 import { Button } from '#/components/ui/button'
@@ -11,6 +12,7 @@ import { Input } from '#/components/ui/input'
 import { Textarea } from '#/components/ui/textarea'
 import { Badge } from '#/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select'
+import { Label } from '#/components/ui/label'
 import {
   Store,
   CheckCircle,
@@ -96,6 +98,11 @@ const updateBusinessStatus = createServerFn({ method: 'POST' })
         .parse(data)
   )
   .handler(async ({ data }) => {
+    const { user, role } = await getAuthSession()
+    if (!user || (role !== 'admin' && role !== 'moderator')) {
+      throw new Error('Unauthorized')
+    }
+
     const supabase = createSupabaseServerClient()
     const updateData: { status: string; updated_at: string; notes?: string } = {
       status: data.status,
@@ -135,7 +142,7 @@ const COMMON_REJECTION_REASONS = [
   'Invalid business category or prohibited goods/services.',
 ]
 
-type BusinessItem = Awaited<ReturnType<typeof getBusinesses>>['businesses'][number]
+type BusinessItem = Awaited<ReturnType<typeof getBusinessesData>>['businesses'][number]
 
 function AdminBusinessesRoute() {
   const { businesses, claims = [], adminScope } = Route.useLoaderData()

@@ -90,8 +90,8 @@ const upsertOfficial = createServerFn({ method: 'POST' })
   .validator((data: unknown) => z.object({ id: z.string().optional() }).merge(officialSchema).parse(data))
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
-    const { session } = await getAuthSession()
-    if (!session) throw new Error('Not authenticated')
+    const { session, role } = await getAuthSession()
+    if (!session || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
 
     if (data.id) {
       const { error } = await supabase
@@ -130,8 +130,8 @@ const deleteOfficial = createServerFn({ method: 'POST' })
   .validator((id: unknown) => z.string().min(1).parse(id))
   .handler(async ({ data: id }) => {
     const supabase = createSupabaseServerClient()
-    const { session } = await getAuthSession()
-    if (!session) throw new Error('Not authenticated')
+    const { session, role } = await getAuthSession()
+    if (!session || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
 
     const { error } = await supabase.from('barangay_officials').delete().eq('id', id)
     if (error) throw new Error(error.message)

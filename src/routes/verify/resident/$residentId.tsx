@@ -3,7 +3,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { Card, CardContent } from '#/components/ui/card'
 import { Badge } from '#/components/ui/badge'
-import { ShieldCheck, AlertTriangle, Calendar, User, MapPin, CheckCircle2, Home, Building2 } from 'lucide-react'
+import { ShieldCheck, AlertTriangle, Calendar, User, MapPin, CheckCircle2, Home, Building2, Shield } from 'lucide-react'
 import { format } from 'date-fns'
 
 const getResidentVerificationData = createServerFn({ method: 'GET' })
@@ -14,27 +14,12 @@ const getResidentVerificationData = createServerFn({ method: 'GET' })
 
     if (!rawId) return null
 
-    if (rawId === 'demo' || rawId.startsWith('demo-')) {
-      return {
-        id: rawId,
-        full_name: 'Juan R. Dela Cruz',
-        barangay: 'daine_1' as const,
-        purok: 'Purok 2 (Centro)',
-        phone: '0917-123-4567',
-        address: '123 Daine 1 Main Road, Indang, Cavite',
-        created_at: '2024-01-15T08:00:00.000Z',
-        avatar_url: null,
-        control_number: 'BD1-RES-DEMO2026',
-        status: 'Active Resident in Good Standing',
-      }
-    }
-
     try {
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawId)
-      
+
       let query = supabase
         .from('profiles')
-        .select('id, full_name, barangay, purok, phone, address, avatar_url, created_at')
+        .select('id, full_name, barangay, purok, avatar_url, created_at')
 
       if (isUuid) {
         query = query.eq('id', rawId)
@@ -51,25 +36,6 @@ const getResidentVerificationData = createServerFn({ method: 'GET' })
       const { data: profile, error } = await query.maybeSingle()
 
       if (error || !profile) {
-        // Fallback: search across all profiles for prefix match
-        const { data: allProfiles } = await supabase
-          .from('profiles')
-          .select('id, full_name, barangay, purok, phone, address, avatar_url, created_at')
-
-        const matched = (allProfiles || []).find(p => 
-          p.id === rawId ||
-          p.id.replace(/-/g, '').toLowerCase().startsWith(rawId.replace(/^BD[12]-RES-/i, '').replace(/-/g, '').toLowerCase())
-        )
-
-        if (matched) {
-          const isDaine2 = matched.barangay === 'daine_2'
-          const prefix = isDaine2 ? 'BD2-RES-' : 'BD1-RES-'
-          return {
-            ...matched,
-            control_number: `${prefix}${matched.id.replace(/-/g, '').slice(0, 8).toUpperCase()}`,
-            status: 'Active Resident in Good Standing',
-          }
-        }
         return null
       }
 
@@ -77,7 +43,12 @@ const getResidentVerificationData = createServerFn({ method: 'GET' })
       const prefix = isDaine2 ? 'BD2-RES-' : 'BD1-RES-'
 
       return {
-        ...profile,
+        id: profile.id,
+        full_name: profile.full_name,
+        barangay: profile.barangay,
+        purok: profile.purok,
+        avatar_url: profile.avatar_url,
+        created_at: profile.created_at,
         control_number: `${prefix}${profile.id.replace(/-/g, '').slice(0, 8).toUpperCase()}`,
         status: 'Active Resident in Good Standing',
       }
@@ -196,8 +167,8 @@ function VerifyResidentRoute() {
                   </div>
                 </div>
 
-                {/* Status Badge */}
-                <div className="pt-2">
+                {/* Status & Privacy Badges */}
+                <div className="pt-2 space-y-2">
                   <Badge
                     variant="outline"
                     className="w-full justify-center py-2 font-bold uppercase tracking-wider text-xs rounded-lg bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-200"
@@ -205,6 +176,10 @@ function VerifyResidentRoute() {
                     <CheckCircle2 className="h-3.5 w-3.5 mr-1.5 inline text-emerald-600 dark:text-emerald-400" />
                     {resident.status}
                   </Badge>
+                  <div className="flex items-center justify-center gap-1.5 py-1 px-2.5 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px] text-muted-foreground font-medium">
+                    <Shield className="h-3.5 w-3.5 text-primary shrink-0" />
+                    <span>Verified Resident Member &bull; Contact & Address Protected for Privacy</span>
+                  </div>
                 </div>
               </div>
 

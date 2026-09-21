@@ -1,6 +1,7 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
+import { getAuthSession } from '#/server/auth'
 import { useState, useMemo, useRef } from 'react'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
@@ -137,17 +138,12 @@ const PRIORITY_CONFIG: Record<ComplaintPriority, { label: string; badge: string 
 }
 
 const getAdminComplaints = createServerFn({ method: 'GET' }).handler(async () => {
+  const { user, role, admin_scope } = await getAuthSession()
+  if (!user || (role !== 'admin' && role !== 'moderator')) {
+    throw new Error('Unauthorized')
+  }
+  const adminScope = admin_scope || 'daine_1'
   const supabase = createSupabaseServerClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
-  const { data: profile } = await supabase
-    .from('user_roles')
-    .select('barangay')
-    .eq('user_id', user.id)
-    .single()
-  const adminScope = profile?.barangay || 'daine_1'
 
   let query = supabase
     .from('complaints')
@@ -191,6 +187,10 @@ const updateComplaintStatus = createServerFn({ method: 'POST' })
       .parse(data)
   )
   .handler(async ({ data }) => {
+    const { user, role } = await getAuthSession()
+    if (!user || (role !== 'admin' && role !== 'moderator')) {
+      throw new Error('Unauthorized')
+    }
     const supabase = createSupabaseServerClient()
     const { error } = await supabase
       .from('complaints')

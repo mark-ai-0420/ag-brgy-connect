@@ -1,0 +1,38 @@
+[
+  {
+    "id": "ag-brgy-domain-models",
+    "category": "domain",
+    "topic": "Barangay Domain Entities & Workflows",
+    "rule": "Core modules include resident profiling, digital certificate/clearance request issuance, incident/blotter tracking, and community announcements.",
+    "confidence": 1,
+    "occurrences": 300,
+    "source_workspaces": [
+      "/Users/markhuelgas/Documents/antigravity/ag-brgy-connect"
+    ],
+    "last_reinforced": "2026-09-15T06:38:52.661Z"
+  },
+  {
+    "id": "ag-brgy-stack",
+    "category": "architecture",
+    "topic": "Application Architecture & Stack",
+    "rule": "TanStack Start framework with React 19, Supabase SSR for auth and PostgreSQL database access, and Tailwind CSS v4 with shadcn/ui components.",
+    "confidence": 1,
+    "occurrences": 300,
+    "source_workspaces": [
+      "/Users/markhuelgas/Documents/antigravity/ag-brgy-connect"
+    ],
+    "last_reinforced": "2026-09-15T06:38:52.661Z"
+  },
+  {
+    "id": "ag-brgy-db-migrations",
+    "category": "database",
+    "topic": "Database Migrations",
+    "rule": "Manage database schema through SQL migration scripts located in supabase/migrations/.",
+    "confidence": 1,
+    "occurrences": 300,
+    "source_workspaces": [
+      "/Users/markhuelgas/Documents/antigravity/ag-brgy-connect"
+    ],
+    "last_reinforced": "2026-09-15T06:38:52.661Z"
+  }
+]

@@ -95,22 +95,6 @@ const getVerificationData = createServerFn({ method: 'GET' })
 
     if (!rawId) return null
 
-    if (rawId === 'demo' || rawId.startsWith('demo-')) {
-      return {
-        id: rawId,
-        control_number: 'BD1-DEMO-2026',
-        requester_id: '00000000-0000-0000-0000-000000000001',
-        document_type: 'barangay_clearance',
-        status: 'completed',
-        purpose: 'Employment & Official Identification Verification',
-        notes: 'Verified demo certificate on Civic Horizon Ledger.',
-        created_at: '2026-08-18T08:00:00.000Z',
-        updated_at: '2026-08-18T10:00:00.000Z',
-        resident_name: 'Juan R. Dela Cruz',
-        barangay: 'daine_1' as const,
-      } as VerifiedDocument
-    }
-
     try {
       // 1. Try high-performance RPC function (bypasses UUID casting errors & supports control numbers)
       const { data: rpcRows, error: rpcError } = await supabase.rpc('get_verified_document', {
