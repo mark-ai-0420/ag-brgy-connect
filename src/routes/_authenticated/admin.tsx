@@ -41,7 +41,8 @@ import { useAuth } from '#/hooks/useAuth'
 
 export const Route = createFileRoute('/_authenticated/admin')({
   beforeLoad: ({ context }) => {
-    const role = (context as any).auth?.role
+    const auth = (context as { auth?: { role?: string } }).auth
+    const role = auth?.role
     if (role !== 'admin' && role !== 'moderator') {
       throw redirect({ to: '/' })
     }
@@ -254,25 +255,29 @@ function AdminLayout() {
               <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 mb-1">
                 {group.group}
               </div>
-              {group.items.map(({ to, icon: Icon, label, exact, badge }) => (
-                <Link
-                  key={to}
-                  to={to}
-                  preload="intent"
-                  activeOptions={{ exact: !!exact }}
-                  className="group relative flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all min-h-[44px] cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted/70 [&.active]:bg-primary [&.active]:text-primary-foreground [&.active]:font-bold [&.active]:shadow-sm [&.active]:shadow-primary/20"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <Icon className="h-4 w-4 shrink-0 transition-transform group-hover:scale-110" />
-                    <span className="truncate">{label}</span>
-                  </div>
-                  {badge && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground group-[.active]:bg-primary-foreground/20 group-[.active]:text-primary-foreground">
-                      {badge}
-                    </span>
-                  )}
-                </Link>
-              ))}
+              {group.items.map((item) => {
+                const { to, icon: Icon, label, exact } = item
+                const badge = 'badge' in item ? (item as any).badge : undefined
+                return (
+                  <Link
+                    key={to}
+                    to={to}
+                    preload="intent"
+                    activeOptions={{ exact: !!exact }}
+                    className="group relative flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all min-h-[44px] cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted/70 [&.active]:bg-primary [&.active]:text-primary-foreground [&.active]:font-bold [&.active]:shadow-sm [&.active]:shadow-primary/20"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Icon className="h-4 w-4 shrink-0 transition-transform group-hover:scale-110" />
+                      <span className="truncate">{label}</span>
+                    </div>
+                    {badge && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground group-[.active]:bg-primary-foreground/20 group-[.active]:text-primary-foreground">
+                        {badge}
+                      </span>
+                    )}
+                  </Link>
+                )
+              })}
             </div>
           ))}
         </nav>

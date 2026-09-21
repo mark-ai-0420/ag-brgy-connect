@@ -84,65 +84,6 @@ export const trackDocumentRequest = createServerFn({ method: 'POST' })
       }
 
       if (!records || records.length === 0) {
-        const upperCode = code.toUpperCase();
-        // Allow explicit DEMO sandbox code for demo/testing mode only
-        if (upperCode === 'DEMO' || upperCode === 'DEMO-2026') {
-          const timeline: TrackingStage[] = [
-            {
-              step: 1,
-              label: 'Request Submitted',
-              description: 'Document request logged in the barangay registry.',
-              state: 'completed',
-              timestamp: '2026-08-18T08:00:00.000Z',
-            },
-            {
-              step: 2,
-              label: 'Secretary Verification',
-              description: 'Resident records and eligibility verified by Barangay Secretary.',
-              state: 'completed',
-              timestamp: '2026-08-18T09:30:00.000Z',
-            },
-            {
-              step: 3,
-              label: 'Barangay Captain Sign-off',
-              description: 'Executive clearance and security QR seal generation.',
-              state: 'completed',
-              timestamp: '2026-08-18T10:00:00.000Z',
-            },
-            {
-              step: 4,
-              label: 'Claimed / Completed',
-              description: 'Official certificate claimed with verified digital QR seal.',
-              state: 'completed',
-              timestamp: '2026-08-18T10:30:00.000Z',
-            },
-          ];
-
-          return {
-            found: true,
-            request: {
-              id: '00000000-0000-0000-0000-000000000001',
-              control_number: 'BD1-DEMO-2026',
-              document_type: 'barangay_clearance',
-              document_title: 'Barangay Clearance',
-              barangay: 'daine_1',
-              barangay_name: 'Barangay Daine 1',
-              status: 'completed',
-              status_label: 'Issued / Completed',
-              purpose: 'Official Demonstration & System Testing',
-              notes: 'Demo verification record.',
-              created_at: '2026-08-18T08:00:00.000Z',
-              updated_at: '2026-08-18T10:30:00.000Z',
-              timeline,
-              hall_info: {
-                address: 'Barangay Daine 1 Hall, Sitio Centro, Purok 2, Indang, Cavite',
-                hours: 'Monday – Friday: 8:00 AM – 5:00 PM',
-                contact: '0917-123-0001 / (046) 415-0100',
-              },
-            },
-          };
-        }
-
         return {
           found: false,
           error: `No document request found for reference code "${code}". Please check your tracking number (e.g., BD1-8F3A29D1, BD2-4E90B17A, or request ID).`,

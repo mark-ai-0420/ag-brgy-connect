@@ -412,7 +412,7 @@ function DocumentRequestRoute() {
                                 <IconComponent className="h-5 w-5" />
                               </div>
                               <div className="flex items-center gap-1.5">
-                                {doc.isFree ? (
+                                {doc.fee === 0 ? (
                                   <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 text-[10px] font-black tracking-wide px-2 py-0.5 rounded-md">
                                     FREE
                                   </Badge>
@@ -721,7 +721,7 @@ function DocumentRequestRoute() {
                           <h4 className="text-sm font-bold text-foreground truncate">
                             {selectedDocConfig.title}
                           </h4>
-                          {selectedDocConfig.isFree ? (
+                          {selectedDocConfig.fee === 0 ? (
                             <Badge className="bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5">
                               FREE
                             </Badge>
@@ -746,7 +746,7 @@ function DocumentRequestRoute() {
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center justify-between text-muted-foreground">
                           <span>Document Processing Fee</span>
-                          {selectedDocConfig.isFree ? (
+                          {selectedDocConfig.fee === 0 ? (
                             <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                               ₱0.00 (Waived)
                             </span>
@@ -776,7 +776,7 @@ function DocumentRequestRoute() {
 
                         <div className="border-t border-border pt-3 flex items-center justify-between font-bold text-base text-foreground">
                           <span>Total Amount Due</span>
-                          {selectedDocConfig.isFree ? (
+                          {selectedDocConfig.fee === 0 ? (
                             <div className="text-right">
                               <span className="text-emerald-600 dark:text-emerald-400 text-xl font-black">
                                 FREE

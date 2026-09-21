@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { LucideIcon } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { Card, CardContent } from '#/components/ui/card'
 import { cn } from '#/lib/utils'
 

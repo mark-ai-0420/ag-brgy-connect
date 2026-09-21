@@ -86,7 +86,7 @@ function formatToGoogleCalendarDates(startStr: string, endStr?: string) {
 }
 
 function EventDetail() {
-  const event = Route.useLoaderData()
+  const event: any = Route.useLoaderData()
 
   if (!event) {
     return (

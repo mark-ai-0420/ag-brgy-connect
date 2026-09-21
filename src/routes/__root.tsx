@@ -22,6 +22,11 @@ import { KaDaineChatbot } from '#/components/chat/KaDaineChatbot'
 import { SessionTimeoutModal } from '#/components/auth/SessionTimeoutModal'
 import { OfflineIndicator } from '#/components/common/OfflineIndicator'
 import { PWAInstallBanner } from '#/components/common/PWAInstallBanner'
+import {
+  DefaultErrorComponent,
+  DefaultNotFoundComponent,
+  DefaultPendingComponent,
+} from '#/components/common/ErrorBoundary'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -78,6 +83,14 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         property: 'og:type',
         content: 'website',
       },
+      {
+        property: 'og:image',
+        content: '/logo.jpg',
+      },
+      {
+        name: 'twitter:image',
+        content: '/logo.jpg',
+      },
     ],
     links: [
       {
@@ -112,6 +125,9 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
     ],
   }),
+  errorComponent: DefaultErrorComponent,
+  notFoundComponent: DefaultNotFoundComponent,
+  pendingComponent: DefaultPendingComponent,
   shellComponent: RootDocument,
   component: RootComponent,
 })

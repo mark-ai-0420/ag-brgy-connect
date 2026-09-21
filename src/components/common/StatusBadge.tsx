@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { CheckCircle, Clock, XCircle, AlertCircle, Shield, FileText, User as UserIcon, HelpCircle, Archive, Search, MapPin, Eye } from 'lucide-react'
 import { cn } from '#/lib/utils'
 

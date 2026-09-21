@@ -12,14 +12,13 @@ const config = defineConfig({
   build: {
     target: 'esnext',
     cssMinify: true,
-    sourcemap: true,
+    sourcemap: 'hidden',
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
             if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts'
             if (id.includes('leaflet')) return 'vendor-leaflet'
-            if (id.includes('@google/genai')) return 'vendor-ai'
             if (id.includes('@supabase')) return 'vendor-supabase'
             if (id.includes('lucide-react')) return 'vendor-icons'
             if (id.includes('date-fns')) return 'vendor-date'
@@ -36,6 +35,7 @@ const config = defineConfig({
       removeDevtoolsOnBuild: true,
     }),
     nitro({
+      preset: process.env.VERCEL ? 'vercel' : undefined,
       rollupConfig: { external: [/^@sentry\//] },
       routeRules: {
         '/assets/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },

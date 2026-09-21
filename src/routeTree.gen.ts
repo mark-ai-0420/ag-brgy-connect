@@ -23,7 +23,6 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AnnouncementsIndexRouteImport } from './routes/announcements/index'
 import { Route as AnnouncementsAnnouncementIdRouteImport } from './routes/announcements/$announcementId'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
-import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
@@ -122,11 +121,6 @@ const AnnouncementsAnnouncementIdRoute =
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/auth/callback',
   path: '/auth/callback',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthLoginRoute = AuthLoginRouteImport.update({
-  id: '/auth/login',
-  path: '/auth/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
@@ -300,7 +294,6 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/announcements/$announcementId': typeof AnnouncementsAnnouncementIdRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/auth/login': typeof AuthLoginRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
@@ -343,7 +336,6 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/announcements/$announcementId': typeof AnnouncementsAnnouncementIdRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/auth/login': typeof AuthLoginRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
@@ -389,7 +381,6 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/announcements/$announcementId': typeof AnnouncementsAnnouncementIdRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/auth/login': typeof AuthLoginRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
@@ -435,7 +426,6 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/announcements/$announcementId'
     | '/auth/callback'
-    | '/auth/login'
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
@@ -478,7 +468,6 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/announcements/$announcementId'
     | '/auth/callback'
-    | '/auth/login'
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
@@ -523,7 +512,6 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/announcements/$announcementId'
     | '/auth/callback'
-    | '/auth/login'
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
@@ -566,7 +554,6 @@ export interface RootRouteChildren {
   TrackRoute: typeof TrackRoute
   AnnouncementsAnnouncementIdRoute: typeof AnnouncementsAnnouncementIdRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
-  AuthLoginRoute: typeof AuthLoginRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
@@ -680,13 +667,6 @@ declare module '@tanstack/react-router' {
       path: '/auth/callback'
       fullPath: '/auth/callback'
       preLoaderRoute: typeof AuthCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth/login': {
-      id: '/auth/login'
-      path: '/auth/login'
-      fullPath: '/auth/login'
-      preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/reset-password': {
@@ -958,7 +938,6 @@ const rootRouteChildren: RootRouteChildren = {
   TrackRoute: TrackRoute,
   AnnouncementsAnnouncementIdRoute: AnnouncementsAnnouncementIdRoute,
   AuthCallbackRoute: AuthCallbackRoute,
-  AuthLoginRoute: AuthLoginRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,

@@ -96,7 +96,7 @@ const signUpSchema = z.object({
   fullName: z.string().min(2, 'Full legal name is required (min 2 characters)'),
   email: z.string().email('Please enter a valid email address'),
   barangay: z.enum(['daine_1', 'daine_2'], {
-    required_error: 'Please select your barangay jurisdiction',
+    message: 'Please select your barangay jurisdiction',
   }),
   purok: z.string().min(1, 'Purok or Sitio is required'),
   password: z.string().min(6, 'Password must be at least 6 characters'),

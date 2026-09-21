@@ -18,8 +18,12 @@ function AuthCallback() {
         return
       }
       const searchParams = new URLSearchParams(window.location.search)
-      const next = searchParams.get('next') || '/dashboard'
-      navigate({ to: next as any })
+      const rawNext = searchParams.get('next') || '/dashboard'
+      // Validate that next is a relative path starting with / and not // or protocol
+      const safeNext = (rawNext.startsWith('/') && !rawNext.startsWith('//') && !rawNext.includes('\\'))
+        ? rawNext
+        : '/dashboard'
+      navigate({ to: safeNext as any })
     }
 
     handleAuth()

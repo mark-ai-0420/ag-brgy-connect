@@ -63,7 +63,7 @@ const updateProfileSchema = z.object({
   phone: z.string().min(7, 'A valid phone number is required'),
   address: z.string().min(3, 'Residential address is required'),
   barangay: z.enum(['daine_1', 'daine_2'], {
-    required_error: 'Please select your barangay jurisdiction',
+    message: 'Please select your barangay jurisdiction',
   }),
   purok: z.string().min(1, 'Purok or Sitio is required'),
   avatar_url: z.string().nullable().optional(),

@@ -691,9 +691,9 @@ function TrackDocumentRoute() {
                 {/* ── 1. Dynamic Percentage Progress Bar & Turnaround Window Estimator ── */}
                 {(() => {
                   const progress = getProgressInfo(req.status)
-                  const isReady = req.status === 'ready' || req.status === 'ready_for_pickup'
-                  const isCompleted = req.status === 'completed' || req.status === 'issued'
-                  const isRejected = req.status === 'rejected' || req.status === 'cancelled'
+                  const isReady = req.status === 'ready' || (req.status as string) === 'ready_for_pickup'
+                  const isCompleted = req.status === 'completed' || (req.status as string) === 'issued'
+                  const isRejected = req.status === 'rejected' || (req.status as string) === 'cancelled'
 
                   return (
                     <div

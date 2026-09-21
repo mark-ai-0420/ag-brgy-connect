@@ -7,7 +7,8 @@ export const globalSearchFn = createServerFn({ method: 'GET' })
   .handler(async ({ data }) => {
     const { query } = data
     const supabase = createSupabaseServerClient()
-    const searchPattern = `%${query}%`
+    const sanitized = query.replace(/[%_\\]/g, '\\$&')
+    const searchPattern = `%${sanitized}%`
 
     const [
       { data: announcements },

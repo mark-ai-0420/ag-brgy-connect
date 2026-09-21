@@ -120,7 +120,7 @@ export const businessFormSchema = z.object({
   name: z.string().min(2, 'Business name must be at least 2 characters'),
   category: z.string().min(1, 'Please select a category'),
   barangay: z.enum(['daine_1', 'daine_2'], {
-    required_error: 'Please select a barangay unit',
+    message: 'Please select a barangay unit',
   }),
   purok: z.string().optional().default(''),
   address: z.string().min(5, 'Please provide a complete address / landmark'),
