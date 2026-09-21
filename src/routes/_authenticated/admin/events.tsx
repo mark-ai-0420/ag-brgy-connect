@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
-import { getAuthSession } from '#/server/auth'
+import { getAuthSession, assertAdminScope } from '#/server/auth'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -29,11 +29,10 @@ const eventSchema = z.object({
 })
 
 const getEvents = createServerFn({ method: 'GET' }).handler(async () => {
+  const { user, role, admin_scope } = await getAuthSession()
+  if (!user || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+  const adminScope = assertAdminScope(admin_scope)
   const supabase = createSupabaseServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
-  const { data: profile } = await supabase.from('user_roles').select('barangay').eq('user_id', user.id).single()
-  const adminScope = profile?.barangay || 'daine_1'
 
   let query = supabase
     .from('events')
@@ -52,8 +51,13 @@ const upsertEvent = createServerFn({ method: 'POST' })
   .validator((data: unknown) => z.object({ id: z.string().optional() }).merge(eventSchema).parse(data))
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
-    const { session, role } = await getAuthSession()
+    const { session, role, admin_scope } = await getAuthSession()
     if (!session || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+    const adminScope = assertAdminScope(admin_scope)
+
+    if (adminScope !== 'both' && data.scope !== adminScope) {
+      throw new Error(`Forbidden: You are only authorized to manage events for ${adminScope}`)
+    }
 
     if (data.id) {
       const { error } = await supabase.from('events')
@@ -88,9 +92,18 @@ const upsertEvent = createServerFn({ method: 'POST' })
 const deleteEvent = createServerFn({ method: 'POST' })
   .validator((id: unknown) => z.string().min(1).parse(id))
   .handler(async ({ data: id }) => {
-    const { session, role } = await getAuthSession()
+    const { session, role, admin_scope } = await getAuthSession()
     if (!session || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+    const adminScope = assertAdminScope(admin_scope)
     const supabase = createSupabaseServerClient()
+
+    if (adminScope !== 'both') {
+      const { data: existing } = await supabase.from('events').select('scope').eq('id', id).single()
+      if (existing && existing.scope !== adminScope) {
+        throw new Error('Forbidden: Cannot delete event outside your jurisdiction')
+      }
+    }
+
     const { error } = await supabase.from('events').delete().eq('id', id)
     if (error) throw new Error(error.message)
     return { success: true }

@@ -124,6 +124,25 @@ const updateComplaintPhoto = createServerFn({ method: 'POST' })
     if (!user) throw new Error('Unauthorized')
 
     const supabase = createSupabaseServerClient()
+
+    // 1. Fetch current status and ownership before update
+    const { data: existing, error: fetchError } = await supabase
+      .from('complaints')
+      .select('id, status, complainant_id')
+      .eq('id', data.id)
+      .eq('complainant_id', user.id)
+      .single()
+
+    if (fetchError || !existing) {
+      throw new Error('Complaint not found or unauthorized')
+    }
+
+    // 2. Reject modifications if complaint is in a terminal state
+    const TERMINAL_STATUSES = ['resolved', 'cancelled', 'rejected', 'dismissed']
+    if (TERMINAL_STATUSES.includes(existing.status)) {
+      throw new Error(`Cannot modify complaint evidence in terminal state: ${existing.status}`)
+    }
+
     const { data: updated, error } = await supabase
       .from('complaints')
       .update({ photo_url: data.photo_url })

@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
-import { getAuthSession } from '#/server/auth'
+import { getAuthSession, assertAdminScope } from '#/server/auth'
 import { useState } from 'react'
 import { PageHeader } from '#/components/common/PageHeader'
 import { Button } from '#/components/ui/button'
@@ -52,17 +52,12 @@ import { format } from 'date-fns'
 import { getBusinessClaims, reviewBusinessClaim } from '#/server/businessClaims'
 
 const getBusinessesData = createServerFn({ method: 'GET' }).handler(async () => {
+  const { user, role, admin_scope } = await getAuthSession()
+  if (!user || (role !== 'admin' && role !== 'moderator')) {
+    throw new Error('Unauthorized')
+  }
+  const adminScope = assertAdminScope(admin_scope)
   const supabase = createSupabaseServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
-
-  const { data: roleData } = await supabase
-    .from('user_roles')
-    .select('role, barangay')
-    .eq('user_id', user.id)
-    .maybeSingle()
-
-  const adminScope = roleData?.barangay ?? 'both'
 
   let query = supabase
     .from('businesses')
@@ -98,12 +93,21 @@ const updateBusinessStatus = createServerFn({ method: 'POST' })
         .parse(data)
   )
   .handler(async ({ data }) => {
-    const { user, role } = await getAuthSession()
+    const { user, role, admin_scope } = await getAuthSession()
     if (!user || (role !== 'admin' && role !== 'moderator')) {
       throw new Error('Unauthorized')
     }
+    const adminScope = assertAdminScope(admin_scope)
 
     const supabase = createSupabaseServerClient()
+
+    if (adminScope !== 'both') {
+      const { data: b } = await supabase.from('businesses').select('barangay').eq('id', data.id).single()
+      if (b && b.barangay !== adminScope) {
+        throw new Error('Forbidden: Cannot modify business outside your assigned jurisdiction')
+      }
+    }
+
     const updateData: { status: string; updated_at: string; notes?: string } = {
       status: data.status,
       updated_at: new Date().toISOString(),

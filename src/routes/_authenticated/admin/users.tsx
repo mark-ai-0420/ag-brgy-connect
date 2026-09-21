@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
-import { getAuthSession } from '#/server/auth'
+import { getAuthSession, assertAdminScope } from '#/server/auth'
 import { useState } from 'react'
 import { PageHeader } from '#/components/common/PageHeader'
 import { Button } from '#/components/ui/button'
@@ -85,7 +85,7 @@ const getUsers = createServerFn({ method: 'GET' }).handler(async () => {
     throw new Error('Unauthorized')
   }
 
-  const adminScope = admin_scope ?? 'both'
+  const adminScope = assertAdminScope(admin_scope)
 
   let query = supabase
     .from('profiles')
@@ -202,12 +202,26 @@ const updateUserRoleAndScope = createServerFn({ method: 'POST' })
         .parse(data)
   )
   .handler(async ({ data }) => {
-    const { user, role } = await getAuthSession()
+    const { user, role, admin_scope } = await getAuthSession()
     if (!user || (role !== 'admin' && role !== 'moderator')) {
       throw new Error('Unauthorized')
     }
+    const adminScope = assertAdminScope(admin_scope)
 
     const supabase = createSupabaseServerClient()
+
+    if (adminScope !== 'both') {
+      if (data.role_scope && data.role_scope !== adminScope) {
+        throw new Error(`Forbidden: You cannot assign scope outside ${adminScope}`)
+      }
+      if (data.barangay && data.barangay !== adminScope) {
+        throw new Error(`Forbidden: You cannot assign user to another barangay`)
+      }
+      const { data: targetProfile } = await supabase.from('profiles').select('barangay').eq('id', data.user_id).single()
+      if (targetProfile && targetProfile.barangay !== adminScope) {
+        throw new Error('Forbidden: Cannot modify users outside your assigned jurisdiction')
+      }
+    }
 
     // 1. Update user_roles table
     const rolePayload: any = { user_id: data.user_id, role: data.role }

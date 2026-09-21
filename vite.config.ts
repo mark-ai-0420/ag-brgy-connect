@@ -38,6 +38,14 @@ const config = defineConfig({
       preset: process.env.VERCEL ? 'vercel' : undefined,
       rollupConfig: { external: [/^@sentry\//] },
       routeRules: {
+        '/**': {
+          headers: {
+            'X-Content-Type-Options': 'nosniff',
+            'X-Frame-Options': 'DENY',
+            'X-XSS-Protection': '1; mode=block',
+            'Referrer-Policy': 'strict-origin-when-cross-origin',
+          },
+        },
         '/assets/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
         '/seed-images/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
       },

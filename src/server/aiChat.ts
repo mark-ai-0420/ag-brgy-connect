@@ -1,7 +1,9 @@
 import { createServerFn } from '@tanstack/react-start';
+import { getRequestHeader, getRequestIP } from '@tanstack/react-start/server';
 import { z } from 'zod';
 import { GoogleGenAI } from '@google/genai';
 import { createSupabaseServerClient } from '#/lib/supabase.server';
+import { getAuthSession } from '#/server/auth';
 
 // 1. Schema with prompt length capping (Max 500 characters)
 const chatInputSchema = z.object({
@@ -20,7 +22,7 @@ const chatInputSchema = z.object({
     .optional(),
 });
 
-// 2. Sliding-window in-memory rate limiter (per client session / identifier)
+// 2. Sliding-window in-memory rate limiter (keyed by authenticated user ID or validated IP)
 interface RateLimitTracker {
   timestamps: number[];
 }
@@ -32,13 +34,13 @@ const MAX_REQUESTS_PER_DAY = 60;
 const ONE_MINUTE_MS = 60 * 1000;
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
-function checkRateLimit(clientId: string): { allowed: boolean; reason?: string } {
+function checkRateLimit(rateKey: string): { allowed: boolean; reason?: string } {
   const now = Date.now();
-  let tracker = rateLimitMap.get(clientId);
+  let tracker = rateLimitMap.get(rateKey);
 
   if (!tracker) {
     tracker = { timestamps: [] };
-    rateLimitMap.set(clientId, tracker);
+    rateLimitMap.set(rateKey, tracker);
   }
 
   // Purge records older than 24 hours
@@ -80,10 +82,27 @@ function isBlatantSpam(message: string): boolean {
 export const sendChatMessage = createServerFn({ method: 'POST' })
   .validator((data: unknown) => chatInputSchema.parse(data))
   .handler(async ({ data }) => {
-    const { message, history = [], clientId = 'anonymous_resident' } = data;
+    const { message, history = [] } = data;
 
-    // Rate Limiter Check
-    const rateCheck = checkRateLimit(clientId);
+    // Resolve rate limiting identity from trusted server-side context
+    let rateLimitKey: string;
+    try {
+      const auth = await getAuthSession();
+      if (auth.user?.id) {
+        rateLimitKey = `usr:${auth.user.id}`;
+      } else {
+        const forwarded = getRequestHeader('x-forwarded-for');
+        const realIp = getRequestHeader('x-real-ip');
+        const cfIp = getRequestHeader('cf-connecting-ip');
+        const rawIp = forwarded?.split(',')[0].trim() || realIp || cfIp || getRequestIP() || 'unknown_ip';
+        rateLimitKey = `ip:${rawIp}`;
+      }
+    } catch {
+      rateLimitKey = `anon:${data.clientId || 'anonymous'}`;
+    }
+
+    // Rate Limiter Check (keyed securely on server identity)
+    const rateCheck = checkRateLimit(rateLimitKey);
     if (!rateCheck.allowed) {
       return {
         text: rateCheck.reason || 'Rate limit exceeded.',

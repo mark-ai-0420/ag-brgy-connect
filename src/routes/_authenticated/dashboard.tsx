@@ -62,7 +62,7 @@ const getMyResidentProfile = createServerFn({ method: 'GET' })
     return profile || {
       id: user.id,
       full_name: (user.user_metadata as any)?.full_name || 'Resident',
-      barangay: 'daine_1',
+      barangay: ((user.user_metadata as any)?.barangay as 'daine_1' | 'daine_2') || 'daine_1',
       purok: null,
       avatar_url: null,
       phone: null,

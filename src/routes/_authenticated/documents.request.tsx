@@ -80,7 +80,7 @@ const getRequestFormData = createServerFn({ method: 'GET' }).handler(async () =>
       phone: '',
       address: '',
       purok: '',
-      barangay: 'daine_1' as const,
+      barangay: ((user.user_metadata as any)?.barangay as 'daine_1' | 'daine_2') || ('daine_1' as const),
       email: user.email,
     },
   }

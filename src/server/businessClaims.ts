@@ -1,5 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
+import { getAuthSession, assertAdminScope } from '#/server/auth'
 import { z } from 'zod'
 
 export const submitBusinessClaim = createServerFn({ method: 'POST' })
@@ -79,24 +80,13 @@ export const submitBusinessClaim = createServerFn({ method: 'POST' })
   })
 
 export const getBusinessClaims = createServerFn({ method: 'GET' }).handler(async () => {
-  const supabase = createSupabaseServerClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) throw new Error('Not authenticated')
-
-  const { data: roleData } = await supabase
-    .from('user_roles')
-    .select('role, barangay')
-    .eq('user_id', user.id)
-    .maybeSingle()
-
-  if (!roleData || !['admin', 'moderator'].includes(roleData.role)) {
+  const { user, role, admin_scope } = await getAuthSession()
+  if (!user || (role !== 'admin' && role !== 'moderator')) {
     throw new Error('Unauthorized')
   }
 
-  const adminScope = roleData.barangay ?? 'both'
+  const adminScope = assertAdminScope(admin_scope)
+  const supabase = createSupabaseServerClient()
 
   let query = supabase
     .from('business_claims')
@@ -113,7 +103,7 @@ export const getBusinessClaims = createServerFn({ method: 'GET' }).handler(async
       admin_notes,
       reviewed_at,
       created_at,
-      businesses (
+      businesses${adminScope !== 'both' ? '!inner' : ''} (
         id,
         name,
         category,
@@ -124,6 +114,10 @@ export const getBusinessClaims = createServerFn({ method: 'GET' }).handler(async
       )
     `)
     .order('created_at', { ascending: false })
+
+  if (adminScope !== 'both') {
+    query = query.eq('businesses.barangay', adminScope)
+  }
 
   const { data: claims, error } = await query
 
@@ -147,32 +141,34 @@ export const reviewBusinessClaim = createServerFn({ method: 'POST' })
         .parse(data)
   )
   .handler(async ({ data }) => {
-    const supabase = createSupabaseServerClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) throw new Error('Not authenticated')
-
-    const { data: roleData } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .maybeSingle()
-
-    if (!roleData || !['admin', 'moderator'].includes(roleData.role)) {
+    const { user, role, admin_scope } = await getAuthSession()
+    if (!user || (role !== 'admin' && role !== 'moderator')) {
       throw new Error('Unauthorized')
     }
+    const adminScope = assertAdminScope(admin_scope)
+    const supabase = createSupabaseServerClient()
 
-    // 1. Fetch the claim
+    // 1. Fetch the claim and verify entity existence + terminal state lock
     const { data: claim, error: fetchErr } = await supabase
       .from('business_claims')
-      .select('id, business_id, claimant_id, status, businesses(name)')
+      .select('id, business_id, claimant_id, status, businesses(name, barangay)')
       .eq('id', data.claimId)
       .single()
 
     if (fetchErr || !claim) {
       throw new Error('Claim not found.')
+    }
+
+    // 2. Reject modifications if claim is already in terminal state
+    const TERMINAL_STATUSES = ['approved', 'rejected']
+    if (TERMINAL_STATUSES.includes(claim.status)) {
+      throw new Error(`Cannot modify claim in terminal state: ${claim.status}`)
+    }
+
+    // 3. Verify jurisdiction scope
+    const businessBarangay = (claim.businesses as any)?.barangay
+    if (adminScope !== 'both' && businessBarangay && businessBarangay !== adminScope) {
+      throw new Error('Forbidden: Cannot review claims outside your assigned jurisdiction')
     }
 
     const businessName = (claim.businesses as any)?.name ?? 'Business'

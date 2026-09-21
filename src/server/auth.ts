@@ -1,6 +1,15 @@
 import { createServerFn } from '@tanstack/react-start';
 import { createSupabaseServerClient } from '#/lib/supabase.server';
 
+export type AdminJurisdiction = 'daine_1' | 'daine_2' | 'both';
+
+export function assertAdminScope(scope: unknown): AdminJurisdiction {
+  if (scope === 'daine_1' || scope === 'daine_2' || scope === 'both') {
+    return scope;
+  }
+  throw new Error('Forbidden: Unassigned or invalid admin jurisdiction scope');
+}
+
 export const getAuthSession = createServerFn({ method: 'GET' })
   .handler(async () => {
     const supabase = createSupabaseServerClient();
@@ -27,7 +36,7 @@ export const getAuthSession = createServerFn({ method: 'GET' })
       session: { user }, 
       user, 
       role: userRole?.role ?? 'resident',
-      admin_scope: userRole?.barangay ?? 'both',
+      admin_scope: (userRole?.barangay as AdminJurisdiction) ?? null,
       barangay: profile?.barangay ?? 'daine_1'
     };
   });

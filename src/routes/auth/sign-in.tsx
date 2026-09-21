@@ -42,7 +42,7 @@ const signInFn = createServerFn({ method: 'POST' })
       .from('user_roles')
       .select('role')
       .eq('user_id', authData.user.id)
-      .single()
+      .maybeSingle()
 
     const role = userRole?.role ?? 'resident'
     const redirectUrl = role === 'admin' || role === 'moderator' ? '/admin/businesses' : '/dashboard'

@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
-import { getAuthSession } from '#/server/auth'
+import { getAuthSession, assertAdminScope } from '#/server/auth'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -50,8 +50,7 @@ const contactSchema = z.object({
 const getContacts = createServerFn({ method: 'GET' }).handler(async () => {
   const { user, role, admin_scope } = await getAuthSession()
   if (!user || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
-
-  const adminScope = admin_scope ?? 'both'
+  const adminScope = assertAdminScope(admin_scope)
   const supabase = createSupabaseServerClient()
 
   let query = supabase
@@ -75,8 +74,13 @@ const getContacts = createServerFn({ method: 'GET' }).handler(async () => {
 const upsertContact = createServerFn({ method: 'POST' })
   .validator((data: unknown) => z.object({ id: z.string().optional() }).merge(contactSchema).parse(data))
   .handler(async ({ data }) => {
-    const { user, role } = await getAuthSession()
+    const { user, role, admin_scope } = await getAuthSession()
     if (!user || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+    const adminScope = assertAdminScope(admin_scope)
+
+    if (adminScope !== 'both' && data.scope !== adminScope) {
+      throw new Error(`Forbidden: You are only authorized to manage contacts for ${adminScope}`)
+    }
 
     const supabase = createSupabaseServerClient()
     if (data.id) {
@@ -122,8 +126,9 @@ const reorderContacts = createServerFn({ method: 'POST' })
         .parse(data)
   )
   .handler(async ({ data }) => {
-    const { user, role } = await getAuthSession()
+    const { user, role, admin_scope } = await getAuthSession()
     if (!user || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+    assertAdminScope(admin_scope)
 
     const supabase = createSupabaseServerClient()
     for (const item of data.items) {
@@ -138,10 +143,19 @@ const reorderContacts = createServerFn({ method: 'POST' })
 const deleteContact = createServerFn({ method: 'POST' })
   .validator((id: unknown) => z.string().min(1).parse(id))
   .handler(async ({ data: id }) => {
-    const { user, role } = await getAuthSession()
+    const { user, role, admin_scope } = await getAuthSession()
     if (!user || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+    const adminScope = assertAdminScope(admin_scope)
 
     const supabase = createSupabaseServerClient()
+
+    if (adminScope !== 'both') {
+      const { data: existing } = await supabase.from('emergency_contacts').select('scope').eq('id', id).single()
+      if (existing && existing.scope !== adminScope) {
+        throw new Error('Forbidden: Cannot delete contact outside your jurisdiction')
+      }
+    }
+
     const { error } = await supabase.from('emergency_contacts').delete().eq('id', id)
     if (error) throw new Error(error.message)
     return { success: true }

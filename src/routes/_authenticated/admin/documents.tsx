@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
-import { getAuthSession } from '#/server/auth'
+import { getAuthSession, assertAdminScope } from '#/server/auth'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#/components/ui/table'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '#/components/ui/card'
 import { Button } from '#/components/ui/button'
@@ -144,7 +144,7 @@ const getDocumentRequests = createServerFn({ method: 'GET' }).handler(async () =
   if (!user || (role !== 'admin' && role !== 'moderator')) {
     throw new Error('Unauthorized')
   }
-  const adminScope = admin_scope || 'daine_1'
+  const adminScope = assertAdminScope(admin_scope)
   const supabase = createSupabaseServerClient()
 
   // Query document requests
@@ -216,11 +216,33 @@ const updateRequestStatus = createServerFn({ method: 'POST' })
       .parse(data)
   )
   .handler(async ({ data }) => {
-    const { user, role } = await getAuthSession()
+    const { user, role, admin_scope } = await getAuthSession()
     if (!user || (role !== 'admin' && role !== 'moderator')) {
       throw new Error('Unauthorized')
     }
+    const adminScope = assertAdminScope(admin_scope)
     const supabase = createSupabaseServerClient()
+
+    // 1. Verify entity existence and check terminal state lock
+    const { data: existing, error: fetchError } = await supabase
+      .from('document_requests')
+      .select('id, status, barangay')
+      .eq('id', data.id)
+      .single()
+
+    if (fetchError || !existing) {
+      throw new Error('Document request not found')
+    }
+
+    if (adminScope !== 'both' && existing.barangay !== adminScope) {
+      throw new Error('Forbidden: Cannot modify document outside assigned jurisdiction')
+    }
+
+    const TERMINAL_STATUSES = ['resolved', 'cancelled', 'rejected', 'dismissed', 'completed']
+    if (TERMINAL_STATUSES.includes(existing.status)) {
+      throw new Error(`Cannot modify document request in terminal state: ${existing.status}`)
+    }
+
     const { error } = await supabase
       .from('document_requests')
       .update({

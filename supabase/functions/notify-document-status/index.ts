@@ -1,36 +1,60 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+};
 
-serve(async (req) => {
+Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const { record, old_record } = await req.json()
-    
-    // Only notify if status actually changed
-    if (record.status === old_record?.status) {
-      return new Response(JSON.stringify({ message: 'Status unchanged, no notification sent' }), {
+    const body = await req.json().catch(() => ({}));
+    const { record, old_record } = body;
+
+    if (!record || !record.id) {
+      return new Response(JSON.stringify({ error: 'Missing document request record' }), {
+        status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      });
     }
 
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    // Only notify if status actually changed
+    if (old_record && record.status === old_record.status) {
+      return new Response(JSON.stringify({ message: 'Status unchanged, no notification sent' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      console.warn('Supabase credentials not configured in Edge runtime environment.');
+      return new Response(JSON.stringify({ error: 'Database service configuration missing' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    if (!record.requester_id) {
+      return new Response(JSON.stringify({ message: 'Anonymous request, skipping email dispatch' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Get requester email from auth.users
-    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(record.requester_id)
+    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(record.requester_id);
     if (userError || !userData.user?.email) {
-      console.error('Could not find user:', userError)
-      return new Response(JSON.stringify({ error: 'User not found' }), { status: 404 })
+      console.warn('Could not find user for notification:', userError?.message || 'Email missing');
+      return new Response(JSON.stringify({ error: 'User not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Get profile for full name
@@ -38,14 +62,14 @@ serve(async (req) => {
       .from('profiles')
       .select('full_name')
       .eq('id', record.requester_id)
-      .single()
+      .maybeSingle();
 
     const statusMessages: Record<string, string> = {
       in_review: 'Your document request is now being reviewed by barangay staff.',
       ready: 'Great news! Your document is ready for pickup at the Barangay Hall.',
       completed: 'Your document request has been completed. Thank you!',
       rejected: 'Unfortunately, your document request could not be processed. Please contact the Barangay Hall for more information.',
-    }
+    };
 
     const documentTypeLabels: Record<string, string> = {
       barangay_clearance: 'Barangay Clearance',
@@ -54,7 +78,7 @@ serve(async (req) => {
       certificate_of_indigency: 'Certificate of Indigency',
       business_permit: 'Business Permit',
       other: 'Document',
-    }
+    };
 
     const statusLabel = {
       pending: 'Pending',
@@ -62,17 +86,17 @@ serve(async (req) => {
       ready: 'Ready for Pickup',
       completed: 'Completed',
       rejected: 'Rejected',
-    }[record.status] ?? record.status
+    }[record.status as string] ?? record.status;
 
-    const docLabel = documentTypeLabels[record.document_type] ?? record.document_type
-    const recipientName = profile?.full_name ?? 'Resident'
-    const message = statusMessages[record.status] ?? `Your request status has been updated to: ${statusLabel}`
+    const docLabel = documentTypeLabels[record.document_type as string] ?? record.document_type;
+    const recipientName = profile?.full_name ?? 'Resident';
+    const message = statusMessages[record.status as string] ?? `Your request status has been updated to: ${statusLabel}`;
 
     // Send email via Resend API if RESEND_API_KEY is configured
-    const resendApiKey = Deno.env.get('RESEND_API_KEY')
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
 
     if (resendApiKey) {
-      console.log(`Sending email via Resend to ${userData.user.email}...`)
+      console.log(`Sending email via Resend to ${userData.user.email}...`);
       const resendRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -104,19 +128,19 @@ serve(async (req) => {
             </div>
           `,
         }),
-      })
+      });
 
       if (!resendRes.ok) {
-        const errText = await resendRes.text()
-        console.error('Resend API error:', errText)
+        const errText = await resendRes.text();
+        console.error('Resend API error:', errText);
       } else {
-        console.log(`Email successfully sent to ${userData.user.email} via Resend.`)
+        console.log(`Email successfully sent to ${userData.user.email} via Resend.`);
       }
     } else {
       console.log(`[Simulation Mode] Notification for ${userData.user.email}:`, {
         subject: `BrgyConnect: ${docLabel} Request Update`,
         body: message,
-      })
+      });
     }
 
     return new Response(
@@ -126,12 +150,12 @@ serve(async (req) => {
         details: { status: record.status, document_type: record.document_type }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  } catch (error) {
-    console.error('Edge function error:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
+    );
+  } catch (error: any) {
+    console.error('Edge function error:', error);
+    return new Response(JSON.stringify({ error: error?.message || 'Internal server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    });
   }
-})
+});

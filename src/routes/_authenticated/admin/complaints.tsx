@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
-import { getAuthSession } from '#/server/auth'
+import { getAuthSession, assertAdminScope } from '#/server/auth'
 import { useState, useMemo, useRef } from 'react'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
@@ -142,7 +142,7 @@ const getAdminComplaints = createServerFn({ method: 'GET' }).handler(async () =>
   if (!user || (role !== 'admin' && role !== 'moderator')) {
     throw new Error('Unauthorized')
   }
-  const adminScope = admin_scope || 'daine_1'
+  const adminScope = assertAdminScope(admin_scope)
   const supabase = createSupabaseServerClient()
 
   let query = supabase
@@ -187,11 +187,33 @@ const updateComplaintStatus = createServerFn({ method: 'POST' })
       .parse(data)
   )
   .handler(async ({ data }) => {
-    const { user, role } = await getAuthSession()
+    const { user, role, admin_scope } = await getAuthSession()
     if (!user || (role !== 'admin' && role !== 'moderator')) {
       throw new Error('Unauthorized')
     }
+    const adminScope = assertAdminScope(admin_scope)
     const supabase = createSupabaseServerClient()
+
+    // 1. Verify entity existence and check terminal state lock
+    const { data: existing, error: fetchError } = await supabase
+      .from('complaints')
+      .select('id, status, barangay')
+      .eq('id', data.id)
+      .single()
+
+    if (fetchError || !existing) {
+      throw new Error('Complaint not found')
+    }
+
+    if (adminScope !== 'both' && existing.barangay !== adminScope) {
+      throw new Error('Forbidden: Cannot modify complaint outside assigned jurisdiction')
+    }
+
+    const TERMINAL_STATUSES = ['resolved', 'cancelled', 'rejected', 'dismissed']
+    if (TERMINAL_STATUSES.includes(existing.status)) {
+      throw new Error(`Cannot modify complaint in terminal state: ${existing.status}`)
+    }
+
     const { error } = await supabase
       .from('complaints')
       .update({
