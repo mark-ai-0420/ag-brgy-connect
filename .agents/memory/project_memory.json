@@ -5,11 +5,11 @@
     "topic": "Barangay Domain Entities & Workflows",
     "rule": "Core modules include resident profiling, digital certificate/clearance request issuance, incident/blotter tracking, and community announcements.",
     "confidence": 1,
-    "occurrences": 300,
+    "occurrences": 332,
     "source_workspaces": [
       "/Users/markhuelgas/Documents/antigravity/ag-brgy-connect"
     ],
-    "last_reinforced": "2026-09-15T06:38:52.661Z"
+    "last_reinforced": "2026-09-23T03:17:55.000Z"
   },
   {
     "id": "ag-brgy-stack",
@@ -17,22 +17,70 @@
     "topic": "Application Architecture & Stack",
     "rule": "TanStack Start framework with React 19, Supabase SSR for auth and PostgreSQL database access, and Tailwind CSS v4 with shadcn/ui components.",
     "confidence": 1,
-    "occurrences": 300,
+    "occurrences": 332,
     "source_workspaces": [
       "/Users/markhuelgas/Documents/antigravity/ag-brgy-connect"
     ],
-    "last_reinforced": "2026-09-15T06:38:52.661Z"
+    "last_reinforced": "2026-09-23T03:17:55.000Z"
   },
   {
     "id": "ag-brgy-db-migrations",
     "category": "database",
-    "topic": "Database Migrations",
-    "rule": "Manage database schema through SQL migration scripts located in supabase/migrations/.",
+    "topic": "Database Migrations & Remote Parity",
+    "rule": "Manage database schema through idempotent SQL migration scripts in supabase/migrations/. Verify remote Supabase column and table parity before querying from server functions.",
     "confidence": 1,
-    "occurrences": 300,
+    "occurrences": 334,
     "source_workspaces": [
       "/Users/markhuelgas/Documents/antigravity/ag-brgy-connect"
     ],
-    "last_reinforced": "2026-09-15T06:38:52.661Z"
+    "last_reinforced": "2026-09-23T03:17:55.000Z"
+  },
+  {
+    "id": "ag-brgy-rls-privileges",
+    "category": "security",
+    "topic": "Supabase RLS & Function Privileges",
+    "rule": "SECURITY DEFINER functions used in RLS policies (e.g. get_user_role) must explicitly grant execute privileges to authenticated and anon roles, and use (SELECT auth.uid()) for InitPlan caching.",
+    "confidence": 1,
+    "occurrences": 12,
+    "source_workspaces": [
+      "/Users/markhuelgas/Documents/antigravity/ag-brgy-connect"
+    ],
+    "last_reinforced": "2026-09-23T03:17:55.000Z"
+  },
+  {
+    "id": "ag-brgy-public-pii-masking",
+    "category": "security",
+    "topic": "Zero-PII Public Endpoints",
+    "rule": "Public QR verification routes (/verify/resident/$id) and directory payloads must never expose raw resident emails, phone numbers, or auth UUIDs (owner_id) in client-accessible DOM.",
+    "confidence": 1,
+    "occurrences": 15,
+    "source_workspaces": [
+      "/Users/markhuelgas/Documents/antigravity/ag-brgy-connect"
+    ],
+    "last_reinforced": "2026-09-23T03:17:55.000Z"
+  },
+  {
+    "id": "ag-brgy-auth-hydration",
+    "category": "testing",
+    "topic": "Client Hydration Guard in Automated Tests",
+    "rule": "Forms gating submit buttons behind !isHydrated require automated test runners (Playwright/Puppeteer) to explicitly wait for !btn.hasAttribute('disabled') before clicking submit.",
+    "confidence": 1,
+    "occurrences": 8,
+    "source_workspaces": [
+      "/Users/markhuelgas/Documents/antigravity/ag-brgy-connect"
+    ],
+    "last_reinforced": "2026-09-23T03:17:55.000Z"
+  },
+  {
+    "id": "ag-brgy-e2e-page-isolation",
+    "category": "testing",
+    "topic": "Playwright Test Page Isolation",
+    "rule": "In multi-route test suites under Vite SSR, spawn fresh browser pages per route to prevent HMR and WebSocket connection stalls during aggressive viewport resizes.",
+    "confidence": 1,
+    "occurrences": 6,
+    "source_workspaces": [
+      "/Users/markhuelgas/Documents/antigravity/ag-brgy-connect"
+    ],
+    "last_reinforced": "2026-09-23T03:17:55.000Z"
   }
 ]
