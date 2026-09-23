@@ -60,6 +60,12 @@ const upsertEvent = createServerFn({ method: 'POST' })
     }
 
     if (data.id) {
+      if (adminScope !== 'both') {
+        const { data: existing } = await supabase.from('events').select('scope').eq('id', data.id).single()
+        if (existing && existing.scope !== adminScope) {
+          throw new Error('Forbidden: Cannot edit event outside your jurisdiction')
+        }
+      }
       const { error } = await supabase.from('events')
         .update({
           title: data.title,
@@ -230,7 +236,7 @@ function EventForm({ defaultValues, adminScope, onSuccess }: { defaultValues?: P
 }
 
 function AdminEventsRoute() {
-  const { events, adminScope } = Route.useLoaderData()
+  const { events = [], adminScope = 'both' } = Route.useLoaderData() ?? {}
   const router = useRouter()
   const [editItem, setEditItem] = useState<Event | null>(null)
   const [createOpen, setCreateOpen] = useState(false)

@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
-import { getAuthSession, assertAdminScope } from '#/server/auth'
+import { getAuthSession, assertAdminScope, assertAdmin } from '#/server/auth'
 import { useState } from 'react'
 import { PageHeader } from '#/components/common/PageHeader'
 import { Button } from '#/components/ui/button'
@@ -203,10 +203,16 @@ const updateUserRoleAndScope = createServerFn({ method: 'POST' })
   )
   .handler(async ({ data }) => {
     const { user, role, admin_scope } = await getAuthSession()
-    if (!user || (role !== 'admin' && role !== 'moderator')) {
-      throw new Error('Unauthorized')
-    }
+    if (!user) throw new Error('Unauthorized')
+    
+    // Only full administrators can manage roles (moderators disallowed)
+    assertAdmin(role, { allowModerator: false })
     const adminScope = assertAdminScope(admin_scope)
+
+    // Prevent self-role modification
+    if (data.user_id === user.id) {
+      throw new Error('Forbidden: Cannot modify your own role or administrative scope')
+    }
 
     const supabase = createSupabaseServerClient()
 
@@ -257,7 +263,7 @@ export const Route = createFileRoute('/_authenticated/admin/users')({
 type UserItem = Awaited<ReturnType<typeof getUsers>>['users'][number]
 
 function AdminUsersRoute() {
-  const { users, adminScope } = Route.useLoaderData()
+  const { users = [], adminScope = 'both' } = Route.useLoaderData() ?? {}
   const router = useRouter()
 
   const [search, setSearch] = useState('')

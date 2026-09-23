@@ -75,27 +75,17 @@ export function DigitalResidentID({
   const [isDownloading, setIsDownloading] = useState(false)
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [activeProfile, setActiveProfile] = useState<ResidentProfile | null>(() => {
-    if (profile && profile.id) return profile
-    if (typeof window !== 'undefined') {
-      try {
-        const cached = localStorage.getItem('cached_resident_id_profile')
-        if (cached) return JSON.parse(cached)
-      } catch (e) {
-        console.warn('Failed to parse cached resident ID profile:', e)
-      }
-    }
-    return null
-  })
-  const [isOfflineCopy, setIsOfflineCopy] = useState<boolean>(() => {
-    if (!profile && typeof window !== 'undefined') {
-      const cached = localStorage.getItem('cached_resident_id_profile')
-      return Boolean(cached)
-    }
-    return false
-  })
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(profile?.avatar_url || activeProfile?.avatar_url || null)
+  const [activeProfile, setActiveProfile] = useState<ResidentProfile | null>(profile?.id ? profile : null)
+  const [isOfflineCopy, setIsOfflineCopy] = useState<boolean>(false)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(profile?.avatar_url || null)
+  const [mountedOrigin, setMountedOrigin] = useState<string>('https://ag-brgy-connect.vercel.app')
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setMountedOrigin(window.location.origin)
+    }
+  }, [])
 
   // Synchronize profile prop and cache to localStorage
   useEffect(() => {
@@ -158,8 +148,7 @@ export function DigitalResidentID({
   const issuedDateFormatted = format(issueDateObj, 'MMM dd, yyyy')
 
   // Verification URL
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://ag-brgy-connect.vercel.app'
-  const verifyUrl = `${origin}/verify/resident/${effectiveProfile.id}`
+  const verifyUrl = `${mountedOrigin}/verify/resident/${effectiveProfile.id}`
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&format=png&data=${encodeURIComponent(verifyUrl)}`
 
   const handleCopyCode = () => {

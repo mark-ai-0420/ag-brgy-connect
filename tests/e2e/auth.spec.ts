@@ -5,8 +5,8 @@ test.describe('Resident & Admin Login', () => {
     await page.goto('/auth/sign-in');
     
     // Attempt to login using the provided credentials
-    await page.fill('input[type="email"], input[name="email"]', 'markhersonhuelgas@gmail.com');
-    await page.fill('input[type="password"], input[name="password"]', 'brgyconnectadmin');
+    await page.fill('input[type="email"], input[name="email"]', 'admin_daine1@brgyconnect.app');
+    await page.fill('input[type="password"], input[name="password"]', 'Password123!');
     await page.click('button[type="submit"], button:has-text("Sign In")');
     
     // Wait for URL to change or dashboard to load
@@ -22,8 +22,8 @@ test.describe('Resident & Admin Login', () => {
     await page.goto('/auth/sign-in');
     
     // Attempt to login
-    await page.fill('input[type="email"], input[name="email"]', 'markai0420@gmail.com');
-    await page.fill('input[type="password"], input[name="password"]', 'resident');
+    await page.fill('input[type="email"], input[name="email"]', 'juan.delacruz@gmail.com');
+    await page.fill('input[type="password"], input[name="password"]', 'Password123!');
     await page.click('button[type="submit"], button:has-text("Sign In")');
     
     // Wait for redirect
@@ -31,7 +31,7 @@ test.describe('Resident & Admin Login', () => {
     console.log('Resident logged in URL:', page.url());
     
     // Navigate to documents
-    await page.goto('/documents');
+    await page.goto('/documents/request');
     await page.waitForTimeout(2000);
     const docText = await page.locator('body').innerText();
     console.log('Documents page text:', docText.substring(0, 150));

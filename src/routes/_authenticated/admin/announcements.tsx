@@ -61,6 +61,18 @@ const upsertAnnouncement = createServerFn({ method: 'POST' })
     }
 
     if (data.id) {
+      if (adminScope !== 'both') {
+        const { data: existing, error: fetchErr } = await supabase
+          .from('announcements')
+          .select('scope')
+          .eq('id', data.id)
+          .single()
+        if (fetchErr || !existing) throw new Error('Announcement not found')
+        if (existing.scope !== adminScope) {
+          throw new Error('Forbidden: Cannot modify announcement outside your jurisdiction')
+        }
+      }
+
       const { error } = await supabase.from('announcements')
         .update({
           title: data.title,
@@ -114,8 +126,16 @@ const togglePin = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const { session, role, admin_scope } = await getAuthSession()
     if (!session || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
-    assertAdminScope(admin_scope)
+    const adminScope = assertAdminScope(admin_scope)
     const supabase = createSupabaseServerClient()
+
+    if (adminScope !== 'both') {
+      const { data: existing } = await supabase.from('announcements').select('scope').eq('id', data.id).single()
+      if (existing && existing.scope !== adminScope) {
+        throw new Error('Forbidden: Cannot modify announcement outside your jurisdiction')
+      }
+    }
+
     const { error } = await supabase.from('announcements')
       .update({ pinned: data.pinned, updated_at: new Date().toISOString() })
       .eq('id', data.id)

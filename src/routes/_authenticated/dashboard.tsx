@@ -252,7 +252,7 @@ function BusinessStatusBadge({ status }: { status: string }) {
 }
 
 function DashboardRoute() {
-  const { documents, businesses, complaints, profile } = Route.useLoaderData();
+  const { documents = [], businesses = [], complaints = [], profile = null } = Route.useLoaderData() ?? {};
   const router = useRouter();
   const [currentProfile, setCurrentProfile] = useState(profile);
   const [printModalOpen, setPrintModalOpen] = useState(false);

@@ -10,13 +10,7 @@ export interface NetworkStatus {
  * Custom hook to monitor online / offline network connectivity in real-time.
  */
 export function useNetworkStatus(): NetworkStatus {
-  const [isOnline, setIsOnline] = useState<boolean>(() => {
-    if (typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean') {
-      return navigator.onLine
-    }
-    return true
-  })
-
+  const [isOnline, setIsOnline] = useState<boolean>(true)
   const [wasOffline, setWasOffline] = useState(false)
 
   useEffect(() => {

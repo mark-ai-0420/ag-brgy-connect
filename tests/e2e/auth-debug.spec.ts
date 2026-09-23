@@ -8,8 +8,8 @@ test.describe('Resident & Admin Login', () => {
     const submitBtn = page.locator('form button[type="submit"]');
     await expect(submitBtn).toBeEnabled();
     
-    await page.fill('input[name="email"]', 'markhersonhuelgas@gmail.com');
-    await page.fill('input[name="password"]', 'brgyconnectadmin');
+    await page.fill('input[name="email"]', 'admin_daine1@brgyconnect.app');
+    await page.fill('input[name="password"]', 'Password123!');
     await submitBtn.click();
     
     await page.waitForURL('**/admin/businesses');

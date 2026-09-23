@@ -2,7 +2,7 @@ import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { getAuthSession, assertAdminScope } from '#/server/auth'
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, type MouseEvent } from 'react'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -240,7 +240,7 @@ type ComplaintItem = Awaited<ReturnType<typeof getAdminComplaints>>['complaints'
 function CopyDocketCode({ code }: { code: string }) {
   const [copied, setCopied] = useState(false)
 
-  const handleCopy = (e: React.MouseEvent) => {
+  const handleCopy = (e: MouseEvent) => {
     e.stopPropagation()
     navigator.clipboard.writeText(code)
     setCopied(true)
@@ -1057,7 +1057,7 @@ function CaseNotesLoggerModal({
 // MAIN ADMIN COMPLAINTS ROUTE COMPONENT
 // -------------------------------------------------------------
 function AdminComplaintsRoute() {
-  const { complaints, adminScope } = Route.useLoaderData()
+  const { complaints = [], adminScope = 'both' } = Route.useLoaderData() ?? {}
   const router = useRouter()
 
   // Filter state

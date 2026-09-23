@@ -7,7 +7,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import { useState } from 'react'
+import { useState, type ChangeEvent } from 'react'
 import { uploadComplaintPhoto } from '#/lib/upload'
 
 import { Button } from '#/components/ui/button'
@@ -251,7 +251,7 @@ function NewComplaintRoute() {
   const selectedCategory = form.watch('category')
   const isAnonymous = form.watch('is_anonymous')
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0]
       if (file.size > 5 * 1024 * 1024) {

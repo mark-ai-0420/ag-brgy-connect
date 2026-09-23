@@ -48,7 +48,7 @@ import {
   Layers,
   FileCheck2,
 } from 'lucide-react'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, type MouseEvent } from 'react'
 import { CertificatePrintModal } from '#/components/documents/CertificatePrintModal'
 
 const STATUSES = ['pending', 'in_review', 'ready', 'completed', 'rejected'] as const
@@ -265,7 +265,7 @@ type RequestItem = Awaited<ReturnType<typeof getDocumentRequests>>['requests'][n
 function CopyTrackingCode({ code }: { code: string }) {
   const [copied, setCopied] = useState(false)
 
-  const handleCopy = (e: React.MouseEvent) => {
+  const handleCopy = (e: MouseEvent) => {
     e.stopPropagation()
     navigator.clipboard.writeText(code)
     setCopied(true)
@@ -528,7 +528,7 @@ function DetailedUpdateModal({ request, open, onOpenChange, onSuccess }: Detaile
 }
 
 function AdminDocumentsRoute() {
-  const { requests, adminScope } = Route.useLoaderData()
+  const { requests = [], adminScope = 'both' } = Route.useLoaderData() ?? {}
   const router = useRouter()
 
   // State

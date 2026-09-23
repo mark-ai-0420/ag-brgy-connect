@@ -5,9 +5,35 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
+  }
+
+  // 1. Enforce Webhook Authentication via Service Role Key or Webhook Secret
+  const authHeader = req.headers.get('Authorization') || '';
+  const expectedServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+  const webhookSecret = Deno.env.get('NOTIFY_WEBHOOK_SECRET') || '';
+
+  const isAuthorized =
+    (expectedServiceKey && authHeader === `Bearer ${expectedServiceKey}`) ||
+    (webhookSecret && req.headers.get('x-webhook-secret') === webhookSecret) ||
+    !expectedServiceKey; // Graceful fallback only if running in test without keys
+
+  if (!isAuthorized) {
+    return new Response(JSON.stringify({ error: 'Unauthorized invocation' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 
   try {
@@ -29,7 +55,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
-    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+    const supabaseServiceRoleKey = expectedServiceKey;
 
     if (!supabaseUrl || !supabaseServiceRoleKey) {
       console.warn('Supabase credentials not configured in Edge runtime environment.');
@@ -40,6 +66,20 @@ Deno.serve(async (req: Request) => {
     }
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    // Verify document request exists in DB to prevent arbitrary forgery
+    const { data: verifiedDoc, error: verifyError } = await supabaseAdmin
+      .from('document_requests')
+      .select('id, requester_id, status, document_type')
+      .eq('id', record.id)
+      .maybeSingle();
+
+    if (verifyError || !verifiedDoc || verifiedDoc.requester_id !== record.requester_id) {
+      return new Response(JSON.stringify({ error: 'Invalid document record verification' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     if (!record.requester_id) {
       return new Response(JSON.stringify({ message: 'Anonymous request, skipping email dispatch' }), {
@@ -80,7 +120,7 @@ Deno.serve(async (req: Request) => {
       other: 'Document',
     };
 
-    const statusLabel = {
+    const rawStatusLabel = {
       pending: 'Pending',
       in_review: 'In Review',
       ready: 'Ready for Pickup',
@@ -88,9 +128,15 @@ Deno.serve(async (req: Request) => {
       rejected: 'Rejected',
     }[record.status as string] ?? record.status;
 
-    const docLabel = documentTypeLabels[record.document_type as string] ?? record.document_type;
-    const recipientName = profile?.full_name ?? 'Resident';
-    const message = statusMessages[record.status as string] ?? `Your request status has been updated to: ${statusLabel}`;
+    const rawDocLabel = documentTypeLabels[record.document_type as string] ?? record.document_type;
+    const rawRecipientName = profile?.full_name ?? 'Resident';
+    const rawMessage = statusMessages[record.status as string] ?? `Your request status has been updated to: ${rawStatusLabel}`;
+
+    // HTML-sanitized values
+    const safeDocLabel = escapeHtml(String(rawDocLabel));
+    const safeStatusLabel = escapeHtml(String(rawStatusLabel));
+    const safeRecipientName = escapeHtml(String(rawRecipientName));
+    const safeMessage = escapeHtml(String(rawMessage));
 
     // Send email via Resend API if RESEND_API_KEY is configured
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
@@ -106,20 +152,20 @@ Deno.serve(async (req: Request) => {
         body: JSON.stringify({
           from: 'Barangay Daine <onboarding@resend.dev>',
           to: [userData.user.email],
-          subject: `BrgyConnect: ${docLabel} Request Update`,
+          subject: `BrgyConnect: ${safeDocLabel} Request Update`,
           html: `
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; padding: 28px; background-color: #ffffff;">
               <div style="text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 16px; margin-bottom: 20px;">
                 <h1 style="color: #0038A8; font-size: 22px; margin: 0;">Barangay Daine, Indang, Cavite</h1>
                 <p style="color: #64748b; font-size: 13px; margin-top: 4px;">Digital Barangay Services & Community Hub</p>
               </div>
-              <p style="font-size: 15px; color: #1e293b; line-height: 1.6;">Hi <strong>${recipientName}</strong>,</p>
-              <p style="font-size: 15px; color: #1e293b; line-height: 1.6;">${message}</p>
+              <p style="font-size: 15px; color: #1e293b; line-height: 1.6;">Hi <strong>${safeRecipientName}</strong>,</p>
+              <p style="font-size: 15px; color: #1e293b; line-height: 1.6;">${safeMessage}</p>
               
               <div style="background-color: #f8fafc; border-left: 4px solid #0038A8; padding: 14px 18px; border-radius: 6px; margin: 20px 0;">
                 <p style="margin: 0 0 6px 0; font-size: 13px; color: #64748b;">REQUEST DETAILS</p>
-                <p style="margin: 0 0 4px 0; font-size: 15px; color: #0f172a;"><strong>Document:</strong> ${docLabel}</p>
-                <p style="margin: 0; font-size: 15px; color: #0f172a;"><strong>Current Status:</strong> <span style="color: #0038A8; font-weight: 600;">${statusLabel}</span></p>
+                <p style="margin: 0 0 4px 0; font-size: 15px; color: #0f172a;"><strong>Document:</strong> ${safeDocLabel}</p>
+                <p style="margin: 0; font-size: 15px; color: #0f172a;"><strong>Current Status:</strong> <span style="color: #0038A8; font-weight: 600;">${safeStatusLabel}</span></p>
               </div>
 
               <p style="font-size: 13px; color: #94a3b8; text-align: center; margin-top: 28px; border-top: 1px solid #f1f5f9; padding-top: 16px;">
@@ -138,8 +184,8 @@ Deno.serve(async (req: Request) => {
       }
     } else {
       console.log(`[Simulation Mode] Notification for ${userData.user.email}:`, {
-        subject: `BrgyConnect: ${docLabel} Request Update`,
-        body: message,
+        subject: `BrgyConnect: ${safeDocLabel} Request Update`,
+        body: safeMessage,
       });
     }
 

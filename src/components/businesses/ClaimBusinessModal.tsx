@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link } from '@tanstack/react-router'
 import {
   Dialog,
@@ -58,7 +58,7 @@ export function ClaimBusinessModal({
   const [proofNotes, setProofNotes] = useState('')
   const [proofImageUrl, setProofImageUrl] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
 
     if (!claimantName.trim()) {

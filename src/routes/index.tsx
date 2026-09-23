@@ -3,7 +3,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { useBarangayScope } from '#/hooks/useBarangayScope'
 import { format, parseISO } from 'date-fns'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, type ReactNode, type FormEvent } from 'react'
 import {
   Calendar,
   FileText,
@@ -107,7 +107,7 @@ export const Route = createFileRoute('/')({
 /* ── Types ────────────────────────────────────────────────────────────────── */
 interface BentoServiceCard {
   to: string
-  icon: React.ReactNode
+  icon: ReactNode
   badge: string
   title: string
   description: string
@@ -121,7 +121,7 @@ interface BentoServiceCard {
 
 interface Step {
   number: string
-  icon: React.ReactNode
+  icon: ReactNode
   title: string
   description: string
 }
@@ -217,7 +217,7 @@ function Home() {
   const upcomingEvents = loaderData?.upcomingEvents ?? []
   const { scope: activeBarangayScope } = useBarangayScope()
 
-  const handleTrackSubmit = (e?: React.FormEvent) => {
+  const handleTrackSubmit = (e?: FormEvent) => {
     if (e) e.preventDefault()
     const trimmedCode = trackingInput.trim().toUpperCase()
     if (trimmedCode) {

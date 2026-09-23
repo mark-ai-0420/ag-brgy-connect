@@ -3,6 +3,15 @@ import { createSupabaseServerClient } from '#/lib/supabase.server';
 
 export type AdminJurisdiction = 'daine_1' | 'daine_2' | 'both';
 
+export function assertAdmin(
+  role: string | null | undefined,
+  options: { allowModerator?: boolean } = { allowModerator: true }
+): 'admin' | 'moderator' {
+  if (role === 'admin') return 'admin';
+  if (options.allowModerator && role === 'moderator') return 'moderator';
+  throw new Error('Forbidden: Insufficient administrative privileges');
+}
+
 export function assertAdminScope(scope: unknown): AdminJurisdiction {
   if (scope === 'daine_1' || scope === 'daine_2' || scope === 'both') {
     return scope;

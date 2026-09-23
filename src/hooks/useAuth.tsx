@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useMemo, type ReactNode } from 'react';
 import { getAuthSession, clearAuthCache } from '#/server/auth';
 import { supabase } from '#/lib/supabase';
 import type { User } from '@supabase/supabase-js';
@@ -25,7 +25,7 @@ const AuthContext = createContext<AuthContextType>({
   setUserState: () => {},
 });
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<UserRole>(null);
   const [barangay, setBarangay] = useState<string | null>(null);

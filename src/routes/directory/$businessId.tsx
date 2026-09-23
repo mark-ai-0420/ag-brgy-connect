@@ -1,3 +1,4 @@
+import type { ReactNode, ElementType } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
@@ -47,6 +48,16 @@ const getBusiness = createServerFn({ method: 'GET' })
       .single()
     if (error || !data) return null
 
+    const isOwner = user?.id === data.owner_id
+    let isStaff = false
+    if (user) {
+      const { data: roleData } = await supabase.rpc('get_user_role', { user_id: user.id })
+      if (roleData === 'admin' || roleData === 'moderator') isStaff = true
+    }
+    if (data.status !== 'approved' && !isOwner && !isStaff) {
+      return null
+    }
+
     let ownerBadge = null
     if (data.owner_id) {
       try {
@@ -59,8 +70,12 @@ const getBusiness = createServerFn({ method: 'GET' })
       }
     }
 
+    const { owner_id, ...safeData } = data
+
     return {
-      ...data,
+      ...safeData,
+      is_claimed: Boolean(owner_id),
+      is_owner: isOwner,
       ownerBadge,
       currentUser: user ? { id: user.id, email: user.email, user_metadata: user.user_metadata } : null,
     }
@@ -76,9 +91,9 @@ function InfoRow({
   label,
   children,
 }: {
-  icon: React.ElementType
+  icon: ElementType
   label: string
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <div className="flex items-start gap-3">
@@ -164,7 +179,7 @@ function BusinessDetail() {
           </Link>
         </Button>
 
-        {!business.owner_id && (
+        {!business.is_claimed && (
           <ClaimBusinessModal
             business={business}
             user={business.currentUser}
@@ -174,7 +189,7 @@ function BusinessDetail() {
       </div>
 
       {/* Unclaimed Business Alert Banner */}
-      {!business.owner_id && (
+      {!business.is_claimed && (
         <Card className="mb-6 border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent rounded-2xl shadow-sm">
           <CardContent className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">

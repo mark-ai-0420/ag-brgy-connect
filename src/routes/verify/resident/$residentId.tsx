@@ -15,27 +15,35 @@ const getResidentVerificationData = createServerFn({ method: 'GET' })
     if (!rawId) return null
 
     try {
-      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawId)
+      // 1. Primary: Use SECURITY DEFINER RPC to allow anonymous verification without exposing private PII
+      const { data: rpcRows, error: rpcError } = await supabase.rpc('get_verified_resident', {
+        lookup_code: rawId,
+      })
 
-      let query = supabase
-        .from('profiles')
-        .select('id, full_name, barangay, purok, avatar_url, created_at')
-
-      if (isUuid) {
-        query = query.eq('id', rawId)
-      } else {
-        // Remove BD1-RES- or BD2-RES- prefix if user searched with control number
-        const cleanCode = rawId.replace(/^BD[12]-RES-/i, '').toLowerCase()
-        if (cleanCode.length >= 6) {
-          query = query.ilike('id::text', `${cleanCode}%`)
-        } else {
-          query = query.eq('id', rawId)
-        }
+      let profile: any = null
+      if (!rpcError && Array.isArray(rpcRows) && rpcRows.length > 0) {
+        profile = rpcRows[0]
       }
 
-      const { data: profile, error } = await query.maybeSingle()
+      // 2. Secondary fallback for direct lookup
+      if (!profile) {
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawId)
+        let query = supabase
+          .from('profiles')
+          .select('id, full_name, barangay, purok, avatar_url, created_at')
 
-      if (error || !profile) {
+        if (isUuid) {
+          query = query.eq('id', rawId)
+        } else {
+          const cleanCode = rawId.replace(/^BD[12]-RES-/i, '').toLowerCase()
+          query = query.eq('id', cleanCode)
+        }
+
+        const { data: fallbackProfile } = await query.maybeSingle()
+        profile = fallbackProfile
+      }
+
+      if (!profile) {
         return null
       }
 

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, type ChangeEvent } from 'react'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { z } from 'zod'
@@ -133,29 +133,29 @@ const PUROK_OPTIONS = [
 ]
 
 function ProfileSettingsPage() {
-  const { user, profile } = Route.useLoaderData()
+  const { user, profile } = Route.useLoaderData() ?? {}
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
 
   const defaultBarangay = (profile?.barangay as 'daine_1' | 'daine_2') || 
-    (user.user_metadata?.barangay as 'daine_1' | 'daine_2') || 
+    (user?.user_metadata?.barangay as 'daine_1' | 'daine_2') || 
     'daine_1'
 
-  const defaultPurok = profile?.purok || user.user_metadata?.purok || 'Purok 1'
+  const defaultPurok = profile?.purok || user?.user_metadata?.purok || 'Purok 1'
 
   const form = useForm<UpdateProfileValues>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
-      full_name: profile?.full_name || user.user_metadata?.full_name || '',
+      full_name: profile?.full_name || user?.user_metadata?.full_name || '',
       phone: profile?.phone || '',
       address: profile?.address || '',
       barangay: defaultBarangay,
       purok: defaultPurok,
-      avatar_url: profile?.avatar_url || user.user_metadata?.avatar_url || null,
-      emergency_contact_name: user.user_metadata?.emergency_contact_name || '',
-      emergency_contact_phone: user.user_metadata?.emergency_contact_phone || '',
-      emergency_contact_relation: user.user_metadata?.emergency_contact_relation || '',
+      avatar_url: profile?.avatar_url || user?.user_metadata?.avatar_url || null,
+      emergency_contact_name: user?.user_metadata?.emergency_contact_name || '',
+      emergency_contact_phone: user?.user_metadata?.emergency_contact_phone || '',
+      emergency_contact_relation: user?.user_metadata?.emergency_contact_relation || '',
     },
   })
 
@@ -163,7 +163,7 @@ function ProfileSettingsPage() {
   const selectedBarangay = form.watch('barangay')
   const selectedPurok = form.watch('purok')
 
-  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useMemo, useState, type ComponentType } from 'react'
+import { useMemo, useState, type ComponentType, type MouseEvent } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Separator } from '#/components/ui/separator'
 import {
@@ -277,7 +277,7 @@ function EmergencyRoute() {
       .filter((section) => section.contacts.length > 0)
   }, [dbContacts, scope, searchQuery])
 
-  const handleCopyNumber = async (number: string, e: React.MouseEvent) => {
+  const handleCopyNumber = async (number: string, e: MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     try {

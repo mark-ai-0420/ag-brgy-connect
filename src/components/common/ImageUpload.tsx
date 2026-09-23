@@ -1,4 +1,4 @@
-import { useState, useRef, type ChangeEvent } from 'react'
+import { useState, useRef, type ChangeEvent, type DragEvent } from 'react'
 import { UploadCloud, X, Image as ImageIcon, Loader2 } from 'lucide-react'
 import { cn } from '#/lib/utils'
 
@@ -26,7 +26,7 @@ export function ImageUpload({
   const [isDragging, setIsDragging] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: DragEvent) => {
     e.preventDefault()
     setIsDragging(true)
   }
@@ -35,7 +35,7 @@ export function ImageUpload({
     setIsDragging(false)
   }
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = (e: DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
     if (disabled || loading) return

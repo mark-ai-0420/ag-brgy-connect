@@ -1,10 +1,33 @@
 import { supabase } from '#/lib/supabase'
 
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp']
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024 // 5MB
+
+function sanitizeUploadFile(file: File): { cleanExt: string } | null {
+  if (!file || file.size > MAX_FILE_SIZE_BYTES) {
+    console.error('File exceeds maximum size of 5MB')
+    return null
+  }
+  const rawExt = (file.name.split('.').pop() || '').toLowerCase()
+  const cleanExt = rawExt.replace(/[^a-z0-9]/g, '')
+  if (!ALLOWED_EXTENSIONS.includes(cleanExt)) {
+    console.error(`Invalid extension .${cleanExt}. Allowed: ${ALLOWED_EXTENSIONS.join(', ')}`)
+    return null
+  }
+  if (file.type && !ALLOWED_MIME_TYPES.includes(file.type.toLowerCase())) {
+    console.error(`Invalid MIME type ${file.type}. Allowed: ${ALLOWED_MIME_TYPES.join(', ')}`)
+    return null
+  }
+  return { cleanExt }
+}
+
 export async function uploadBusinessPhoto(file: File, businessId: string): Promise<string | null> {
-  
-  
-  const ext = file.name.split('.').pop()
-  const fileName = `${businessId}-${Date.now()}.${ext}`
+  const check = sanitizeUploadFile(file)
+  if (!check) return null
+
+  const cleanBusinessId = businessId.replace(/[^a-zA-Z0-9_-]/g, '')
+  const fileName = `${cleanBusinessId}-${Date.now()}.${check.cleanExt}`
   
   const { error } = await supabase.storage
     .from('business-photos')
@@ -23,10 +46,11 @@ export async function uploadBusinessPhoto(file: File, businessId: string): Promi
 }
 
 export async function uploadComplaintPhoto(file: File, complaintId: string): Promise<string | null> {
-  
-  
-  const ext = file.name.split('.').pop()
-  const fileName = `${complaintId}-${Date.now()}.${ext}`
+  const check = sanitizeUploadFile(file)
+  if (!check) return null
+
+  const cleanComplaintId = complaintId.replace(/[^a-zA-Z0-9_-]/g, '')
+  const fileName = `${cleanComplaintId}-${Date.now()}.${check.cleanExt}`
   
   const { error } = await supabase.storage
     .from('complaint-photos')
@@ -45,10 +69,11 @@ export async function uploadComplaintPhoto(file: File, complaintId: string): Pro
 }
 
 export async function uploadOfficialPhoto(file: File, officialId?: string): Promise<string | null> {
-  
-  
-  const ext = file.name.split('.').pop()
-  const fileName = `${officialId || 'official'}-${Date.now()}.${ext}`
+  const check = sanitizeUploadFile(file)
+  if (!check) return null
+
+  const cleanOfficialId = (officialId || 'official').replace(/[^a-zA-Z0-9_-]/g, '')
+  const fileName = `${cleanOfficialId}-${Date.now()}.${check.cleanExt}`
   
   const { error } = await supabase.storage
     .from('official-photos')
@@ -67,8 +92,11 @@ export async function uploadOfficialPhoto(file: File, officialId?: string): Prom
 }
 
 export async function uploadAnnouncementPhoto(file: File, id?: string): Promise<string | null> {
-  const ext = file.name.split('.').pop()
-  const fileName = `${id || 'announcement'}-${Date.now()}.${ext}`
+  const check = sanitizeUploadFile(file)
+  if (!check) return null
+
+  const cleanId = (id || 'announcement').replace(/[^a-zA-Z0-9_-]/g, '')
+  const fileName = `${cleanId}-${Date.now()}.${check.cleanExt}`
 
   const { error } = await supabase.storage
     .from('announcement-photos')
@@ -87,8 +115,11 @@ export async function uploadAnnouncementPhoto(file: File, id?: string): Promise<
 }
 
 export async function uploadEventPhoto(file: File, id?: string): Promise<string | null> {
-  const ext = file.name.split('.').pop()
-  const fileName = `${id || 'event'}-${Date.now()}.${ext}`
+  const check = sanitizeUploadFile(file)
+  if (!check) return null
+
+  const cleanId = (id || 'event').replace(/[^a-zA-Z0-9_-]/g, '')
+  const fileName = `${cleanId}-${Date.now()}.${check.cleanExt}`
 
   const { error } = await supabase.storage
     .from('event-photos')
@@ -107,8 +138,11 @@ export async function uploadEventPhoto(file: File, id?: string): Promise<string 
 }
 
 export async function uploadAvatarPhoto(file: File, userId: string): Promise<string | null> {
-  const ext = file.name.split('.').pop() || 'jpg'
-  const fileName = `avatar-${userId}-${Date.now()}.${ext}`
+  const check = sanitizeUploadFile(file)
+  if (!check) return null
+
+  const cleanUserId = userId.replace(/[^a-zA-Z0-9_-]/g, '')
+  const fileName = `avatar-${cleanUserId}-${Date.now()}.${check.cleanExt}`
 
   // Try 'avatars' bucket first, fallback to 'business-photos'
   const buckets = ['avatars', 'business-photos']

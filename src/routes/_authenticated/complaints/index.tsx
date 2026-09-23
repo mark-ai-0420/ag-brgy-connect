@@ -37,7 +37,7 @@ export const Route = createFileRoute('/_authenticated/complaints/')({
 })
 
 function ComplaintsIndexPage() {
-  const complaints = Route.useLoaderData()
+  const complaints = Route.useLoaderData() ?? []
   const [filter, setFilter] = useState('All')
 
   const filteredComplaints = complaints.filter(

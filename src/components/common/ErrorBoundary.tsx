@@ -8,14 +8,14 @@ export function DefaultErrorComponent({ error }: { error: any }) {
   
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-sm">
+      <Card className="w-full max-w-md shadow-sm border border-border/80">
         <CardContent className="pt-6 flex flex-col items-center text-center space-y-4">
-          <div className="rounded-full bg-red-100 p-4">
-            <AlertTriangle className="h-8 w-8 text-red-600" />
+          <div className="rounded-full bg-destructive/10 dark:bg-destructive/20 p-4">
+            <AlertTriangle className="h-8 w-8 text-destructive" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-bold text-slate-900">Something went wrong</h2>
-            <p className="text-sm text-slate-500 break-all">
+            <h2 className="text-xl font-bold text-foreground">Something went wrong</h2>
+            <p className="text-sm text-muted-foreground break-all">
               {error instanceof Error ? error.message : 'An unexpected error occurred.'}
             </p>
           </div>
@@ -38,18 +38,18 @@ export function DefaultNotFoundComponent() {
   
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-sm border-t-4 border-t-primary">
+      <Card className="w-full max-w-md shadow-sm border-t-4 border-t-primary border-border/80">
         <CardContent className="pt-6 flex flex-col items-center text-center space-y-4">
-          <div className="rounded-full bg-blue-50 p-4">
-            <Search className="h-8 w-8 text-[#0038A8]" />
+          <div className="rounded-full bg-primary/10 dark:bg-primary/20 p-4">
+            <Search className="h-8 w-8 text-primary" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-bold text-slate-900">Page Not Found</h2>
-            <p className="text-sm text-slate-500">
+            <h2 className="text-xl font-bold text-foreground">Page Not Found</h2>
+            <p className="text-sm text-muted-foreground">
               The page you are looking for doesn't exist or has been moved.
             </p>
           </div>
-          <Button className="w-full mt-2 bg-[#0038A8] hover:bg-[#002675]" onClick={() => router.navigate({ to: '/' })}>
+          <Button className="w-full mt-2" onClick={() => router.navigate({ to: '/' })}>
             Go Home
           </Button>
         </CardContent>
@@ -61,8 +61,8 @@ export function DefaultNotFoundComponent() {
 export function DefaultPendingComponent() {
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center p-4 space-y-4">
-      <Loader2 className="h-8 w-8 animate-spin text-[#0038A8]" />
-      <p className="text-sm font-medium text-slate-500">Loading...</p>
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <p className="text-sm font-medium text-muted-foreground">Loading...</p>
     </div>
   )
 }

@@ -34,7 +34,10 @@ const getBusinesses = createServerFn({ method: 'GET' }).handler(async () => {
       .eq('status', 'approved')
       .order('name')
     if (error) console.error('Error fetching businesses:', error)
-    return data ?? []
+    return (data ?? []).map(({ owner_id, ...rest }) => ({
+      ...rest,
+      is_claimed: Boolean(owner_id),
+    }))
   } catch (error) {
     console.error('Error in getBusinesses:', error)
     return []
@@ -454,7 +457,7 @@ function DirectoryRoute() {
                   >
                     {business.category}
                   </span>
-                  {!business.owner_id && (
+                  {!business.is_claimed && (
                     <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/95 text-amber-950 border border-amber-300 shadow-xs backdrop-blur-md">
                       <Sparkles className="h-3 w-3" />
                       Claimable

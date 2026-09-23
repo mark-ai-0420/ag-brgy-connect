@@ -149,7 +149,7 @@ const COMMON_REJECTION_REASONS = [
 type BusinessItem = Awaited<ReturnType<typeof getBusinessesData>>['businesses'][number]
 
 function AdminBusinessesRoute() {
-  const { businesses, claims = [], adminScope } = Route.useLoaderData()
+  const { businesses = [], claims = [], adminScope = 'both' } = Route.useLoaderData() ?? {}
   const router = useRouter()
 
   // State

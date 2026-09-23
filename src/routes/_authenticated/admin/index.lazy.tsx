@@ -135,7 +135,7 @@ const MSME_GROWTH_DATA = [
 ]
 
 function AdminDashboardRoute() {
-  const { stats, docRequestsByStatus, recentActivity } = AdminRoute.useLoaderData()
+  const { stats = {} as any, docRequestsByStatus = [], recentActivity = [] } = AdminRoute.useLoaderData() ?? {}
   const [activeActivityTab, setActiveActivityTab] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
 

@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { getAuthSession } from '#/server/auth'
@@ -21,7 +21,7 @@ const getBusiness = createServerFn({ method: 'GET' })
       .eq('owner_id', session.user.id)
       .single()
 
-    if (error || !data) throw new Error('Business not found or access denied')
+    if (error || !data) throw notFound()
     return data
   })
 

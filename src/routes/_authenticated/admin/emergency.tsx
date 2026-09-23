@@ -84,6 +84,12 @@ const upsertContact = createServerFn({ method: 'POST' })
 
     const supabase = createSupabaseServerClient()
     if (data.id) {
+      if (adminScope !== 'both') {
+        const { data: existing } = await supabase.from('emergency_contacts').select('scope').eq('id', data.id).single()
+        if (existing && existing.scope !== adminScope) {
+          throw new Error('Forbidden: Cannot edit contact outside your jurisdiction')
+        }
+      }
       const { error } = await supabase
         .from('emergency_contacts')
         .update({
@@ -128,9 +134,19 @@ const reorderContacts = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const { user, role, admin_scope } = await getAuthSession()
     if (!user || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
-    assertAdminScope(admin_scope)
+    const adminScope = assertAdminScope(admin_scope)
 
     const supabase = createSupabaseServerClient()
+
+    if (adminScope !== 'both') {
+      const ids = data.items.map((i) => i.id)
+      const { data: records } = await supabase.from('emergency_contacts').select('id, scope').in('id', ids)
+      const unauthorized = records?.some((r) => r.scope !== adminScope)
+      if (unauthorized) {
+        throw new Error('Forbidden: Cannot reorder contacts outside your jurisdiction')
+      }
+    }
+
     for (const item of data.items) {
       await supabase
         .from('emergency_contacts')
@@ -327,7 +343,7 @@ function ContactForm({
 }
 
 function AdminEmergencyRoute() {
-  const { contacts, adminScope } = Route.useLoaderData()
+  const { contacts = [], adminScope = 'both' } = Route.useLoaderData() ?? {}
   const router = useRouter()
 
   const [search, setSearch] = useState('')

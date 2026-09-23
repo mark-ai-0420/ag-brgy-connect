@@ -98,6 +98,12 @@ const upsertOfficial = createServerFn({ method: 'POST' })
     }
 
     if (data.id) {
+      if (adminScope !== 'both') {
+        const { data: existing } = await supabase.from('barangay_officials').select('barangay').eq('id', data.id).single()
+        if (existing && existing.barangay !== adminScope) {
+          throw new Error('Forbidden: Cannot edit official outside your jurisdiction')
+        }
+      }
       const { error } = await supabase
         .from('barangay_officials')
         .update({
@@ -372,7 +378,7 @@ function OfficialForm({ defaultValues, adminScope, onSuccess }: { defaultValues?
 }
 
 function AdminOfficialsRoute() {
-  const { officials, adminScope } = Route.useLoaderData()
+  const { officials = [], adminScope = 'both' } = Route.useLoaderData() ?? {}
   const router = useRouter()
   const [editItem, setEditItem] = useState<Official | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
