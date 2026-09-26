@@ -20,10 +20,10 @@ export function DefaultErrorComponent({ error }: { error: any }) {
             </p>
           </div>
           <div className="flex gap-3 w-full pt-2">
-            <Button variant="outline" className="flex-1" onClick={() => router.invalidate()}>
+            <Button variant="outline" className="flex-1 min-h-[44px] h-11 font-bold" onClick={() => router.invalidate()}>
               Try Again
             </Button>
-            <Button className="flex-1" onClick={() => router.navigate({ to: '/' })}>
+            <Button className="flex-1 min-h-[44px] h-11 font-bold" onClick={() => router.navigate({ to: '/' })}>
               Go Home
             </Button>
           </div>
@@ -49,7 +49,7 @@ export function DefaultNotFoundComponent() {
               The page you are looking for doesn't exist or has been moved.
             </p>
           </div>
-          <Button className="w-full mt-2" onClick={() => router.navigate({ to: '/' })}>
+          <Button className="w-full mt-2 min-h-[44px] h-11 font-bold" onClick={() => router.navigate({ to: '/' })}>
             Go Home
           </Button>
         </CardContent>

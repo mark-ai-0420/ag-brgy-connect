@@ -506,11 +506,11 @@ function DirectoryRoute() {
               </Link>
 
               {/* Card Body */}
-              <CardHeader className="pb-2 pt-4 px-5">
+              <CardHeader className="pb-2 pt-3 px-5">
                 <Link
                   to="/directory/$businessId"
                   params={{ businessId: business.id }}
-                  className="hover:text-primary transition-colors"
+                  className="hover:text-primary transition-colors min-h-[44px] flex items-center"
                 >
                   <CardTitle className="text-base sm:text-lg font-extrabold leading-snug line-clamp-1 group-hover:text-primary transition-colors">
                     {business.name}

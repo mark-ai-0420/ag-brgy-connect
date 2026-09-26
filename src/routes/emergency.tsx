@@ -596,7 +596,7 @@ function EmergencyRoute() {
                                       <a
                                         href={telUri}
                                         aria-label={`Call ${contact.name} at ${number}`}
-                                        className="text-base sm:text-lg font-mono font-bold tracking-tight text-foreground hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors truncate focus:outline-none focus:underline"
+                                        className="text-base sm:text-lg font-mono font-bold tracking-tight text-foreground hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors truncate focus:outline-none focus:underline min-h-[44px] flex items-center"
                                       >
                                         {number}
                                       </a>

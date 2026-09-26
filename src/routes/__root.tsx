@@ -88,6 +88,10 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: '/logo.jpg',
       },
       {
+        name: 'twitter:card',
+        content: 'summary_large_image',
+      },
+      {
         name: 'twitter:image',
         content: '/logo.jpg',
       },
