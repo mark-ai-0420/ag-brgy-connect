@@ -42,6 +42,13 @@ import {
 } from 'lucide-react'
 import { ImageUploader } from '#/components/common/ImageUploader'
 import { toast } from 'sonner'
+import {
+  phPhoneSchema,
+  addressSchema,
+  barangayUnitSchema,
+  socialLinkSchema,
+  formatPHPhone,
+} from '#/lib/validation'
 
 export const CATEGORIES = [
   'Sari-Sari Store',
@@ -117,17 +124,15 @@ export const PUROK_COORDINATE_PRESETS: Record<'daine_1' | 'daine_2', Record<stri
 }
 
 export const businessFormSchema = z.object({
-  name: z.string().min(2, 'Business name must be at least 2 characters'),
+  name: z.string().trim().min(2, 'Business name must be at least 2 characters'),
   category: z.string().min(1, 'Please select a category'),
-  barangay: z.enum(['daine_1', 'daine_2'], {
-    message: 'Please select a barangay unit',
-  }),
+  barangay: barangayUnitSchema,
   purok: z.string().optional().default(''),
-  address: z.string().min(5, 'Please provide a complete address / landmark'),
+  address: addressSchema,
   latitude: z.number().nullable().optional(),
   longitude: z.number().nullable().optional(),
-  phone: z.string().min(7, 'Please provide a valid contact number'),
-  messenger_link: z.string().optional().default(''),
+  phone: phPhoneSchema,
+  messenger_link: socialLinkSchema,
   payment_methods: z.array(z.string()).default(['Cash', 'GCash']),
   hours: z.string().optional().default(''),
   description: z.string().optional().default(''),
@@ -726,6 +731,8 @@ export function BusinessForm({
                             className="h-11 text-sm rounded-xl font-medium focus-visible:ring-primary min-h-[44px]"
                             disabled={isSubmitting}
                             {...field}
+                            value={field.value || ''}
+                            onChange={(e) => field.onChange(formatPHPhone(e.target.value))}
                           />
                         </FormControl>
                         <FormDescription className="text-[11px] text-muted-foreground">

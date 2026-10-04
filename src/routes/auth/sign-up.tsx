@@ -34,13 +34,20 @@ import { toast } from 'sonner'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { useAuth } from '#/hooks/useAuth'
 import { clearAuthCache } from '#/server/auth'
+import {
+  fullNameSchema,
+  emailSchema,
+  barangayUnitSchema,
+  purokSchema,
+  OFFICIAL_PUROKS,
+} from '#/lib/validation'
 
 const signUpFnSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-  fullName: z.string().min(2),
-  barangay: z.enum(['daine_1', 'daine_2']),
-  purok: z.string().min(1),
+  email: emailSchema,
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  fullName: fullNameSchema,
+  barangay: barangayUnitSchema,
+  purok: purokSchema,
 })
 
 const signUpFn = createServerFn({ method: 'POST' })
@@ -93,12 +100,10 @@ export const Route = createFileRoute('/auth/sign-up')({
 })
 
 const signUpSchema = z.object({
-  fullName: z.string().min(2, 'Full legal name is required (min 2 characters)'),
-  email: z.string().email('Please enter a valid email address'),
-  barangay: z.enum(['daine_1', 'daine_2'], {
-    message: 'Please select your barangay jurisdiction',
-  }),
-  purok: z.string().min(1, 'Purok or Sitio is required'),
+  fullName: fullNameSchema,
+  email: emailSchema,
+  barangay: barangayUnitSchema,
+  purok: purokSchema,
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -108,14 +113,7 @@ const signUpSchema = z.object({
 
 type SignUpFormValues = z.infer<typeof signUpSchema>
 
-const PUROK_QUICK_SELECT = [
-  'Purok 1',
-  'Purok 2',
-  'Purok 3',
-  'Purok 4',
-  'Sitio Ilaya',
-  'Sitio Ibaba',
-]
+const PUROK_QUICK_SELECT = OFFICIAL_PUROKS
 
 function SignUp() {
   const router = useRouter()

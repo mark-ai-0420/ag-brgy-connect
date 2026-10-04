@@ -20,6 +20,7 @@ import {
   CheckCircle2,
   Shield,
   HelpCircle,
+  Calendar,
 } from 'lucide-react'
 import {
   Card,
@@ -35,6 +36,20 @@ import { Textarea } from '#/components/ui/textarea'
 import { Badge } from '#/components/ui/badge'
 import { useRouter, createFileRoute, Link } from '@tanstack/react-router'
 import { uploadAvatarPhoto } from '#/lib/upload'
+import {
+  fullNameSchema,
+  phPhoneSchema,
+  optionalPhPhoneSchema,
+  addressSchema,
+  barangayUnitSchema,
+  purokSchema,
+  birthDateSchema,
+  genderSchema,
+  formatPHPhone,
+  calculateAge,
+  isSeniorCitizen,
+  OFFICIAL_PUROKS,
+} from '#/lib/validation'
 
 const getMyProfile = createServerFn({ method: 'GET' })
   .handler(async () => {
@@ -59,16 +74,16 @@ const getMyProfile = createServerFn({ method: 'GET' })
   })
 
 const updateProfileSchema = z.object({
-  full_name: z.string().min(1, 'Full legal name is required'),
-  phone: z.string().min(7, 'A valid phone number is required'),
-  address: z.string().min(3, 'Residential address is required'),
-  barangay: z.enum(['daine_1', 'daine_2'], {
-    message: 'Please select your barangay jurisdiction',
-  }),
-  purok: z.string().min(1, 'Purok or Sitio is required'),
+  full_name: fullNameSchema,
+  phone: phPhoneSchema,
+  address: addressSchema,
+  barangay: barangayUnitSchema,
+  purok: purokSchema,
+  birth_date: birthDateSchema.optional().or(z.literal('')),
+  gender: genderSchema.optional().or(z.literal('')),
   avatar_url: z.string().nullable().optional(),
   emergency_contact_name: z.string().optional(),
-  emergency_contact_phone: z.string().optional(),
+  emergency_contact_phone: optionalPhPhoneSchema,
   emergency_contact_relation: z.string().optional(),
 })
 
@@ -101,12 +116,14 @@ const updateMyProfile = createServerFn({ method: 'POST' })
       throw new Error(updateError.message)
     }
 
-    // 2. Update user metadata for emergency contacts and auth session sync
+    // 2. Update user metadata for emergency contacts, demographic attributes and auth session sync
     await supabase.auth.updateUser({
       data: {
         full_name: data.full_name,
         barangay: data.barangay,
         purok: data.purok,
+        birth_date: data.birth_date || '',
+        gender: data.gender || '',
         emergency_contact_name: data.emergency_contact_name || '',
         emergency_contact_phone: data.emergency_contact_phone || '',
         emergency_contact_relation: data.emergency_contact_relation || '',
@@ -121,16 +138,7 @@ export const Route = createFileRoute('/_authenticated/settings/profile')({
   loader: () => getMyProfile(),
 })
 
-const PUROK_OPTIONS = [
-  'Purok 1',
-  'Purok 2',
-  'Purok 3',
-  'Purok 4',
-  'Sitio Ilaya',
-  'Sitio Ibaba',
-  'Sitio Centro',
-  'Sitio Boundary',
-]
+const PUROK_OPTIONS = OFFICIAL_PUROKS
 
 function ProfileSettingsPage() {
   const { user, profile } = Route.useLoaderData() ?? {}
@@ -152,6 +160,8 @@ function ProfileSettingsPage() {
       address: profile?.address || '',
       barangay: defaultBarangay,
       purok: defaultPurok,
+      birth_date: (user?.user_metadata?.birth_date as string) || '',
+      gender: (user?.user_metadata?.gender as 'male' | 'female' | 'prefer_not_to_say') || undefined,
       avatar_url: profile?.avatar_url || user?.user_metadata?.avatar_url || null,
       emergency_contact_name: user?.user_metadata?.emergency_contact_name || '',
       emergency_contact_phone: user?.user_metadata?.emergency_contact_phone || '',
@@ -162,6 +172,9 @@ function ProfileSettingsPage() {
   const avatarUrl = form.watch('avatar_url')
   const selectedBarangay = form.watch('barangay')
   const selectedPurok = form.watch('purok')
+  const birthDateValue = form.watch('birth_date')
+  const calculatedAge = birthDateValue ? calculateAge(birthDateValue) : null
+  const seniorCitizen = birthDateValue ? isSeniorCitizen(birthDateValue) : false
 
   const handleAvatarFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -418,8 +431,14 @@ function ProfileSettingsPage() {
                   </Label>
                   <Input
                     id="phone"
-                    {...form.register('phone')}
-                    placeholder="0917 123 4567"
+                    value={form.watch('phone')}
+                    onChange={(e) =>
+                      form.setValue('phone', formatPHPhone(e.target.value), {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                    }
+                    placeholder="0917-123-4567"
                     type="tel"
                     autoComplete="tel"
                     className="min-h-[44px] rounded-xl border-border focus-visible:ring-primary/40"
@@ -430,6 +449,73 @@ function ProfileSettingsPage() {
                       {form.formState.errors.phone.message}
                     </p>
                   )}
+                </div>
+              </div>
+
+              {/* Demographic Information: Date of Birth & Gender */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                {/* Date of Birth */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="birth_date" className="text-xs font-bold text-foreground flex items-center gap-1">
+                      <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                      Date of Birth
+                    </Label>
+                    {calculatedAge !== null && calculatedAge >= 0 && (
+                      <div className="flex items-center gap-1">
+                        <Badge variant="outline" className="text-[11px] font-bold px-2 py-0 border-primary/30 text-primary">
+                          Age: {calculatedAge}
+                        </Badge>
+                        {seniorCitizen && (
+                          <Badge variant="secondary" className="text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30">
+                            Senior Citizen
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <Input
+                    id="birth_date"
+                    type="date"
+                    max={new Date().toISOString().split('T')[0]}
+                    {...form.register('birth_date')}
+                    className="min-h-[44px] rounded-xl border-border focus-visible:ring-primary/40 text-sm"
+                    aria-invalid={!!form.formState.errors.birth_date}
+                  />
+                  {form.formState.errors.birth_date && (
+                    <p className="text-xs font-semibold text-destructive mt-1">
+                      {form.formState.errors.birth_date.message}
+                    </p>
+                  )}
+                  <p className="text-[11px] text-muted-foreground">
+                    Required for Senior Citizen and youth benefits verification.
+                  </p>
+                </div>
+
+                {/* Gender / Sex */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="gender" className="text-xs font-bold text-foreground flex items-center gap-1">
+                    Sex / Gender
+                  </Label>
+                  <select
+                    id="gender"
+                    {...form.register('gender')}
+                    className="min-h-[44px] w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
+                    aria-invalid={!!form.formState.errors.gender}
+                  >
+                    <option value="">Select Sex / Gender (Optional)</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="prefer_not_to_say">Prefer not to say</option>
+                  </select>
+                  {form.formState.errors.gender && (
+                    <p className="text-xs font-semibold text-destructive mt-1">
+                      {form.formState.errors.gender.message}
+                    </p>
+                  )}
+                  <p className="text-[11px] text-muted-foreground">
+                    For official civil and health registry demographics.
+                  </p>
                 </div>
               </div>
             </div>
@@ -621,11 +707,23 @@ function ProfileSettingsPage() {
                   </Label>
                   <Input
                     id="emergency_contact_phone"
-                    {...form.register('emergency_contact_phone')}
-                    placeholder="0918 765 4321"
+                    value={form.watch('emergency_contact_phone') || ''}
+                    onChange={(e) =>
+                      form.setValue('emergency_contact_phone', formatPHPhone(e.target.value), {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                    }
+                    placeholder="0918-765-4321"
                     type="tel"
                     className="min-h-[44px] rounded-xl border-border bg-background"
+                    aria-invalid={!!form.formState.errors.emergency_contact_phone}
                   />
+                  {form.formState.errors.emergency_contact_phone && (
+                    <p className="text-xs font-semibold text-destructive mt-1">
+                      {form.formState.errors.emergency_contact_phone.message}
+                    </p>
+                  )}
                 </div>
               </div>
             </section>

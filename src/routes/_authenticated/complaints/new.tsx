@@ -9,6 +9,11 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { useState, type ChangeEvent } from 'react'
 import { uploadComplaintPhoto } from '#/lib/upload'
+import {
+  barangayUnitSchema,
+  incidentDateSchema,
+  addressSchema,
+} from '#/lib/validation'
 
 import { Button } from '#/components/ui/button'
 import {
@@ -60,7 +65,11 @@ import {
 
 // Schema strictly aligned with Database CHECK constraints
 const formSchema = z.object({
-  title: z.string().min(3, 'Incident title must be at least 3 characters').max(100, 'Title is too long (max 100)'),
+  title: z
+    .string({ message: 'Incident title is required' })
+    .trim()
+    .min(3, 'Incident title must be at least 3 characters')
+    .max(100, 'Title is too long (max 100 characters)'),
   category: z.enum([
     'Noise Complaint',
     'Sanitation & Trash',
@@ -73,11 +82,15 @@ const formSchema = z.object({
   ], {
     error: 'Please select a valid complaint category',
   }),
-  description: z.string().min(10, 'Please provide a detailed narrative (at least 10 characters)'),
-  location: z.string().optional(),
-  incident_date: z.string().optional(),
+  description: z
+    .string({ message: 'Narrative description is required' })
+    .trim()
+    .min(10, 'Please provide a detailed narrative (at least 10 characters)')
+    .max(2000, 'Narrative description is too long (max 2000 characters)'),
+  location: addressSchema.optional().or(z.literal('')),
+  incident_date: incidentDateSchema,
   is_anonymous: z.boolean().default(false),
-  barangay: z.enum(['daine_1', 'daine_2']),
+  barangay: barangayUnitSchema,
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -581,8 +594,10 @@ function NewComplaintRoute() {
                           <FormControl>
                             <Input
                               type="datetime-local"
+                              max={new Date().toISOString().slice(0, 16)}
                               className="h-11 min-h-[44px] text-sm bg-background border-input focus-visible:border-primary"
                               {...field}
+                              value={field.value ?? ''}
                             />
                           </FormControl>
                           <FormDescription className="text-xs">

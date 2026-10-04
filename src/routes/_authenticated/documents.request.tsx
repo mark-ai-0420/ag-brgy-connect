@@ -42,6 +42,12 @@ import {
   Award,
 } from 'lucide-react'
 import { useState, useMemo } from 'react'
+import {
+  fullNameSchema,
+  optionalPhPhoneSchema,
+  barangayUnitSchema,
+  formatPHPhone,
+} from '#/lib/validation'
 
 const formSchema = z.object({
   document_type: z.enum([
@@ -53,11 +59,11 @@ const formSchema = z.object({
     'other',
   ]),
   purpose: z.string().min(3, 'Please provide a valid purpose (at least 3 characters)'),
-  full_name: z.string().min(1, 'Full name is required'),
-  phone: z.string().optional(),
+  full_name: fullNameSchema,
+  phone: optionalPhPhoneSchema,
   address: z.string().optional(),
   purok: z.string().optional(),
-  barangay: z.enum(['daine_1', 'daine_2']).default('daine_1'),
+  barangay: barangayUnitSchema.default('daine_1'),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -603,6 +609,8 @@ function DocumentRequestRoute() {
                               <Input
                                 placeholder="0917-123-4567"
                                 {...field}
+                                value={field.value || ''}
+                                onChange={(e) => field.onChange(formatPHPhone(e.target.value))}
                                 className="min-h-[44px] rounded-xl text-sm"
                               />
                             </FormControl>
