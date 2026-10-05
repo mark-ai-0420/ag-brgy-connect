@@ -30,7 +30,6 @@ import {
   CreditCard,
   CheckCircle2,
   UserCheck,
-  Sparkles,
 } from 'lucide-react'
 import { CATEGORY_COLORS, computeOpenStatus, getMessengerUrl } from './index'
 import { ClaimBusinessModal } from '#/components/businesses/ClaimBusinessModal'
@@ -194,7 +193,7 @@ function BusinessDetail() {
           <CardContent className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-300 text-xs font-bold border border-amber-500/30">
-                <Sparkles className="h-3.5 w-3.5 text-amber-600" />
+                <Store className="h-3.5 w-3.5 text-amber-600" />
                 <span>Barangay-Curated Listing</span>
               </div>
               <h3 className="font-extrabold text-base text-foreground">Do you own or manage {business.name}?</h3>

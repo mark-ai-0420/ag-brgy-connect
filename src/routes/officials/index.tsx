@@ -14,7 +14,6 @@ import {
   Building2,
   Users,
   ChevronRight,
-  Sparkles,
   Layers,
   HeartHandshake,
   CheckCircle2,
@@ -402,21 +401,11 @@ function OfficialsRoute() {
 
   return (
     <div className="min-h-[100dvh] pb-20 bg-slate-50/50 dark:bg-background">
-      {/* ── 1. Hero Civic Horizon Header ───────────────────────────────────────── */}
+      {/* ── 1. Official Barangay Leaders Header ───────────────────────────────────────── */}
       <header className="relative overflow-hidden bg-gradient-to-r from-[#002675] via-[#0038A8] to-[#1E3A8A] text-white py-12 px-4 sm:px-6 lg:px-8 shadow-md">
         {/* Flag Accent Ribbon */}
         <div
           className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-[#0038A8] via-[#FCD116] to-[#CE1126]"
-          aria-hidden="true"
-        />
-
-        {/* Subtle Ambient Glow */}
-        <div
-          className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-[#FCD116]/10 blur-3xl pointer-events-none"
-          aria-hidden="true"
-        />
-        <div
-          className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-[#CE1126]/10 blur-3xl pointer-events-none"
           aria-hidden="true"
         />
 

@@ -18,7 +18,6 @@ import {
   Check,
   Printer,
   ChevronRight,
-  Sparkles,
   ExternalLink,
   Shield,
   FileCheck2,
@@ -202,7 +201,7 @@ function VerifyRoute() {
 
       {/* Main Certificate Verification Portal Card */}
       <Card className="w-full max-w-2xl shadow-2xl border-2 border-border/80 rounded-3xl overflow-hidden bg-card relative z-10">
-        {/* ── 1. Top Civic Horizon Header with Philippine Flag Stripe ─────────── */}
+        {/* ── 1. Top Republic of the Philippines • Official Document Verification Header with Philippine Flag Stripe ─────────── */}
         <header className="relative bg-gradient-to-r from-[#002675] via-[#0038A8] to-[#1E3A8A] text-white p-6 sm:p-8 text-center overflow-hidden">
           {/* Flag Accent Stripe */}
           <div
@@ -282,7 +281,7 @@ function VerifyRoute() {
               <div className="rounded-2xl bg-gradient-to-r from-slate-900 to-blue-950 text-white p-4 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-white/10">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-xl bg-white/10 text-[#FCD116] shrink-0">
-                    <Sparkles className="h-5 w-5" />
+                    <ShieldCheck className="h-5 w-5" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">

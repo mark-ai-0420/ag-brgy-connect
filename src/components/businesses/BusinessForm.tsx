@@ -12,7 +12,7 @@ import {
   Store,
   Image as ImageIcon,
   Utensils,
-  Sparkles,
+  Shirt,
   MessageSquare,
   Phone,
   MapPin,
@@ -67,7 +67,7 @@ export const CATEGORY_ICONS: Record<string, typeof Store> = {
   'Sari-Sari Store': Store,
   'Eatery / Carenderia': Utensils,
   'Water Station': Droplets,
-  'Laundry': Sparkles,
+  'Laundry': Shirt,
   'Salon': Scissors,
   'Repair Shop': Wrench,
   'Clinic': Stethoscope,
@@ -883,7 +883,7 @@ export function BusinessForm({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                          <Sparkles className="h-3.5 w-3.5 text-primary" />
+                          <ImageIcon className="h-3.5 w-3.5 text-primary" />
                           Products / Interior
                         </FormLabel>
                         <FormControl>

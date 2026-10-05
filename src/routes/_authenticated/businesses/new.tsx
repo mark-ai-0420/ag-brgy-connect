@@ -8,7 +8,6 @@ import { useState } from 'react'
 import { BusinessForm, businessFormSchema, type BusinessFormValues } from '#/components/businesses/BusinessForm'
 import {
   Store,
-  Sparkles,
   CheckCircle2,
   MapPin,
   ShieldCheck,
@@ -133,13 +132,11 @@ function NewBusinessRoute() {
         {/* Glow & micro-pattern accents */}
         <div className="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-amber-400/20 blur-3xl pointer-events-none" />
         <div className="absolute -left-16 -bottom-16 w-80 h-80 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.08)_1px,transparent_0)] bg-[size:28px_28px] pointer-events-none" />
-
         <div className="relative z-10 max-w-4xl space-y-6">
           
           {/* Header Tag */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-xs sm:text-sm font-bold tracking-wide border border-white/30 text-amber-200 shadow-xs">
-            <Sparkles className="h-4 w-4 text-amber-300 fill-amber-300" />
+            <Store className="h-4 w-4 text-amber-300" />
             <span>Barangay Daine MSME Merchant Onboarding</span>
           </div>
 

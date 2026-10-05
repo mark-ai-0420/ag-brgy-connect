@@ -34,7 +34,6 @@ import {
   Locate,
   ChevronUp,
   ChevronDown,
-  Sparkles,
   Ambulance,
   HeartPulse,
   Share2,
@@ -1392,7 +1391,7 @@ function MapRouteComponent() {
             <div className="space-y-2.5 max-w-2xl">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="bg-[#FCD116] text-[#0038A8] hover:bg-[#FCD116]/90 font-black px-3 py-1 text-xs border border-amber-300 shadow-xs">
-                  <Compass className="h-3.5 w-3.5 mr-1" /> Interactive GIS Map & Civic Horizon
+                  <Compass className="h-3.5 w-3.5 mr-1" /> Interactive GIS Map & Evacuation Hubs
                 </Badge>
                 <Badge variant="outline" className="text-white border-white/30 text-xs backdrop-blur-xs">
                   Indang, Cavite

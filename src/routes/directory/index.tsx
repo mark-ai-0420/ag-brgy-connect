@@ -12,7 +12,6 @@ import {
   Store,
   X,
   RotateCcw,
-  Sparkles,
   MessageCircle,
   Building2,
   CreditCard,
@@ -287,17 +286,12 @@ function DirectoryRoute() {
 
   return (
     <div className="min-h-[100dvh] container mx-auto py-8 md:py-10 px-4 md:px-6 max-w-6xl">
-      {/* High-visibility MSME Growth Hero Banner with Stitch Civic Horizon Gradient */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0038A8] via-[#002d87] to-teal-800 text-white p-6 sm:p-8 md:p-10 shadow-xl border border-white/15 mb-8">
-        {/* Glow and micro-pattern accents */}
-        <div className="absolute -right-12 -top-12 w-72 h-72 rounded-full bg-amber-400/20 blur-3xl pointer-events-none" />
-        <div className="absolute -left-12 -bottom-12 w-72 h-72 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.08)_1px,transparent_0)] bg-[size:28px_28px] pointer-events-none" />
-
+      {/* High-visibility MSME Growth Hero Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0038A8] via-[#002d87] to-slate-900 text-white p-6 sm:p-8 md:p-10 shadow-lg border border-white/15 mb-8">
         <div className="relative z-10 max-w-3xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-xs sm:text-sm font-bold tracking-wide border border-white/30 text-amber-200 shadow-xs">
-            <Sparkles className="h-4 w-4 text-amber-300 fill-amber-300" />
-            <span>Barangay Daine MSME Growth &amp; Livelihood Hub</span>
+            <Store className="h-4 w-4 text-amber-300" />
+            <span>Local Business &amp; Merchant Directory</span>
           </div>
 
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight drop-shadow-xs">
@@ -459,7 +453,6 @@ function DirectoryRoute() {
                   </span>
                   {!business.is_claimed && (
                     <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/95 text-amber-950 border border-amber-300 shadow-xs backdrop-blur-md">
-                      <Sparkles className="h-3 w-3" />
                       Claimable
                     </span>
                   )}

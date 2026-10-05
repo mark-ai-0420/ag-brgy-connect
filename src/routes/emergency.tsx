@@ -331,7 +331,7 @@ function EmergencyRoute() {
         </aside>
       )}
 
-      {/* Urgent Civic Hero Banner */}
+      {/* Urgent Emergency Response Banner */}
       <section
         aria-labelledby="emergency-hero-heading"
         className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 text-white py-8 sm:py-12 px-4 shadow-lg"
@@ -345,7 +345,7 @@ function EmergencyRoute() {
               <div>
                 <div className="flex flex-wrap items-center gap-2 mb-1.5">
                   <span className="text-[10px] uppercase tracking-widest bg-yellow-400 text-yellow-950 font-black px-2.5 py-0.5 rounded-full shadow-xs">
-                    Civic Response Desk
+                    Emergency Response Desk
                   </span>
                   <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 text-white px-2 py-0.5 rounded-full">
                     Indang, Cavite

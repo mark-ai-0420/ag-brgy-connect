@@ -25,7 +25,6 @@ import {
   CheckCircle2,
   AlertCircle,
   Clock,
-  Sparkles,
   Store,
   Eye,
   SlidersHorizontal,
@@ -376,7 +375,7 @@ function AdminUsersRoute() {
 
   return (
     <div className="space-y-6">
-      {/* Civic Horizon Header */}
+      {/* Barangay Administration Desk Header */}
       <PageHeader
         badge={
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">

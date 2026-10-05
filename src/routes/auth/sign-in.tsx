@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState, useEffect } from 'react'
-import { Eye, EyeOff, Lock, Mail, ArrowLeft, ShieldCheck, Sparkles, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Lock, Mail, ArrowLeft, ShieldCheck, Loader2 } from 'lucide-react'
 import { Button } from '#/components/ui/button'
 import {
   Form,
@@ -152,9 +152,6 @@ function SignIn() {
               decoding="async"
               className="h-16 w-16 rounded-full object-cover mx-auto ring-4 ring-[#0038A8]/25 dark:ring-sky-400/30 shadow-md p-0.5 bg-background"
             />
-            <span className="absolute -bottom-1 -right-1 bg-[#FCD116] text-[#0038A8] rounded-full p-1 shadow-sm ring-2 ring-background">
-              <Sparkles className="h-3 w-3" />
-            </span>
           </div>
 
           <div>

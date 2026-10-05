@@ -24,7 +24,6 @@ import {
   Printer,
   ExternalLink,
   Building2,
-  Sparkles,
   Edit,
   ChevronRight,
   ArrowRight,
@@ -138,7 +137,7 @@ function StatusBadge({ status }: { status: string }) {
   if (s === 'ready') {
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40 shadow-xs animate-pulse whitespace-nowrap">
-        <Sparkles className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+        <CheckCircle className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
         Ready for Pickup
       </span>
     )
@@ -332,7 +331,7 @@ function DashboardRoute() {
 
   return (
     <div className="container mx-auto py-8 sm:py-10 px-4 sm:px-6 md:px-8 space-y-8 max-w-6xl">
-      {/* Stitch Civic Horizon Header */}
+      {/* Tanggapan ng Mamamayan • Resident Portal Header */}
       <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-br from-card via-card to-muted/40 p-6 sm:p-8 shadow-sm">
         {/* Philippine Flag Subtle Civic Accent Ribbon */}
         <div className="absolute top-0 left-0 right-0 h-1.5 flex">
@@ -344,8 +343,8 @@ function DashboardRoute() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pt-1">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold tracking-wider uppercase">
-              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-              Civic Citizen Portal • {barangayLabel}
+              <Building2 className="h-3.5 w-3.5" />
+              Tanggapan ng Mamamayan • Resident Portal • {barangayLabel}
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">
               Mabuhay, {currentProfile?.full_name?.split(' ')[0] || 'Resident'}!
@@ -418,7 +417,7 @@ function DashboardRoute() {
                 <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                   {readyDocsCount > 0 ? (
                     <span className="inline-flex items-center gap-1 font-bold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 animate-pulse">
-                      <Sparkles className="h-3 w-3 text-emerald-600" />
+                      <CheckCircle className="h-3 w-3 text-emerald-600" />
                       {readyDocsCount} Ready for Pickup
                     </span>
                   ) : (
@@ -585,7 +584,7 @@ function DashboardRoute() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1.5">
                   <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-600 text-white shadow-xs">
-                    <Sparkles className="h-3.5 w-3.5" />
+                    <CheckCircle className="h-3.5 w-3.5" />
                     Action Required • Ready for Pickup
                   </div>
                   <h3 className="text-base sm:text-lg font-black text-foreground">
@@ -790,7 +789,7 @@ function DashboardRoute() {
                     {isReady && (
                       <CardContent className="pt-0 pb-3 px-5">
                         <div className="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-950 dark:text-emerald-200">
-                          <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                           <span className="font-medium leading-relaxed">
                             Official certificate has been verified & approved. Digital copy ready for instant high-res printing!
                           </span>
@@ -811,7 +810,7 @@ function DashboardRoute() {
                         <div className="text-xs font-semibold flex items-center gap-1.5">
                           {isReady ? (
                             <span className="text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
-                              <Sparkles className="h-3.5 w-3.5 text-emerald-600" /> Official Document Ready
+                              <CheckCircle className="h-3.5 w-3.5 text-emerald-600" /> Official Document Ready
                             </span>
                           ) : (
                             <span className="text-muted-foreground flex items-center gap-1.5">
@@ -883,7 +882,7 @@ function DashboardRoute() {
                   </div>
                   <Button asChild size="default" className="min-h-[44px] px-6 rounded-xl font-bold bg-primary hover:bg-primary/90">
                     <Link to="/businesses/new">
-                      <Sparkles className="mr-2 h-4 w-4 text-amber-300" /> Register / List Your Business Free
+                      <PlusCircle className="mr-2 h-4 w-4" /> Register / List Your Business Free
                     </Link>
                   </Button>
                 </CardContent>

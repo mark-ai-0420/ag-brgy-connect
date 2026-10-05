@@ -20,7 +20,6 @@ import {
   FileText,
   Loader2,
   ShieldAlert,
-  Sparkles,
   CheckCircle2,
   User,
   Phone,
@@ -362,7 +361,7 @@ function DocumentRequestRoute() {
         <div className="mb-6 p-3.5 rounded-2xl border border-emerald-300/80 dark:border-emerald-800/80 bg-emerald-50/90 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 flex flex-wrap items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-3 min-w-0">
             <div className="h-9 w-9 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-              <Sparkles className="h-4.5 w-4.5" />
+              <ShieldCheck className="h-4.5 w-4.5" />
             </div>
             <div className="min-w-0">
               <p className="text-xs sm:text-sm font-bold tracking-tight text-emerald-950 dark:text-emerald-100">
@@ -482,7 +481,7 @@ function DocumentRequestRoute() {
                 <Card className="border-border/80 shadow-md">
                   <CardHeader className="pb-3 bg-muted/20 border-b border-border/60">
                     <CardTitle className="text-base sm:text-lg font-bold flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 text-amber-500" />
+                      <FileText className="h-5 w-5 text-primary" />
                       2. Purpose of Request
                     </CardTitle>
                     <CardDescription className="text-xs sm:text-sm">
@@ -493,7 +492,7 @@ function DocumentRequestRoute() {
                     {/* Quick Presets Chips */}
                     <div className="space-y-2">
                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                        <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                        <FileText className="h-3.5 w-3.5 text-primary" />
                         Popular 1-Click Presets
                       </Label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

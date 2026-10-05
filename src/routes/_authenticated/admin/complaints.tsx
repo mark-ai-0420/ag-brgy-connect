@@ -29,7 +29,6 @@ import {
   CheckCircle2,
   AlertCircle,
   XCircle,
-  Sparkles,
   ExternalLink,
   ChevronDown,
   Layers,

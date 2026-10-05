@@ -71,7 +71,7 @@ export const Route = createFileRoute('/map/')({
       },
       {
         property: 'og:site_name',
-        content: 'Barangay Daine Connect & Civic Horizon',
+        content: 'Barangay Daine Connect Community Portal',
       },
       {
         name: 'twitter:card',

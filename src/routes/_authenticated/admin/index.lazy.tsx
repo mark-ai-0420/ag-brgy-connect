@@ -16,7 +16,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   ArrowRight,
-  Sparkles,
   BarChart3,
   Activity,
   Users,
@@ -55,7 +54,7 @@ export const Route = createLazyFileRoute('/_authenticated/admin/')({
   component: AdminDashboardRoute,
 })
 
-// Status colors aligned with Civic Horizon tokens
+// Status colors aligned with Barangay Administration tokens
 const STATUS_COLORS: Record<string, { bg: string; text: string; border: string; hex: string }> = {
   pending: {
     bg: 'bg-amber-500/10 dark:bg-amber-950/40',
@@ -159,7 +158,7 @@ function AdminDashboardRoute() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* ── 1. Stitch Civic Horizon Executive Banner ──────────────────────────── */}
+      {/* ── 1. Municipal Operations Executive Banner ──────────────────────────── */}
       <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-br from-card via-card to-muted/40 p-6 sm:p-8 shadow-sm">
         {/* Flag Tricolor Accent Ribbon */}
         <div className="absolute top-0 left-0 right-0 h-1.5 flex">
@@ -171,8 +170,8 @@ function AdminDashboardRoute() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pt-1">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold tracking-wider uppercase">
-              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-              Executive Civic Analytics Deck • Barangay Daine
+              <Building2 className="h-3.5 w-3.5" />
+              Executive Municipal Operations Deck • Barangay Daine
             </div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-foreground">
               Municipal Governance Operations

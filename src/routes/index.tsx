@@ -22,7 +22,6 @@ import {
   MapPin,
   QrCode,
   X,
-  Sparkles,
   FileCheck,
   CheckCircle2,
 } from 'lucide-react'
@@ -130,14 +129,14 @@ interface Step {
 const bentoServices: BentoServiceCard[] = [
   {
     to: '/documents',
-    icon: <FileCheck className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />,
+    icon: <FileCheck className="h-8 w-8 text-blue-600 dark:text-blue-400" />,
     badge: 'Official E-Services',
     title: 'Online Document Requests & Clearances',
     description:
       'Request Barangay Clearance, Indigency Certificate, Residency Proof, and Business Clearances 24/7 without standing in line. Real-time digital status verification.',
-    color: 'text-emerald-600 dark:text-emerald-400',
-    accentColor: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
-    bgColor: 'from-emerald-500/10 via-emerald-500/5 to-transparent',
+    color: 'text-blue-600 dark:text-blue-400',
+    accentColor: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300',
+    bgColor: 'from-blue-500/10 via-blue-500/5 to-transparent',
     colSpan: 'lg:col-span-7',
     actionLabel: 'Request Document',
     highlights: ['Barangay Clearance', 'Indigency Certificate', 'Certificate of Residency', 'Business Permit'],
@@ -254,22 +253,6 @@ function Home() {
     <div className="flex flex-col min-h-[100dvh]">
       {/* ── Dual-Zone Hero Section ───────────────────────────────────────── */}
       <section className="hero-gradient relative min-h-[90dvh] flex items-center overflow-hidden" id="hero">
-        {/* Ambient Radial Lighting Overlay */}
-        <div aria-hidden="true" className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div
-            className="absolute -top-32 -left-32 w-[550px] h-[550px] rounded-full blur-3xl opacity-40"
-            style={{ background: 'radial-gradient(circle, rgba(0, 56, 168, 0.8) 0%, transparent 70%)' }}
-          />
-          <div
-            className="absolute top-1/4 right-0 w-[600px] h-[600px] rounded-full blur-3xl opacity-35"
-            style={{ background: 'radial-gradient(circle, rgba(252, 209, 22, 0.45) 0%, transparent 70%)' }}
-          />
-          <div
-            className="absolute -bottom-24 left-1/3 w-[500px] h-[500px] rounded-full blur-3xl opacity-30"
-            style={{ background: 'radial-gradient(circle, rgba(206, 17, 38, 0.5) 0%, transparent 70%)' }}
-          />
-        </div>
-
         {/* Dynamic Philippine Flag Accent Bar */}
         <div
           aria-hidden="true"
@@ -300,34 +283,25 @@ function Home() {
               </h1>
 
               <p className="text-base sm:text-lg md:text-xl text-white/90 max-w-2xl leading-relaxed font-normal">
-                Your official Civic Horizon portal for public services, document requests, local news, and public assistance in Barangay Daine, Indang, Cavite. Access services, file incident reports, and stay connected with community leaders online.
+                Official digital portal of Barangay Daine, Indang, Cavite for public services, document clearances, and 24/7 community assistance.
               </p>
 
               {/* CTAs with >=44px touch targets */}
               <div className="flex flex-wrap gap-4 items-center pt-3">
                 <Link
-                  to="/directory"
+                  to="/documents"
                   className="btn-tactile inline-flex items-center justify-center gap-2.5 px-7 py-3.5 min-h-[48px] rounded-xl font-extrabold text-base bg-[#FCD116] text-[#0038A8] hover:bg-[#FFE033] shadow-xl shadow-yellow-500/25 ring-2 ring-[#FCD116]/60 hover:ring-[#FCD116] transition-all duration-200 group"
-                  id="hero-cta-directory"
+                  id="hero-cta-documents"
                 >
-                  <span>Explore Directory</span>
+                  <span>Online Services &amp; Clearances</span>
                   <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
                 </Link>
                 <Link
-                  to="/announcements"
-                  id="hero-cta-announcements"
+                  to="/directory"
+                  id="hero-cta-directory"
                   className="btn-tactile inline-flex items-center justify-center gap-2.5 px-7 py-3.5 min-h-[48px] rounded-xl font-bold text-base text-white border border-white/40 bg-white/10 backdrop-blur-md hover:bg-white/20 hover:border-white/80 shadow-lg shadow-black/10 transition-all duration-200 group"
                 >
-                  <span>View Announcements</span>
-                  <Megaphone className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
-                </Link>
-                <Link
-                  to="/documents"
-                  id="hero-cta-documents"
-                  className="btn-tactile inline-flex items-center justify-center gap-2 px-5 py-3.5 min-h-[48px] rounded-xl font-bold text-sm text-white/90 border border-white/25 bg-white/5 backdrop-blur-sm hover:bg-white/15 transition-all duration-200"
-                >
-                  <FileText className="h-4 w-4 text-[#FCD116]" />
-                  <span>Request Clearances</span>
+                  <span>Explore Directory &amp; Hotlines</span>
                 </Link>
               </div>
             </div>
@@ -342,8 +316,8 @@ function Home() {
                   </div>
                   <div className="space-y-0.5">
                     <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/15 text-[#FCD116] text-[11px] font-bold uppercase tracking-wider">
-                      <Sparkles className="h-3 w-3" />
-                      Instant Lookup
+                      <CheckCircle2 className="h-3 w-3" />
+                      Public Document Verification
                     </div>
                     <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
                       Track Document Instantly
@@ -450,11 +424,7 @@ function Home() {
       <section className="py-20 md:py-28 bg-muted/20" id="services">
         <div className="page-container">
           <div className="text-center mb-14 space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 text-xs font-bold uppercase tracking-widest border border-blue-500/20">
-              <Sparkles className="h-3.5 w-3.5" />
-              CIVIC HORIZON SERVICES
-            </div>
-            <h2 className="section-title">Barangay Public Services</h2>
+            <h2 className="section-title">Online Services &amp; Clearances</h2>
             <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
               Everything you need from your barangay hall, accessible online with 24/7 document processing, incident reporting, directory access, and emergency response.
             </p>
@@ -498,7 +468,7 @@ function Home() {
                             key={tag}
                             className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-background/80 text-foreground/80 border border-border/80 shadow-2xs"
                           >
-                            <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                            <CheckCircle2 className="h-3 w-3 text-blue-600 dark:text-blue-400" />
                             {tag}
                           </span>
                         ))}
@@ -558,13 +528,9 @@ function Home() {
           <div className="page-container">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
               <div className="space-y-2">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 text-xs font-bold uppercase tracking-widest border border-blue-500/20">
-                  <Megaphone className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
-                  COMMUNITY HIGHLIGHTS
-                </div>
                 <h2 className="section-title">Latest Bulletins &amp; Upcoming Events</h2>
                 <p className="text-muted-foreground text-base">
-                  Stay updated with the newest barangay bulletins, programs, and community assemblies.
+                  Stay updated with official barangay bulletins, community assemblies, and public advisories.
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -765,11 +731,7 @@ function Home() {
       <section className="py-20 md:py-28 bg-muted/30" id="how-it-works">
         <div className="page-container">
           <div className="text-center mb-14 space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-red-500/10 text-red-700 dark:text-red-400 text-xs font-bold uppercase tracking-widest border border-red-500/20">
-              <Sparkles className="h-3.5 w-3.5" />
-              SIMPLE &amp; ACCESSIBLE
-            </div>
-            <h2 className="section-title">How BrgyConnect Works</h2>
+            <h2 className="section-title">How to Request Services Online</h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
               Connecting you with local governance in three simple, digital steps.
             </p>
@@ -810,16 +772,6 @@ function Home() {
           background: 'linear-gradient(135deg, #002d87 0%, #0038A8 40%, #0e47c7 70%, #CE1126 100%)',
         }}
       >
-        {/* Dynamic Pattern & Glow */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
-            backgroundSize: '28px 28px',
-          }}
-        />
-
         <div className="page-container relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="text-center md:text-left space-y-3">
             <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
@@ -846,7 +798,7 @@ function Home() {
               id="cta-explore-services"
               className="btn-tactile w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 min-h-[48px] rounded-xl font-bold text-base text-white border border-white/40 bg-white/10 backdrop-blur-md hover:bg-white/20 hover:border-white/80 shadow-lg shadow-black/10 transition-all duration-200 whitespace-nowrap"
             >
-              <span>Explore Directory</span>
+              <span>Explore Directory &amp; Hotlines</span>
             </Link>
           </div>
         </div>

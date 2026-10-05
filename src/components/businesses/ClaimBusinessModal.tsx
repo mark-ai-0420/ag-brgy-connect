@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
-import { Sparkles, Store, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react'
+import { Store, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { submitBusinessClaim } from '#/server/businessClaims'
 
@@ -109,7 +109,7 @@ export function ClaimBusinessModal({
           className={`min-h-[44px] inline-flex items-center gap-2 font-bold cursor-pointer transition-all active:scale-[0.97] border-amber-500/30 text-amber-900 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 ${className}`}
           aria-label={`Claim ownership of ${business.name}`}
         >
-          <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
+          <ShieldCheck className="h-4 w-4 text-amber-500 shrink-0" />
           <span>Claim this Business</span>
         </Button>
       </DialogTrigger>

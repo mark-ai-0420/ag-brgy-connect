@@ -34,7 +34,7 @@ import {
   Check,
   ChevronDown,
   MoreHorizontal,
-  Sparkles,
+  PackageCheck,
   ShieldCheck,
   Building2,
   Home,
@@ -77,7 +77,7 @@ const STATUS_CONFIG: Record<
     badge:
       'bg-indigo-100 text-indigo-900 border-indigo-300 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800',
     dot: 'bg-indigo-500',
-    icon: Sparkles,
+    icon: PackageCheck,
   },
   completed: {
     label: 'Released / Completed',
@@ -1041,7 +1041,7 @@ function AdminDocumentsRoute() {
                                   onClick={() => handleFastStatusUpdate(req, 'ready')}
                                   className="min-h-[40px] cursor-pointer gap-2 font-semibold text-xs"
                                 >
-                                  <Sparkles className="h-4 w-4 text-indigo-600" />
+                                  <PackageCheck className="h-4 w-4 text-indigo-600" />
                                   <span>Mark Ready for Pickup</span>
                                   {req.status === 'ready' && <Check className="h-3.5 w-3.5 ml-auto text-primary" />}
                                 </DropdownMenuItem>

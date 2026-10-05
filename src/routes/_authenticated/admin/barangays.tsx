@@ -38,7 +38,6 @@ import {
   Edit,
   Power,
   RotateCcw,
-  Sparkles,
   Info,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -555,8 +554,8 @@ function AdminBarangaysRoute() {
             <CardDescription className="text-xs uppercase font-medium tracking-wider">
               Architecture Status
             </CardDescription>
-            <CardTitle className="text-xl font-bold flex items-center gap-2 text-amber-600 dark:text-amber-400">
-              <Sparkles className="h-5 w-5" />
+            <CardTitle className="text-xl font-bold flex items-center gap-2 text-primary">
+              <Layers className="h-5 w-5" />
               Multi-Tenant v2
             </CardTitle>
           </CardHeader>

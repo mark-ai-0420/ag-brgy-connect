@@ -8,7 +8,6 @@ import {
   ExternalLink,
   User,
   CheckCircle2,
-  Sparkles,
   RefreshCw,
   Copy,
   Check,
@@ -562,7 +561,7 @@ export function DigitalResidentID({
       <div className="flex flex-wrap items-center justify-between gap-3 bg-card p-3 rounded-2xl border shadow-xs">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-xl bg-primary/10 text-primary">
-            <Sparkles className="h-5 w-5" />
+            <ShieldCheck className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">

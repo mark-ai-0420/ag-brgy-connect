@@ -19,7 +19,6 @@ import {
   FileCheck2,
   RefreshCw,
   HelpCircle,
-  Sparkles,
   SearchCheck,
   WifiOff,
   History,
@@ -404,7 +403,7 @@ function TrackDocumentRoute() {
 
   return (
     <div className="min-h-[100dvh] pb-16 bg-slate-50/60 dark:bg-background">
-      {/* ── Hero Banner with Philippine Civic Horizon Gradient ─────────────────────────── */}
+      {/* ── Hero Banner with Official Document Tracking & Verification ─────────────────────────── */}
       <header className="relative overflow-hidden bg-gradient-to-r from-[#002675] via-[#0038A8] to-[#1E3A8A] text-white py-12 px-4 sm:px-6 lg:px-8 shadow-md">
         {/* National Flag color accent top stripe */}
         <div
@@ -785,7 +784,7 @@ function TrackDocumentRoute() {
                   <div className="flex items-center justify-between">
                     {/* Sequential Level 3 Heading (h3) */}
                     <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-primary" />
+                      <ShieldCheck className="h-4 w-4 text-primary" />
                       Document Lifecycle & Verification Progress
                     </h3>
                     <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">

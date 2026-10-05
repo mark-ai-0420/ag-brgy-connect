@@ -31,7 +31,6 @@ import {
   AlertTriangle,
   Copy,
   Layers,
-  Sparkles,
   ShoppingBag,
   Utensils,
   Droplet,
@@ -288,11 +287,11 @@ function AdminBusinessesRoute() {
 
   return (
     <div className="space-y-6">
-      {/* Civic Horizon Header */}
+      {/* Barangay Administration Desk Header */}
       <PageHeader
         badge={
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
-            <Sparkles className="h-3.5 w-3.5" />
+            <Building2 className="h-3.5 w-3.5" />
             MSME Economic Registry & Verification
           </span>
         }

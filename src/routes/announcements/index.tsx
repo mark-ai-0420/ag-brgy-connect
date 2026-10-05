@@ -14,7 +14,6 @@ import {
   PhoneCall,
   Search,
   CheckCircle2,
-  Sparkles,
   Layers,
 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
@@ -281,7 +280,7 @@ function AnnouncementsRoute() {
 
   return (
     <div className="min-h-[100dvh] pb-20 bg-slate-50/50 dark:bg-background">
-      {/* ── 1. Hero Civic Horizon Header ───────────────────────────────────────── */}
+      {/* ── 1. Official Civic Bulletins Header ───────────────────────────────────────── */}
       <header className="relative overflow-hidden bg-gradient-to-r from-[#002675] via-[#0038A8] to-[#1E3A8A] text-white py-12 px-4 sm:px-6 lg:px-8 shadow-md">
         {/* National Flag Accent Ribbon */}
         <div
@@ -534,7 +533,7 @@ function AnnouncementsRoute() {
                 <div className="flex items-center justify-between gap-2 mb-5">
                   <div className="flex items-center gap-2">
                     <div className="p-1 rounded-md bg-primary/10 text-primary">
-                      <Sparkles className="h-4 w-4" />
+                      <Megaphone className="h-4 w-4" />
                     </div>
                     <h2
                       id="regular-notices-heading"

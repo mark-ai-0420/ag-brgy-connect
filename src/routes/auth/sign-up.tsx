@@ -14,7 +14,6 @@ import {
   Building2,
   ArrowLeft,
   ShieldCheck,
-  Sparkles,
   Loader2,
   Check,
   CheckCircle2,
@@ -236,9 +235,6 @@ function SignUp() {
               decoding="async"
               className="h-16 w-16 rounded-full object-cover mx-auto ring-4 ring-[#0038A8]/25 dark:ring-sky-400/30 shadow-md p-0.5 bg-background"
             />
-            <span className="absolute -bottom-1 -right-1 bg-[#0038A8] text-white rounded-full p-1 shadow-sm ring-2 ring-background">
-              <Sparkles className="h-3 w-3" />
-            </span>
           </div>
 
           <div>

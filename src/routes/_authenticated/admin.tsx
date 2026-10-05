@@ -17,7 +17,6 @@ import {
   MapPin,
   ExternalLink,
   ChevronRight,
-  Sparkles,
   CheckCircle2,
   FileCheck,
   History,
@@ -178,7 +177,7 @@ function AdminLayout() {
     <div className="flex flex-1 min-h-screen bg-background">
       {/* ── Desktop Sidebar Navigation (>= 1024px) ──────────────────────────────────── */}
       <aside className="w-64 xl:w-72 bg-card border-r border-border shrink-0 hidden lg:flex flex-col shadow-sm select-none">
-        {/* Civic Horizon Accent Header */}
+        {/* Barangay Administration Desk Header */}
         <div className="relative border-b border-border/80 p-4 bg-card/60 backdrop-blur-xs">
           {/* Flag Tricolor Strip */}
           <div className="absolute top-0 left-0 right-0 h-1 flex">
@@ -194,7 +193,7 @@ function AdminLayout() {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <h2 className="font-extrabold text-sm tracking-tight text-foreground truncate">
-                  Civic Horizon
+                  Barangay Administration Desk
                 </h2>
                 <Badge variant="outline" className="text-[10px] font-bold px-1.5 py-0 bg-primary/10 text-primary border-primary/25 uppercase">
                   Admin
@@ -407,7 +406,7 @@ function AdminLayout() {
               <div className="flex items-center justify-between">
                 <SheetTitle className="text-base font-extrabold flex items-center gap-2 text-foreground">
                   <Building2 className="h-5 w-5 text-primary" />
-                  Civic Horizon Modules
+                  Barangay Administration Modules
                 </SheetTitle>
                 <Badge variant="outline" className="text-xs font-bold px-2 py-0.5 bg-primary/10 text-primary border-primary/25">
                   {roleLabel}
