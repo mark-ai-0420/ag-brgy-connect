@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
-import { getAuthSession, assertAdminScope } from '#/server/auth'
+import { getAuthSession, assertAdminScope, assertAdmin } from '#/server/auth'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#/components/ui/table'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '#/components/ui/card'
 import { Button } from '#/components/ui/button'
@@ -141,9 +141,8 @@ const QUICK_REMARK_TEMPLATES = [
 
 const getDocumentRequests = createServerFn({ method: 'GET' }).handler(async () => {
   const { user, role, admin_scope } = await getAuthSession()
-  if (!user || (role !== 'admin' && role !== 'moderator')) {
-    throw new Error('Unauthorized')
-  }
+  if (!user) throw new Error('Unauthorized')
+  assertAdmin(role)
   const adminScope = assertAdminScope(admin_scope)
   const supabase = createSupabaseServerClient()
 
@@ -151,7 +150,7 @@ const getDocumentRequests = createServerFn({ method: 'GET' }).handler(async () =
   let query = supabase
     .from('document_requests')
     .select(
-      'id, requester_id, document_type, purpose, status, notes, created_at, updated_at, barangay, control_number, profiles(full_name, phone, address)'
+      'id, requester_id, document_type, purpose, status, notes, created_at, updated_at, barangay, barangay_id, control_number, profiles(full_name, phone, address)'
     )
     .order('created_at', { ascending: false })
 
@@ -217,9 +216,8 @@ const updateRequestStatus = createServerFn({ method: 'POST' })
   )
   .handler(async ({ data }) => {
     const { user, role, admin_scope } = await getAuthSession()
-    if (!user || (role !== 'admin' && role !== 'moderator')) {
-      throw new Error('Unauthorized')
-    }
+    if (!user) throw new Error('Unauthorized')
+    assertAdmin(role)
     const adminScope = assertAdminScope(admin_scope)
     const supabase = createSupabaseServerClient()
 

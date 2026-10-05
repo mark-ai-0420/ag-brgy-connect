@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
-import { getAuthSession, assertAdminScope } from '#/server/auth'
+import { getAuthSession, assertAdminScope, assertAdmin } from '#/server/auth'
 import { z } from 'zod'
 
 export const submitBusinessClaim = createServerFn({ method: 'POST' })
@@ -81,9 +81,10 @@ export const submitBusinessClaim = createServerFn({ method: 'POST' })
 
 export const getBusinessClaims = createServerFn({ method: 'GET' }).handler(async () => {
   const { user, role, admin_scope } = await getAuthSession()
-  if (!user || (role !== 'admin' && role !== 'moderator')) {
+  if (!user) {
     throw new Error('Unauthorized')
   }
+  assertAdmin(role)
 
   const adminScope = assertAdminScope(admin_scope)
   const supabase = createSupabaseServerClient()
@@ -142,9 +143,10 @@ export const reviewBusinessClaim = createServerFn({ method: 'POST' })
   )
   .handler(async ({ data }) => {
     const { user, role, admin_scope } = await getAuthSession()
-    if (!user || (role !== 'admin' && role !== 'moderator')) {
+    if (!user) {
       throw new Error('Unauthorized')
     }
+    assertAdmin(role)
     const adminScope = assertAdminScope(admin_scope)
     const supabase = createSupabaseServerClient()
 

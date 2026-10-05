@@ -1,7 +1,8 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
-import { getAuthSession, assertAdminScope } from '#/server/auth'
+import { getAuthSession, assertAdminScope, assertAdmin } from '#/server/auth'
+import { getTenantBarangay } from '#/server/tenant'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -44,12 +45,13 @@ const contactSchema = z.object({
   label: z.string().optional(),
   phone: z.string().min(3, 'Phone number is required'),
   display_order: z.coerce.number().default(0),
-  scope: z.enum(['daine_1', 'daine_2', 'both']).default('both'),
+  scope: z.string().default('both'),
 })
 
 const getContacts = createServerFn({ method: 'GET' }).handler(async () => {
   const { user, role, admin_scope } = await getAuthSession()
-  if (!user || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+  if (!user) throw new Error('Unauthorized')
+  assertAdmin(role)
   const adminScope = assertAdminScope(admin_scope)
   const supabase = createSupabaseServerClient()
 
@@ -75,12 +77,15 @@ const upsertContact = createServerFn({ method: 'POST' })
   .validator((data: unknown) => z.object({ id: z.string().optional() }).merge(contactSchema).parse(data))
   .handler(async ({ data }) => {
     const { user, role, admin_scope } = await getAuthSession()
-    if (!user || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+    if (!user) throw new Error('Unauthorized')
+    assertAdmin(role)
     const adminScope = assertAdminScope(admin_scope)
 
     if (adminScope !== 'both' && data.scope !== adminScope) {
       throw new Error(`Forbidden: You are only authorized to manage contacts for ${adminScope}`)
     }
+
+    const tenant = (data.scope !== 'both' && data.scope !== 'all') ? await getTenantBarangay({ data: data.scope }) : null
 
     const supabase = createSupabaseServerClient()
     if (data.id) {
@@ -98,6 +103,7 @@ const upsertContact = createServerFn({ method: 'POST' })
           phone: data.phone,
           display_order: data.display_order,
           scope: data.scope,
+          barangay_id: tenant?.id || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', data.id)
@@ -111,6 +117,7 @@ const upsertContact = createServerFn({ method: 'POST' })
           phone: data.phone,
           display_order: data.display_order,
           scope: data.scope,
+          barangay_id: tenant?.id || null,
         })
       if (error) throw new Error(error.message)
     }
@@ -133,7 +140,8 @@ const reorderContacts = createServerFn({ method: 'POST' })
   )
   .handler(async ({ data }) => {
     const { user, role, admin_scope } = await getAuthSession()
-    if (!user || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+    if (!user) throw new Error('Unauthorized')
+    assertAdmin(role)
     const adminScope = assertAdminScope(admin_scope)
 
     const supabase = createSupabaseServerClient()
@@ -160,7 +168,8 @@ const deleteContact = createServerFn({ method: 'POST' })
   .validator((id: unknown) => z.string().min(1).parse(id))
   .handler(async ({ data: id }) => {
     const { user, role, admin_scope } = await getAuthSession()
-    if (!user || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+    if (!user) throw new Error('Unauthorized')
+    assertAdmin(role)
     const adminScope = assertAdminScope(admin_scope)
 
     const supabase = createSupabaseServerClient()

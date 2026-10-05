@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Form Validations & Input Masking E2E', () => {
   test('Sign-up form validation catches typos, one-word names, and ensures mobile responsiveness', async ({ page }) => {
-    await page.goto('http://localhost:3003/auth/sign-up', { waitUntil: 'networkidle' })
+    await page.goto('/auth/sign-up', { waitUntil: 'networkidle' })
 
     // Take Desktop Screenshot
     await page.setViewportSize({ width: 1280, height: 900 })
@@ -40,14 +40,14 @@ test.describe('Form Validations & Input Masking E2E', () => {
 
   test('Profile settings validation, phone auto-formatting, and Senior Citizen badge calculation', async ({ page }) => {
     // 1. Log in as resident
-    await page.goto('http://localhost:3003/auth/sign-in', { waitUntil: 'networkidle' })
+    await page.goto('/auth/sign-in', { waitUntil: 'networkidle' })
     await page.fill('input[name="email"], input[type="email"]', 'juan.delacruz@gmail.com')
     await page.fill('input[name="password"], input[type="password"]', 'Password123!')
     await page.click('button[type="submit"]')
     await page.waitForTimeout(2500)
 
     // 2. Go to Profile Settings
-    await page.goto('http://localhost:3003/settings/profile', { waitUntil: 'networkidle' })
+    await page.goto('/settings/profile', { waitUntil: 'networkidle' })
     await page.setViewportSize({ width: 1280, height: 950 })
 
     // Test phone auto-formatting

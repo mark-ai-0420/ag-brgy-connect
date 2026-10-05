@@ -1,6 +1,7 @@
 import { useState, useRef, type ChangeEvent } from 'react'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
+import { getTenantBarangay } from '#/server/tenant'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -99,6 +100,8 @@ const updateMyProfile = createServerFn({ method: 'POST' })
       throw new Error('Not authenticated')
     }
 
+    const tenant = await getTenantBarangay({ data: data.barangay })
+
     // 1. Update profiles table
     const { error: updateError } = await supabase
       .from('profiles')
@@ -106,7 +109,8 @@ const updateMyProfile = createServerFn({ method: 'POST' })
         full_name: data.full_name,
         phone: data.phone,
         address: data.address,
-        barangay: data.barangay,
+        barangay: tenant.slug,
+        barangay_id: tenant.id,
         purok: data.purok,
         avatar_url: data.avatar_url,
       })
@@ -120,7 +124,8 @@ const updateMyProfile = createServerFn({ method: 'POST' })
     await supabase.auth.updateUser({
       data: {
         full_name: data.full_name,
-        barangay: data.barangay,
+        barangay: tenant.slug,
+        barangay_id: tenant.id,
         purok: data.purok,
         birth_date: data.birth_date || '',
         gender: data.gender || '',

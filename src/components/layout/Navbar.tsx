@@ -21,11 +21,14 @@ import {
   Check,
   SearchCheck,
   Building2,
+  Locate,
+  Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useAuth } from '#/hooks/useAuth'
 import { useTenant } from '#/lib/tenant/TenantContext'
+import { findNearestBarangay, getCurrentDeviceLocation } from '#/lib/tenant/geoMatch'
 import { signOutFn, clearAuthCache } from '#/server/auth'
 import { useRealtimeNotifications } from '#/hooks/useRealtimeNotifications'
 import { useBarangayScope, type BarangayScope } from '#/hooks/useBarangayScope'
@@ -102,6 +105,37 @@ export function NavBar() {
       router.navigate({ to: '/' })
     } catch {
       toast.error('Failed to sign out')
+    }
+  }
+
+  const [isLocating, setIsLocating] = useState(false)
+
+  async function handleLocateMe() {
+    setIsLocating(true)
+    try {
+      const coords = await getCurrentDeviceLocation()
+      const match = findNearestBarangay(coords.lat, coords.lng, barangays)
+      if (match) {
+        await setTenantSlug(match.barangay.slug)
+        setScope(
+          match.barangay.slug === 'daine-1'
+            ? 'daine1'
+            : match.barangay.slug === 'daine-2'
+              ? 'daine2'
+              : match.barangay.slug
+        )
+        setScopeOpen(false)
+        setIsOpen(false)
+        toast.success(
+          `Detected location! Switched to ${match.barangay.name} (~${match.distanceFormatted} away)`
+        )
+      } else {
+        toast.info('No registered barangay found within proximity.')
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Unable to detect location. Please select manually.')
+    } finally {
+      setIsLocating(false)
     }
   }
 
@@ -424,6 +458,26 @@ export function NavBar() {
 
                 {scopeOpen && (
                   <div className="absolute right-0 mt-2 w-56 bg-card text-card-foreground border border-border rounded-xl shadow-xl p-1.5 z-50 animate-in fade-in-0 zoom-in-95 duration-150">
+                    <div className="p-1 mb-1 border-b border-border">
+                      <button
+                        type="button"
+                        onClick={handleLocateMe}
+                        disabled={isLocating}
+                        className="w-full flex items-center gap-2 min-h-[40px] px-2.5 py-1.5 text-xs rounded-lg font-semibold text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 transition-colors cursor-pointer disabled:opacity-50"
+                        title="Use device GPS to detect closest barangay"
+                      >
+                        {isLocating ? (
+                          <Loader2 className="h-4 w-4 animate-spin text-sky-600 dark:text-sky-400 shrink-0" />
+                        ) : (
+                          <Locate className="h-4 w-4 text-sky-600 dark:text-sky-400 shrink-0" />
+                        )}
+                        <div className="text-left">
+                          <span className="block leading-tight font-bold">Locate Me (GPS)</span>
+                          <span className="block text-[10px] text-muted-foreground font-normal">Detect nearest barangay</span>
+                        </div>
+                      </button>
+                    </div>
+
                     <p className="px-3 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                       Select Barangay Jurisdiction
                     </p>
@@ -607,14 +661,29 @@ export function NavBar() {
             
             {/* Mobile Scope Selector */}
             {(!user || isAdmin) && (
-              <div className="glass-dock p-3 rounded-2xl bg-white/10 dark:bg-white/5 border border-white/20">
-                <div className="flex items-center justify-between mb-2.5 px-1">
+              <div className="glass-dock p-3 rounded-2xl bg-white/10 dark:bg-white/5 border border-white/20 space-y-2.5">
+                <div className="flex items-center justify-between px-1">
                   <p className="text-[11px] font-extrabold text-white tracking-wider flex items-center gap-1.5 uppercase">
                     <MapPin className="h-3.5 w-3.5 text-[#FCD116]" />
                     Barangay Jurisdiction
                   </p>
                   <span className="text-[11px] text-white/80 font-bold">{currentScopeLabel}</span>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={handleLocateMe}
+                  disabled={isLocating}
+                  className="w-full flex items-center justify-center gap-2 min-h-[40px] px-3 py-2 text-xs font-bold rounded-xl bg-sky-500/25 hover:bg-sky-500/35 active:bg-sky-500/40 text-white border border-sky-400/30 transition-all btn-tactile cursor-pointer disabled:opacity-50"
+                >
+                  {isLocating ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-white shrink-0" />
+                  ) : (
+                    <Locate className="h-4 w-4 text-white shrink-0" />
+                  )}
+                  <span>{isLocating ? 'Detecting via GPS...' : 'Locate Me (Detect Nearest Barangay)'}</span>
+                </button>
+
                 <div className="flex flex-wrap gap-1.5 p-1 bg-black/25 rounded-xl">
                   <button
                     type="button"

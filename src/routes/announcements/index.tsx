@@ -33,7 +33,8 @@ export interface AnnouncementItem {
   created_at: string
   author_id?: string | null
   category: string | null
-  scope: 'all' | 'daine_1' | 'daine_2' | 'both' | null
+  scope: string | null
+  barangay_id?: string | null
   image_url: string | null
 }
 
@@ -42,7 +43,7 @@ export const getAnnouncements = createServerFn({ method: 'GET' }).handler(async 
     const supabase = createSupabaseServerClient()
     const { data, error } = await supabase
       .from('announcements')
-      .select('id, title, body, pinned, created_at, author_id, category, scope, image_url')
+      .select('id, title, body, pinned, created_at, author_id, category, scope, barangay_id, image_url')
       .order('pinned', { ascending: false })
       .order('created_at', { ascending: false })
     if (error) console.error('Error fetching announcements:', error)

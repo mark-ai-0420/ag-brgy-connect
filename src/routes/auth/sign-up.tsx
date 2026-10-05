@@ -18,6 +18,7 @@ import {
   Loader2,
   Check,
   CheckCircle2,
+  Locate,
 } from 'lucide-react'
 import { Button } from '#/components/ui/button'
 import {
@@ -33,6 +34,8 @@ import { Badge } from '#/components/ui/badge'
 import { toast } from 'sonner'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { useAuth } from '#/hooks/useAuth'
+import { useTenant } from '#/lib/tenant/TenantContext'
+import { findNearestBarangay, getCurrentDeviceLocation } from '#/lib/tenant/geoMatch'
 import { clearAuthCache } from '#/server/auth'
 import {
   fullNameSchema,
@@ -118,8 +121,10 @@ const PUROK_QUICK_SELECT = OFFICIAL_PUROKS
 function SignUp() {
   const router = useRouter()
   const { refreshAuth } = useAuth()
+  const { barangays } = useTenant()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [isLocating, setIsLocating] = useState(false)
 
   const form = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
@@ -132,6 +137,30 @@ function SignUp() {
       purok: 'Purok 1',
     },
   })
+
+  async function handleLocateMe() {
+    setIsLocating(true)
+    try {
+      const coords = await getCurrentDeviceLocation()
+      const match = findNearestBarangay(coords.lat, coords.lng, barangays)
+      if (match) {
+        const val = match.barangay.slug === 'daine-2' ? 'daine_2' : 'daine_1'
+        form.setValue('barangay', val as any, { shouldValidate: true })
+        if (match.barangay.puroks && match.barangay.puroks.length > 0) {
+          form.setValue('purok', match.barangay.puroks[0], { shouldValidate: true })
+        }
+        toast.success(
+          `Detected location near ${match.barangay.name} (~${match.distanceFormatted})`
+        )
+      } else {
+        toast.info('No registered barangay found within proximity.')
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Unable to detect location. Please select manually.')
+    } finally {
+      setIsLocating(false)
+    }
+  }
 
   const passwordValue = form.watch('password') || ''
   const selectedBarangay = form.watch('barangay')
@@ -284,9 +313,25 @@ function SignUp() {
               name="barangay"
               render={({ field }) => (
                 <FormItem className="space-y-1.5">
-                  <FormLabel className="text-xs font-bold text-foreground">
-                    Barangay Jurisdiction
-                  </FormLabel>
+                  <div className="flex items-center justify-between">
+                    <FormLabel className="text-xs font-bold text-foreground">
+                      Barangay Jurisdiction
+                    </FormLabel>
+                    <button
+                      type="button"
+                      onClick={handleLocateMe}
+                      disabled={isLocating}
+                      className="inline-flex items-center gap-1.5 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 transition-colors cursor-pointer disabled:opacity-50"
+                      title="Auto-detect nearest barangay using device GPS"
+                    >
+                      {isLocating ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Locate className="h-3.5 w-3.5" />
+                      )}
+                      <span>{isLocating ? 'Locating...' : 'Locate Me (GPS)'}</span>
+                    </button>
+                  </div>
                   <FormControl>
                     <div className="grid grid-cols-2 gap-2.5">
                       <button

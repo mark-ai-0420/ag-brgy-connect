@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { getAuthSession } from '#/server/auth'
+import { getTenantBarangay } from '#/server/tenant'
 import { toast } from 'sonner'
 import { useState } from 'react'
 import { BusinessForm, businessFormSchema, type BusinessFormValues } from '#/components/businesses/BusinessForm'
@@ -31,11 +32,14 @@ const createBusiness = createServerFn({ method: 'POST' })
       throw new Error('Not authenticated')
     }
 
+    const tenant = await getTenantBarangay({ data: data.barangay })
+
     const { data: inserted, error } = await supabase.from('businesses').insert({
       owner_id: session.user.id,
       name: data.name,
       category: data.category,
-      barangay: data.barangay,
+      barangay: tenant.slug,
+      barangay_id: tenant.id,
       purok: data.purok || null,
       address: data.address,
       latitude: data.latitude ?? null,

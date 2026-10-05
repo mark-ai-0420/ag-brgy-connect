@@ -15,7 +15,7 @@ export default defineConfig({
   webServer: {
     command: `npx vite dev --port ${PORT}`,
     port: Number(PORT),
-    reuseExistingServer: false,
+    reuseExistingServer: true,
   },
   projects: [
     {

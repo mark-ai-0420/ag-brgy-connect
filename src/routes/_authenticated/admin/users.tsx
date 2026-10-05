@@ -2,6 +2,7 @@ import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { getAuthSession, assertAdminScope, assertAdmin } from '#/server/auth'
+import { getTenantBarangay } from '#/server/tenant'
 import { useState } from 'react'
 import { PageHeader } from '#/components/common/PageHeader'
 import { Button } from '#/components/ui/button'
@@ -81,15 +82,16 @@ const ROLE_CONFIG: Record<
 const getUsers = createServerFn({ method: 'GET' }).handler(async () => {
   const supabase = createSupabaseServerClient()
   const { user, role, admin_scope } = await getAuthSession()
-  if (!user || (role !== 'admin' && role !== 'moderator')) {
+  if (!user) {
     throw new Error('Unauthorized')
   }
+  assertAdmin(role)
 
   const adminScope = assertAdminScope(admin_scope)
 
   let query = supabase
     .from('profiles')
-    .select('id, full_name, phone, address, purok, email, avatar_url, barangay, created_at, updated_at, user_roles(role, barangay)')
+    .select('id, full_name, phone, address, purok, email, avatar_url, barangay, barangay_id, created_at, updated_at, user_roles(role, barangay, barangay_id)')
     .order('created_at', { ascending: false })
 
   if (adminScope !== 'both') {
@@ -195,9 +197,9 @@ const updateUserRoleAndScope = createServerFn({ method: 'POST' })
       z
         .object({
           user_id: z.string(),
-          role: z.enum(['admin', 'moderator', 'business_owner', 'resident']),
-          barangay: z.enum(['daine_1', 'daine_2']).optional(),
-          role_scope: z.enum(['daine_1', 'daine_2', 'both']).optional(),
+          role: z.enum(['super_admin', 'admin', 'moderator', 'business_owner', 'resident']),
+          barangay: z.string().optional(),
+          role_scope: z.string().optional(),
         })
         .parse(data)
   )
@@ -233,6 +235,12 @@ const updateUserRoleAndScope = createServerFn({ method: 'POST' })
     const rolePayload: any = { user_id: data.user_id, role: data.role }
     if (data.role_scope) {
       rolePayload.barangay = data.role_scope
+      if (data.role_scope !== 'both' && data.role_scope !== 'all') {
+        const tenant = await getTenantBarangay({ data: data.role_scope })
+        rolePayload.barangay_id = tenant.id
+      } else {
+        rolePayload.barangay_id = null
+      }
     }
     const { error: roleError } = await supabase
       .from('user_roles')
@@ -242,9 +250,14 @@ const updateUserRoleAndScope = createServerFn({ method: 'POST' })
 
     // 2. Update profile barangay if specified
     if (data.barangay) {
+      const tenant = await getTenantBarangay({ data: data.barangay })
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({ barangay: data.barangay, updated_at: new Date().toISOString() })
+        .update({
+          barangay: tenant.slug,
+          barangay_id: tenant.id,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', data.user_id)
 
       if (profileError) {

@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { getAuthSession } from '#/server/auth'
+import { getTenantBarangay } from '#/server/tenant'
 import { useAuth } from '#/hooks/useAuth'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -105,6 +106,8 @@ const createComplaint = createServerFn({ method: 'POST' })
       throw new Error('Unauthorized')
     }
 
+    const tenant = await getTenantBarangay({ data: data.barangay })
+
     const { data: inserted, error } = await supabase
       .from('complaints')
       .insert({
@@ -115,7 +118,8 @@ const createComplaint = createServerFn({ method: 'POST' })
         location: data.location || null,
         incident_date: data.incident_date || null,
         is_anonymous: data.is_anonymous,
-        barangay: data.barangay,
+        barangay: tenant.slug,
+        barangay_id: tenant.id,
         status: 'pending',
         priority: 'medium',
       })

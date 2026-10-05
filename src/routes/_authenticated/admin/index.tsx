@@ -1,13 +1,12 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
-import { getAuthSession, assertAdminScope } from '#/server/auth'
+import { getAuthSession, assertAdminScope, assertAdmin } from '#/server/auth'
 
 export const getAdminStats = createServerFn({ method: 'GET' }).handler(async () => {
   const { user, role, admin_scope } = await getAuthSession()
-  if (!user || (role !== 'admin' && role !== 'moderator')) {
-    throw new Error('Unauthorized')
-  }
+  if (!user) throw new Error('Unauthorized')
+  assertAdmin(role)
   const adminScope = assertAdminScope(admin_scope)
   const supabase = createSupabaseServerClient()
 
@@ -57,9 +56,8 @@ export const getAdminStats = createServerFn({ method: 'GET' }).handler(async () 
 
 const getDocRequestsByStatus = createServerFn({ method: 'GET' }).handler(async () => {
   const { user, role, admin_scope } = await getAuthSession()
-  if (!user || (role !== 'admin' && role !== 'moderator')) {
-    throw new Error('Unauthorized')
-  }
+  if (!user) throw new Error('Unauthorized')
+  assertAdmin(role)
   const adminScope = assertAdminScope(admin_scope)
 
   const supabase = createSupabaseServerClient()
@@ -82,9 +80,8 @@ const getDocRequestsByStatus = createServerFn({ method: 'GET' }).handler(async (
 
 const getRecentActivity = createServerFn({ method: 'GET' }).handler(async () => {
   const { user, role, admin_scope } = await getAuthSession()
-  if (!user || (role !== 'admin' && role !== 'moderator')) {
-    throw new Error('Unauthorized')
-  }
+  if (!user) throw new Error('Unauthorized')
+  assertAdmin(role)
   const adminScope = assertAdminScope(admin_scope)
 
   const supabase = createSupabaseServerClient()

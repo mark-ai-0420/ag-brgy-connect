@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
-import { getAuthSession, assertAdminScope } from '#/server/auth'
+import { getAuthSession, assertAdminScope, assertAdmin } from '#/server/auth'
 import { useState } from 'react'
 import { PageHeader } from '#/components/common/PageHeader'
 import { Button } from '#/components/ui/button'
@@ -53,15 +53,14 @@ import { getBusinessClaims, reviewBusinessClaim } from '#/server/businessClaims'
 
 const getBusinessesData = createServerFn({ method: 'GET' }).handler(async () => {
   const { user, role, admin_scope } = await getAuthSession()
-  if (!user || (role !== 'admin' && role !== 'moderator')) {
-    throw new Error('Unauthorized')
-  }
+  if (!user) throw new Error('Unauthorized')
+  assertAdmin(role)
   const adminScope = assertAdminScope(admin_scope)
   const supabase = createSupabaseServerClient()
 
   let query = supabase
     .from('businesses')
-    .select('id, name, category, description, address, phone, hours, owner_id, status, notes, photo_url, menu_image_url, misc_image_url, barangay, purok, messenger_link, facebook_url, latitude, longitude, payment_methods, created_at, updated_at')
+    .select('id, name, category, description, address, phone, hours, owner_id, status, notes, photo_url, menu_image_url, misc_image_url, barangay, barangay_id, purok, messenger_link, facebook_url, latitude, longitude, payment_methods, created_at, updated_at')
     .order('created_at', { ascending: false })
 
   if (adminScope !== 'both') {
@@ -94,9 +93,8 @@ const updateBusinessStatus = createServerFn({ method: 'POST' })
   )
   .handler(async ({ data }) => {
     const { user, role, admin_scope } = await getAuthSession()
-    if (!user || (role !== 'admin' && role !== 'moderator')) {
-      throw new Error('Unauthorized')
-    }
+    if (!user) throw new Error('Unauthorized')
+    assertAdmin(role)
     const adminScope = assertAdminScope(admin_scope)
 
     const supabase = createSupabaseServerClient()

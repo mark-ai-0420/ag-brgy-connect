@@ -1,7 +1,8 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
-import { getAuthSession, assertAdminScope } from '#/server/auth'
+import { getAuthSession, assertAdminScope, assertAdmin } from '#/server/auth'
+import { getTenantBarangay } from '#/server/tenant'
 import { uploadOfficialPhoto } from '#/lib/upload'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -29,6 +30,7 @@ export interface Official {
   display_order: number
   created_at: string
   barangay: string
+  barangay_id?: string | null
 }
 
 const officialSchema = z.object({
@@ -67,13 +69,14 @@ const COMMITTEES = [
 
 const getAdminOfficials = createServerFn({ method: 'GET' }).handler(async () => {
   const { user, role, admin_scope } = await getAuthSession()
-  if (!user || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+  if (!user) throw new Error('Unauthorized')
+  assertAdmin(role)
   const adminScope = assertAdminScope(admin_scope)
   const supabase = createSupabaseServerClient()
 
   let query = supabase
     .from('barangay_officials')
-    .select('id, name, position, committee, photo_url, contact_number, term, display_order, created_at, barangay')
+    .select('id, name, position, committee, photo_url, contact_number, term, display_order, created_at, barangay, barangay_id')
     .order('display_order', { ascending: true })
 
   if (adminScope !== 'both') {
@@ -90,12 +93,15 @@ const upsertOfficial = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
     const { session, role, admin_scope } = await getAuthSession()
-    if (!session || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+    if (!session) throw new Error('Unauthorized')
+    assertAdmin(role)
     const adminScope = assertAdminScope(admin_scope)
 
     if (adminScope !== 'both' && data.barangay !== adminScope) {
       throw new Error(`Forbidden: You are only authorized to manage officials for ${adminScope}`)
     }
+
+    const tenant = await getTenantBarangay({ data: data.barangay })
 
     if (data.id) {
       if (adminScope !== 'both') {
@@ -114,7 +120,8 @@ const upsertOfficial = createServerFn({ method: 'POST' })
           contact_number: data.contact_number || null,
           term: data.term,
           display_order: data.display_order,
-          barangay: data.barangay,
+          barangay: tenant.slug,
+          barangay_id: tenant.id,
         })
         .eq('id', data.id)
       if (error) throw new Error(error.message)
@@ -129,7 +136,8 @@ const upsertOfficial = createServerFn({ method: 'POST' })
           contact_number: data.contact_number || null,
           term: data.term,
           display_order: data.display_order,
-          barangay: data.barangay,
+          barangay: tenant.slug,
+          barangay_id: tenant.id,
         })
       if (error) throw new Error(error.message)
     }
@@ -141,7 +149,8 @@ const deleteOfficial = createServerFn({ method: 'POST' })
   .handler(async ({ data: id }) => {
     const supabase = createSupabaseServerClient()
     const { session, role, admin_scope } = await getAuthSession()
-    if (!session || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+    if (!session) throw new Error('Unauthorized')
+    assertAdmin(role)
     const adminScope = assertAdminScope(admin_scope)
 
     if (adminScope !== 'both') {

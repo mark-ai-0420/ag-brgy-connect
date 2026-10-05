@@ -1,7 +1,8 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
-import { getAuthSession, assertAdminScope } from '#/server/auth'
+import { getAuthSession, assertAdminScope, assertAdmin } from '#/server/auth'
+import { getTenantBarangay } from '#/server/tenant'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -25,19 +26,20 @@ const announcementSchema = z.object({
   body: z.string().min(10, 'Body must be at least 10 characters'),
   pinned: z.boolean().default(false),
   category: z.enum(['General', 'Health', 'Infrastructure', 'Emergency', 'Advisory', 'Programs']).default('General'),
-  scope: z.enum(['daine_1', 'daine_2', 'both']).default('both'),
+  scope: z.string().default('both'),
   image_url: z.string().nullable().optional(),
 })
 
 const getAnnouncements = createServerFn({ method: 'GET' }).handler(async () => {
   const { user, role, admin_scope } = await getAuthSession()
-  if (!user || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+  if (!user) throw new Error('Unauthorized')
+  assertAdmin(role)
   const adminScope = assertAdminScope(admin_scope)
   const supabase = createSupabaseServerClient()
 
   let query = supabase
     .from('announcements')
-    .select('id, title, body, pinned, author_id, created_at, category, scope, image_url')
+    .select('id, title, body, pinned, author_id, created_at, category, scope, barangay_id, image_url')
     .order('pinned', { ascending: false })
     .order('created_at', { ascending: false })
 
@@ -54,11 +56,14 @@ const upsertAnnouncement = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
     const { session, role, admin_scope } = await getAuthSession()
-    if (!session || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+    if (!session) throw new Error('Unauthorized')
+    assertAdmin(role)
     const adminScope = assertAdminScope(admin_scope)
     if (adminScope !== 'both' && data.scope !== adminScope) {
       throw new Error(`Forbidden: You are only authorized to manage announcements for ${adminScope}`)
     }
+
+    const tenant = (data.scope !== 'both' && data.scope !== 'all') ? await getTenantBarangay({ data: data.scope }) : null
 
     if (data.id) {
       if (adminScope !== 'both') {
@@ -80,6 +85,7 @@ const upsertAnnouncement = createServerFn({ method: 'POST' })
           pinned: data.pinned,
           category: data.category,
           scope: data.scope,
+          barangay_id: tenant?.id || null,
           image_url: data.image_url ?? null,
           updated_at: new Date().toISOString()
         })
@@ -93,6 +99,7 @@ const upsertAnnouncement = createServerFn({ method: 'POST' })
           pinned: data.pinned,
           category: data.category,
           scope: data.scope,
+          barangay_id: tenant?.id || null,
           image_url: data.image_url ?? null,
           author_id: session.user.id
         })
@@ -105,7 +112,8 @@ const deleteAnnouncement = createServerFn({ method: 'POST' })
   .validator((id: unknown) => z.string().min(1).parse(id))
   .handler(async ({ data: id }) => {
     const { session, role, admin_scope } = await getAuthSession()
-    if (!session || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+    if (!session) throw new Error('Unauthorized')
+    assertAdmin(role)
     const adminScope = assertAdminScope(admin_scope)
     const supabase = createSupabaseServerClient()
 
@@ -125,7 +133,8 @@ const togglePin = createServerFn({ method: 'POST' })
   .validator((data: unknown) => z.object({ id: z.string().min(1), pinned: z.boolean() }).parse(data))
   .handler(async ({ data }) => {
     const { session, role, admin_scope } = await getAuthSession()
-    if (!session || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+    if (!session) throw new Error('Unauthorized')
+    assertAdmin(role)
     const adminScope = assertAdminScope(admin_scope)
     const supabase = createSupabaseServerClient()
 

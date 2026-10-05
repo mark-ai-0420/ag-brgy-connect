@@ -1,7 +1,8 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
-import { getAuthSession, assertAdminScope } from '#/server/auth'
+import { getAuthSession, assertAdminScope, assertAdmin } from '#/server/auth'
+import { getTenantBarangay } from '#/server/tenant'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -24,19 +25,20 @@ const eventSchema = z.object({
   location: z.string().optional(),
   starts_at: z.string().min(1, 'Start date/time is required'),
   ends_at: z.string().optional(),
-  scope: z.enum(['daine_1', 'daine_2', 'both']).default('both'),
+  scope: z.string().default('both'),
   image_url: z.string().nullable().optional(),
 })
 
 const getEvents = createServerFn({ method: 'GET' }).handler(async () => {
   const { user, role, admin_scope } = await getAuthSession()
-  if (!user || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+  if (!user) throw new Error('Unauthorized')
+  assertAdmin(role)
   const adminScope = assertAdminScope(admin_scope)
   const supabase = createSupabaseServerClient()
 
   let query = supabase
     .from('events')
-    .select('id, title, description, location, starts_at, ends_at, created_at, scope, image_url')
+    .select('id, title, description, location, starts_at, ends_at, created_at, scope, barangay_id, image_url')
     .order('starts_at', { ascending: true })
 
   if (adminScope !== 'both') {
@@ -52,12 +54,15 @@ const upsertEvent = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
     const { session, role, admin_scope } = await getAuthSession()
-    if (!session || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+    if (!session) throw new Error('Unauthorized')
+    assertAdmin(role)
     const adminScope = assertAdminScope(admin_scope)
 
     if (adminScope !== 'both' && data.scope !== adminScope) {
       throw new Error(`Forbidden: You are only authorized to manage events for ${adminScope}`)
     }
+
+    const tenant = (data.scope !== 'both' && data.scope !== 'all') ? await getTenantBarangay({ data: data.scope }) : null
 
     if (data.id) {
       if (adminScope !== 'both') {
@@ -74,6 +79,7 @@ const upsertEvent = createServerFn({ method: 'POST' })
           starts_at: data.starts_at,
           ends_at: data.ends_at || null,
           scope: data.scope,
+          barangay_id: tenant?.id || null,
           image_url: data.image_url ?? null,
           updated_at: new Date().toISOString()
         })
@@ -88,6 +94,7 @@ const upsertEvent = createServerFn({ method: 'POST' })
           starts_at: data.starts_at,
           ends_at: data.ends_at || null,
           scope: data.scope,
+          barangay_id: tenant?.id || null,
           image_url: data.image_url ?? null,
         })
       if (error) throw new Error(error.message)
@@ -99,7 +106,8 @@ const deleteEvent = createServerFn({ method: 'POST' })
   .validator((id: unknown) => z.string().min(1).parse(id))
   .handler(async ({ data: id }) => {
     const { session, role, admin_scope } = await getAuthSession()
-    if (!session || (role !== 'admin' && role !== 'moderator')) throw new Error('Unauthorized')
+    if (!session) throw new Error('Unauthorized')
+    assertAdmin(role)
     const adminScope = assertAdminScope(admin_scope)
     const supabase = createSupabaseServerClient()
 

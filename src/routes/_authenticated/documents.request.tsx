@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { getAuthSession } from '#/server/auth'
+import { getTenantBarangay } from '#/server/tenant'
 import { useAuth } from '#/hooks/useAuth'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -102,6 +103,8 @@ const submitDocumentRequest = createServerFn({ method: 'POST' })
       throw new Error('Not authenticated')
     }
 
+    const tenant = await getTenantBarangay({ data: data.barangay || 'daine-1' })
+
     // Sync profile details if edited
     if (data.phone || data.address || data.purok || data.full_name) {
       await supabase
@@ -111,7 +114,7 @@ const submitDocumentRequest = createServerFn({ method: 'POST' })
           ...(data.phone ? { phone: data.phone } : {}),
           ...(data.address ? { address: data.address } : {}),
           ...(data.purok ? { purok: data.purok } : {}),
-          ...(data.barangay ? { barangay: data.barangay } : {}),
+          ...(data.barangay ? { barangay: tenant.slug, barangay_id: tenant.id } : {}),
         })
         .eq('id', session.user.id)
     }
@@ -123,7 +126,8 @@ const submitDocumentRequest = createServerFn({ method: 'POST' })
         document_type: data.document_type,
         purpose: data.purpose,
         status: 'pending',
-        barangay: data.barangay || 'daine_1',
+        barangay: tenant.slug,
+        barangay_id: tenant.id,
       })
       .select('id')
       .single()

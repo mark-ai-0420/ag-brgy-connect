@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
-import { getAuthSession, assertAdminScope } from '#/server/auth'
+import { getAuthSession, assertAdminScope, assertAdmin } from '#/server/auth'
 import { useState, useMemo, useRef, type MouseEvent } from 'react'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
@@ -140,15 +140,14 @@ const PRIORITY_CONFIG: Record<ComplaintPriority, { label: string; badge: string 
 
 const getAdminComplaints = createServerFn({ method: 'GET' }).handler(async () => {
   const { user, role, admin_scope } = await getAuthSession()
-  if (!user || (role !== 'admin' && role !== 'moderator')) {
-    throw new Error('Unauthorized')
-  }
+  if (!user) throw new Error('Unauthorized')
+  assertAdmin(role)
   const adminScope = assertAdminScope(admin_scope)
   const supabase = createSupabaseServerClient()
 
   let query = supabase
     .from('complaints')
-    .select('id, complainant_id, is_anonymous, title, category, description, location, incident_date, status, priority, photo_url, admin_notes, barangay, created_at, updated_at, profiles(full_name, phone, address, email)')
+    .select('id, complainant_id, is_anonymous, title, category, description, location, incident_date, status, priority, photo_url, admin_notes, barangay, barangay_id, created_at, updated_at, profiles(full_name, phone, address, email)')
     .order('created_at', { ascending: false })
 
   if (adminScope !== 'both') {
@@ -189,9 +188,8 @@ const updateComplaintStatus = createServerFn({ method: 'POST' })
   )
   .handler(async ({ data }) => {
     const { user, role, admin_scope } = await getAuthSession()
-    if (!user || (role !== 'admin' && role !== 'moderator')) {
-      throw new Error('Unauthorized')
-    }
+    if (!user) throw new Error('Unauthorized')
+    assertAdmin(role)
     const adminScope = assertAdminScope(admin_scope)
     const supabase = createSupabaseServerClient()
 

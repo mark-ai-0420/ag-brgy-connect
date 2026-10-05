@@ -151,6 +151,34 @@ ALTER TABLE public.events
 ALTER TABLE public.emergency_contacts
   ADD COLUMN IF NOT EXISTS barangay_id UUID REFERENCES public.barangays(id) ON DELETE SET NULL;
 
+-- 4b. RELAX LEGACY ENUM COLUMNS TO ALLOW ARBITRARY TENANT SLUGS
+ALTER TABLE public.profiles ALTER COLUMN barangay DROP NOT NULL;
+ALTER TABLE public.profiles ALTER COLUMN barangay TYPE TEXT USING barangay::TEXT;
+
+ALTER TABLE public.user_roles ALTER COLUMN barangay DROP NOT NULL;
+ALTER TABLE public.user_roles ALTER COLUMN barangay TYPE TEXT USING barangay::TEXT;
+
+ALTER TABLE public.document_requests ALTER COLUMN barangay DROP NOT NULL;
+ALTER TABLE public.document_requests ALTER COLUMN barangay TYPE TEXT USING barangay::TEXT;
+
+ALTER TABLE public.complaints ALTER COLUMN barangay DROP NOT NULL;
+ALTER TABLE public.complaints ALTER COLUMN barangay TYPE TEXT USING barangay::TEXT;
+
+ALTER TABLE public.barangay_officials ALTER COLUMN barangay DROP NOT NULL;
+ALTER TABLE public.barangay_officials ALTER COLUMN barangay TYPE TEXT USING barangay::TEXT;
+
+ALTER TABLE public.businesses ALTER COLUMN barangay DROP NOT NULL;
+ALTER TABLE public.businesses ALTER COLUMN barangay TYPE TEXT USING barangay::TEXT;
+
+ALTER TABLE public.announcements ALTER COLUMN scope DROP NOT NULL;
+ALTER TABLE public.announcements ALTER COLUMN scope TYPE TEXT USING scope::TEXT;
+
+ALTER TABLE public.events ALTER COLUMN scope DROP NOT NULL;
+ALTER TABLE public.events ALTER COLUMN scope TYPE TEXT USING scope::TEXT;
+
+ALTER TABLE public.emergency_contacts ALTER COLUMN scope DROP NOT NULL;
+ALTER TABLE public.emergency_contacts ALTER COLUMN scope TYPE TEXT USING scope::TEXT;
+
 -- 5. BACKFILL DATA FROM LEGACY 'daine_1' / 'daine_2' VALUES
 UPDATE public.profiles
 SET barangay_id = CASE
@@ -252,7 +280,7 @@ RETURNS trigger AS $$
 DECLARE
   v_barangay_id UUID;
   v_meta_brgy TEXT;
-  v_legacy_unit public.barangay_unit;
+  v_legacy_unit TEXT;
 BEGIN
   v_meta_brgy := COALESCE(new.raw_user_meta_data->>'barangay_id', new.raw_user_meta_data->>'barangay', 'daine-1');
 
@@ -269,8 +297,9 @@ BEGIN
   END IF;
 
   v_legacy_unit := CASE
-    WHEN v_barangay_id = '22222222-2222-2222-2222-222222222222'::UUID THEN 'daine_2'::public.barangay_unit
-    ELSE 'daine_1'::public.barangay_unit
+    WHEN v_barangay_id = '22222222-2222-2222-2222-222222222222'::UUID THEN 'daine_2'
+    WHEN v_barangay_id = '11111111-1111-1111-1111-111111111111'::UUID THEN 'daine_1'
+    ELSE (SELECT slug FROM public.barangays WHERE id = v_barangay_id LIMIT 1)
   END;
 
   INSERT INTO public.profiles (id, full_name, avatar_url, email, barangay, barangay_id)
@@ -302,13 +331,14 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 -- 8. UPDATE RPC: GET_VERIFIED_DOCUMENT
+DROP FUNCTION IF EXISTS public.get_verified_document(TEXT);
 CREATE OR REPLACE FUNCTION public.get_verified_document(lookup_code TEXT)
 RETURNS TABLE (
   id UUID,
   control_number TEXT,
   document_type TEXT,
   status TEXT,
-  barangay public.barangay_unit,
+  barangay TEXT,
   barangay_id UUID,
   barangay_name TEXT,
   barangay_code_prefix TEXT,
@@ -337,7 +367,7 @@ BEGIN
     ) AS control_number,
     dr.document_type::text,
     dr.status::text,
-    dr.barangay,
+    dr.barangay::text,
     dr.barangay_id,
     COALESCE(b.name, CASE WHEN dr.barangay = 'daine_2' THEN 'Barangay Daine 2' ELSE 'Barangay Daine 1' END) AS barangay_name,
     COALESCE(b.code_prefix, CASE WHEN dr.barangay = 'daine_2' THEN 'BD2' ELSE 'BD1' END) AS barangay_code_prefix,
@@ -360,11 +390,12 @@ $$;
 GRANT EXECUTE ON FUNCTION public.get_verified_document(TEXT) TO anon, authenticated, service_role;
 
 -- 9. UPDATE RPC: GET_VERIFIED_RESIDENT
+DROP FUNCTION IF EXISTS public.get_verified_resident(TEXT);
 CREATE OR REPLACE FUNCTION public.get_verified_resident(lookup_code TEXT)
 RETURNS TABLE (
   id UUID,
   full_name TEXT,
-  barangay public.barangay_unit,
+  barangay TEXT,
   barangay_id UUID,
   barangay_name TEXT,
   purok TEXT,
@@ -386,7 +417,7 @@ BEGIN
     SELECT 
       p.id, 
       p.full_name, 
-      p.barangay, 
+      p.barangay::text, 
       p.barangay_id,
       COALESCE(b.name, CASE WHEN p.barangay = 'daine_2' THEN 'Barangay Daine 2' ELSE 'Barangay Daine 1' END) AS barangay_name,
       p.purok, 
@@ -409,7 +440,7 @@ BEGIN
     SELECT 
       p.id, 
       p.full_name, 
-      p.barangay, 
+      p.barangay::text, 
       p.barangay_id,
       COALESCE(b.name, CASE WHEN p.barangay = 'daine_2' THEN 'Barangay Daine 2' ELSE 'Barangay Daine 1' END) AS barangay_name,
       p.purok, 
@@ -454,3 +485,175 @@ CREATE POLICY "Super admins can manage barangays" ON public.barangays
       WHERE user_roles.user_id = auth.uid() AND user_roles.role = 'super_admin'
     )
   );
+
+-- 11. BI-DIRECTIONAL SYNC TRIGGER FOR TENANT_ID AND LEGACY SCOPE/BARANGAY
+CREATE OR REPLACE FUNCTION public.sync_tenant_id_and_legacy()
+RETURNS trigger AS $$
+BEGIN
+  -- If barangay_id is provided, populate legacy scope/barangay if missing
+  IF NEW.barangay_id IS NOT NULL THEN
+    IF TG_TABLE_NAME IN ('announcements', 'events', 'emergency_contacts') THEN
+      IF NEW.scope IS NULL THEN
+        SELECT CASE 
+          WHEN slug = 'daine-1' THEN 'daine_1'
+          WHEN slug = 'daine-2' THEN 'daine_2'
+          ELSE slug
+        END INTO NEW.scope
+        FROM public.barangays WHERE id = NEW.barangay_id;
+      END IF;
+    ELSE
+      IF NEW.barangay IS NULL THEN
+        SELECT CASE 
+          WHEN slug = 'daine-1' THEN 'daine_1'
+          WHEN slug = 'daine-2' THEN 'daine_2'
+          ELSE slug
+        END INTO NEW.barangay
+        FROM public.barangays WHERE id = NEW.barangay_id;
+      END IF;
+    END IF;
+  ELSE
+    -- If barangay_id is missing, derive it from legacy scope/barangay
+    IF TG_TABLE_NAME IN ('announcements', 'events', 'emergency_contacts') THEN
+      IF NEW.scope IS NOT NULL AND NEW.scope NOT IN ('both', 'all') THEN
+        IF NEW.scope IN ('daine_1', 'daine-1') THEN
+          NEW.barangay_id := '11111111-1111-1111-1111-111111111111'::uuid;
+        ELSIF NEW.scope IN ('daine_2', 'daine-2') THEN
+          NEW.barangay_id := '22222222-2222-2222-2222-222222222222'::uuid;
+        ELSE
+          SELECT id INTO NEW.barangay_id FROM public.barangays WHERE slug = NEW.scope LIMIT 1;
+        END IF;
+      END IF;
+    ELSE
+      IF NEW.barangay IS NOT NULL AND NEW.barangay NOT IN ('both', 'all') THEN
+        IF NEW.barangay IN ('daine_1', 'daine-1') THEN
+          NEW.barangay_id := '11111111-1111-1111-1111-111111111111'::uuid;
+        ELSIF NEW.barangay IN ('daine_2', 'daine-2') THEN
+          NEW.barangay_id := '22222222-2222-2222-2222-222222222222'::uuid;
+        ELSE
+          SELECT id INTO NEW.barangay_id FROM public.barangays WHERE slug = NEW.barangay LIMIT 1;
+        END IF;
+      END IF;
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
+
+-- Attach sync trigger to domain tables
+DROP TRIGGER IF EXISTS tr_sync_tenant_profiles ON public.profiles;
+CREATE TRIGGER tr_sync_tenant_profiles
+  BEFORE INSERT OR UPDATE ON public.profiles
+  FOR EACH ROW EXECUTE FUNCTION public.sync_tenant_id_and_legacy();
+
+DROP TRIGGER IF EXISTS tr_sync_tenant_user_roles ON public.user_roles;
+CREATE TRIGGER tr_sync_tenant_user_roles
+  BEFORE INSERT OR UPDATE ON public.user_roles
+  FOR EACH ROW EXECUTE FUNCTION public.sync_tenant_id_and_legacy();
+
+DROP TRIGGER IF EXISTS tr_sync_tenant_doc_requests ON public.document_requests;
+CREATE TRIGGER tr_sync_tenant_doc_requests
+  BEFORE INSERT OR UPDATE ON public.document_requests
+  FOR EACH ROW EXECUTE FUNCTION public.sync_tenant_id_and_legacy();
+
+DROP TRIGGER IF EXISTS tr_sync_tenant_complaints ON public.complaints;
+CREATE TRIGGER tr_sync_tenant_complaints
+  BEFORE INSERT OR UPDATE ON public.complaints
+  FOR EACH ROW EXECUTE FUNCTION public.sync_tenant_id_and_legacy();
+
+DROP TRIGGER IF EXISTS tr_sync_tenant_officials ON public.barangay_officials;
+CREATE TRIGGER tr_sync_tenant_officials
+  BEFORE INSERT OR UPDATE ON public.barangay_officials
+  FOR EACH ROW EXECUTE FUNCTION public.sync_tenant_id_and_legacy();
+
+DROP TRIGGER IF EXISTS tr_sync_tenant_businesses ON public.businesses;
+CREATE TRIGGER tr_sync_tenant_businesses
+  BEFORE INSERT OR UPDATE ON public.businesses
+  FOR EACH ROW EXECUTE FUNCTION public.sync_tenant_id_and_legacy();
+
+DROP TRIGGER IF EXISTS tr_sync_tenant_announcements ON public.announcements;
+CREATE TRIGGER tr_sync_tenant_announcements
+  BEFORE INSERT OR UPDATE ON public.announcements
+  FOR EACH ROW EXECUTE FUNCTION public.sync_tenant_id_and_legacy();
+
+DROP TRIGGER IF EXISTS tr_sync_tenant_events ON public.events;
+CREATE TRIGGER tr_sync_tenant_events
+  BEFORE INSERT OR UPDATE ON public.events
+  FOR EACH ROW EXECUTE FUNCTION public.sync_tenant_id_and_legacy();
+
+DROP TRIGGER IF EXISTS tr_sync_tenant_emergency ON public.emergency_contacts;
+CREATE TRIGGER tr_sync_tenant_emergency
+  BEFORE INSERT OR UPDATE ON public.emergency_contacts
+  FOR EACH ROW EXECUTE FUNCTION public.sync_tenant_id_and_legacy();
+
+-- 12. RLS POLICIES FOR SUPER_ADMIN ON DOMAIN ENTITIES
+
+-- User Roles
+DROP POLICY IF EXISTS "Admins can view all roles" ON public.user_roles;
+CREATE POLICY "Admins can view all roles" ON public.user_roles 
+  FOR SELECT USING (public.get_user_role(auth.uid()) IN ('admin', 'super_admin'));
+
+DROP POLICY IF EXISTS "Admins can manage user roles" ON public.user_roles;
+CREATE POLICY "Admins can manage user roles" ON public.user_roles 
+  FOR ALL USING (public.get_user_role(auth.uid()) IN ('admin', 'super_admin'));
+
+-- Profiles
+DROP POLICY IF EXISTS "Admins can read all profiles" ON public.profiles;
+CREATE POLICY "Admins can read all profiles" ON public.profiles 
+  FOR SELECT USING (public.get_user_role(auth.uid()) IN ('admin', 'moderator', 'super_admin'));
+
+-- Document Requests
+DROP POLICY IF EXISTS "Admins/Moderators can view all document requests" ON public.document_requests;
+CREATE POLICY "Admins/Moderators can view all document requests" ON public.document_requests 
+  FOR SELECT USING (public.get_user_role(auth.uid()) IN ('admin', 'moderator', 'super_admin'));
+
+DROP POLICY IF EXISTS "Admins/Moderators can update document requests" ON public.document_requests;
+CREATE POLICY "Admins/Moderators can update document requests" ON public.document_requests 
+  FOR UPDATE USING (public.get_user_role(auth.uid()) IN ('admin', 'moderator', 'super_admin'));
+
+-- Complaints
+DROP POLICY IF EXISTS "Admins and moderators can view all complaints" ON public.complaints;
+CREATE POLICY "Admins and moderators can view all complaints" ON public.complaints 
+  FOR SELECT USING (public.get_user_role(auth.uid()) IN ('admin', 'moderator', 'super_admin'));
+
+DROP POLICY IF EXISTS "Admins and moderators can update complaints" ON public.complaints;
+CREATE POLICY "Admins and moderators can update complaints" ON public.complaints 
+  FOR UPDATE USING (public.get_user_role(auth.uid()) IN ('admin', 'moderator', 'super_admin'));
+
+-- Businesses
+DROP POLICY IF EXISTS "Admins/Moderators can view all businesses" ON public.businesses;
+CREATE POLICY "Admins/Moderators can view all businesses" ON public.businesses 
+  FOR SELECT USING (public.get_user_role(auth.uid()) IN ('admin', 'moderator', 'super_admin'));
+
+DROP POLICY IF EXISTS "Admins/Moderators can update any business" ON public.businesses;
+CREATE POLICY "Admins/Moderators can update any business" ON public.businesses 
+  FOR UPDATE USING (public.get_user_role(auth.uid()) IN ('admin', 'moderator', 'super_admin'));
+
+-- Announcements
+DROP POLICY IF EXISTS "Admins/Moderators can manage announcements" ON public.announcements;
+CREATE POLICY "Admins/Moderators can manage announcements" ON public.announcements 
+  FOR ALL USING (public.get_user_role(auth.uid()) IN ('admin', 'moderator', 'super_admin'));
+
+-- Events
+DROP POLICY IF EXISTS "Admins/Moderators can manage events" ON public.events;
+CREATE POLICY "Admins/Moderators can manage events" ON public.events 
+  FOR ALL USING (public.get_user_role(auth.uid()) IN ('admin', 'moderator', 'super_admin'));
+
+-- Emergency Contacts
+DROP POLICY IF EXISTS "Admins/Moderators can manage emergency contacts" ON public.emergency_contacts;
+CREATE POLICY "Admins/Moderators can manage emergency contacts" ON public.emergency_contacts 
+  FOR ALL USING (public.get_user_role(auth.uid()) IN ('admin', 'moderator', 'super_admin'));
+
+-- Barangay Officials
+DROP POLICY IF EXISTS "Admins can manage officials" ON public.barangay_officials;
+CREATE POLICY "Admins can manage officials" ON public.barangay_officials 
+  FOR ALL USING (public.get_user_role(auth.uid()) IN ('admin', 'moderator', 'super_admin'));
+
+-- Business Claims
+DROP POLICY IF EXISTS "Admins and moderators can view all claims" ON public.business_claims;
+CREATE POLICY "Admins and moderators can view all claims" ON public.business_claims 
+  FOR SELECT USING (public.get_user_role(auth.uid()) IN ('admin', 'moderator', 'super_admin'));
+
+DROP POLICY IF EXISTS "Admins and moderators can update claims" ON public.business_claims;
+CREATE POLICY "Admins and moderators can update claims" ON public.business_claims 
+  FOR UPDATE USING (public.get_user_role(auth.uid()) IN ('admin', 'moderator', 'super_admin'));

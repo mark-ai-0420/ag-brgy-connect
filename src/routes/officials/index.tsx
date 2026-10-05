@@ -35,7 +35,8 @@ export interface Official {
   contact_number: string | null
   term: string
   display_order: number
-  barangay: 'daine_1' | 'daine_2'
+  barangay: string
+  barangay_id?: string | null
   created_at?: string
 }
 
@@ -44,7 +45,7 @@ export const getOfficials = createServerFn({ method: 'GET' }).handler(async () =
     const supabase = createSupabaseServerClient()
     const { data, error } = await supabase
       .from('barangay_officials')
-      .select('id, name, position, committee, photo_url, contact_number, term, display_order, barangay')
+      .select('id, name, position, committee, photo_url, contact_number, term, display_order, barangay, barangay_id')
       .order('display_order', { ascending: true })
     if (error) console.error('Error fetching officials:', error)
     return (data as Official[]) ?? []

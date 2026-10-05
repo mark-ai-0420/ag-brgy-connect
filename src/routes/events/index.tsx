@@ -33,7 +33,8 @@ export interface EventItem {
   starts_at: string
   ends_at: string | null
   created_at: string
-  scope: 'all' | 'daine_1' | 'daine_2' | 'both' | null
+  scope: string | null
+  barangay_id?: string | null
   image_url: string | null
   category?: string | null
   organizer?: string | null
@@ -54,7 +55,7 @@ export const getEvents = createServerFn({ method: 'GET' }).handler(async () => {
     const supabase = createSupabaseServerClient()
     const { data, error } = await supabase
       .from('events')
-      .select('id, title, description, location, starts_at, ends_at, created_at, scope, image_url')
+      .select('id, title, description, location, starts_at, ends_at, created_at, scope, barangay_id, image_url')
       .order('starts_at', { ascending: true })
     
     if (error) {
