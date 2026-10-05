@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const PORT = process.env.TEST_PORT || 3006;
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: false,
@@ -7,13 +9,13 @@ export default defineConfig({
   workers: 1,
   reporter: 'list',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: `http://localhost:${PORT}`,
     trace: 'on-first-retry',
   },
   webServer: {
-    command: 'npx vite dev --port 3000',
-    port: 3000,
-    reuseExistingServer: true,
+    command: `npx vite dev --port ${PORT}`,
+    port: Number(PORT),
+    reuseExistingServer: false,
   },
   projects: [
     {

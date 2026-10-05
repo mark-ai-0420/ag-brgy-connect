@@ -66,6 +66,7 @@ import { Input } from '#/components/ui/input'
 import { Textarea } from '#/components/ui/textarea'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#/components/ui/table'
 import { ScrollArea } from '#/components/ui/scroll-area'
+import { escapeHtml } from '#/lib/utils'
 
 const STATUSES = ['pending', 'investigating', 'scheduled_hearing', 'resolved', 'dismissed'] as const
 type ComplaintStatus = (typeof STATUSES)[number]
@@ -361,7 +362,7 @@ function SummonsModal({ complaint, open, onOpenChange }: SummonsModalProps) {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>KP Form 9 - Summons (${docketNumber})</title>
+        <title>KP Form 9 - Summons (${escapeHtml(docketNumber)})</title>
         <style>
           @page { size: A4 portrait; margin: 12mm 15mm; }
           body { font-family: 'Times New Roman', Times, serif; color: #0f172a; line-height: 1.6; margin: 0; padding: 20px; }
@@ -386,39 +387,39 @@ function SummonsModal({ complaint, open, onOpenChange }: SummonsModalProps) {
         <div class="header">
           <h4>Republic of the Philippines</h4>
           <h4>Province of Cavite • Municipality of Indang</h4>
-          <h2>${barangayTitle}</h2>
+          <h2>${escapeHtml(barangayTitle)}</h2>
           <h3>OFFICE OF THE LUPONG TAGAPAMAYAPA</h3>
         </div>
 
         <div class="docket-box">
-          <div><strong>KP CASE DOCKET NO.:</strong> ${docketNumber}</div>
-          <div><strong>NATURE:</strong> ${complaint.category.toUpperCase()}</div>
+          <div><strong>KP CASE DOCKET NO.:</strong> ${escapeHtml(docketNumber)}</div>
+          <div><strong>NATURE:</strong> ${escapeHtml(complaint.category.toUpperCase())}</div>
         </div>
 
         <div class="parties">
-          <div><strong>COMPLAINANT:</strong> ${complainantName}</div>
+          <div><strong>COMPLAINANT:</strong> ${escapeHtml(complainantName)}</div>
           <div style="margin-left: 30px; font-style: italic; font-size: 12px;">- AGAINST -</div>
-          <div><strong>RESPONDENT:</strong> ${respondentName}</div>
+          <div><strong>RESPONDENT:</strong> ${escapeHtml(respondentName)}</div>
         </div>
 
         <div class="title">SUMMONS (PATAWAG)</div>
 
         <p class="body-text">
-          <strong>TO:</strong> <span style="text-decoration: underline; font-weight: bold;">${respondentName}</span>
+          <strong>TO:</strong> <span style="text-decoration: underline; font-weight: bold;">${escapeHtml(respondentName)}</span>
         </p>
 
         <p class="body-text">
-          You are hereby strictly summoned and required to appear in person before the <strong>${presiding}</strong> at the <strong>${venue}</strong>, ${barangayTitle}, Municipality of Indang, Cavite on:
+          You are hereby strictly summoned and required to appear in person before the <strong>${escapeHtml(presiding)}</strong> at the <strong>${escapeHtml(venue)}</strong>, ${escapeHtml(barangayTitle)}, Municipality of Indang, Cavite on:
         </p>
 
         <div style="text-align: center; margin: 20px auto; padding: 12px 20px; border: 1.5px solid #0f172a; width: 80%; background: #f8fafc;">
-          <div style="font-size: 17px; font-weight: bold; text-transform: uppercase;">${formattedHearingDate}</div>
-          <div style="font-size: 15px; font-weight: bold; color: #1e3a8a;">EXACT TIME: ${hearingTime}</div>
-          <div style="font-size: 13px; color: #334155; margin-top: 4px;">Venue: ${venue}</div>
+          <div style="font-size: 17px; font-weight: bold; text-transform: uppercase;">${escapeHtml(formattedHearingDate)}</div>
+          <div style="font-size: 15px; font-weight: bold; color: #1e3a8a;">EXACT TIME: ${escapeHtml(hearingTime)}</div>
+          <div style="font-size: 13px; color: #334155; margin-top: 4px;">Venue: ${escapeHtml(venue)}</div>
         </div>
 
         <p class="body-text">
-          This conciliation and mediation session is called to settle amicably the formal complaint filed regarding: <em>"${complaint.title}"</em>.
+          This conciliation and mediation session is called to settle amicably the formal complaint filed regarding: <em>"${escapeHtml(complaint.title)}"</em>.
         </p>
 
         <div class="warning">
@@ -426,7 +427,7 @@ function SummonsModal({ complaint, open, onOpenChange }: SummonsModalProps) {
         </div>
 
         <p class="body-text">
-          Issued this ${format(new Date(), 'do')} day of ${format(new Date(), 'MMMM, yyyy')} at ${barangayTitle}, Indang, Cavite, Philippines.
+          Issued this ${escapeHtml(format(new Date(), 'do'))} day of ${escapeHtml(format(new Date(), 'MMMM, yyyy'))} at ${escapeHtml(barangayTitle)}, Indang, Cavite, Philippines.
         </p>
 
         <div class="signatures">

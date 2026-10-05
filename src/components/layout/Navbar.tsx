@@ -19,11 +19,13 @@ import {
   MapPin,
   PhoneCall,
   Check,
-  SearchCheck
+  SearchCheck,
+  Building2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useAuth } from '#/hooks/useAuth'
+import { useTenant } from '#/lib/tenant/TenantContext'
 import { signOutFn, clearAuthCache } from '#/server/auth'
 import { useRealtimeNotifications } from '#/hooks/useRealtimeNotifications'
 import { useBarangayScope, type BarangayScope } from '#/hooks/useBarangayScope'
@@ -50,6 +52,7 @@ export function NavBar() {
   const { user, role, barangay, setUserState, refreshAuth } = useAuth()
   const { unreadCount, clearUnread } = useRealtimeNotifications(user?.id ?? null)
   const { scope, setScope } = useBarangayScope()
+  const { barangays, activeBarangay, setTenantSlug } = useTenant()
 
   // Close all open menus when clicking outside
   useEffect(() => {
@@ -102,23 +105,26 @@ export function NavBar() {
     }
   }
 
-  const isAdmin = role === 'admin' || (role as string) === 'moderator'
+  const isAdmin = role === 'admin' || (role as string) === 'moderator' || (role as string) === 'super_admin'
+  const isSuperAdmin = (role as string) === 'super_admin'
 
   const userInitials = user?.email
     ? user.email.substring(0, 2).toUpperCase()
     : 'U'
 
   const formatBarangay = (b: string | null) => {
+    if (!b) return activeBarangay.short_name
+    const found = barangays.find((item) => item.id === b || item.slug === b)
+    if (found) return found.short_name
     if (b === 'daine_1') return 'Daine 1'
     if (b === 'daine_2') return 'Daine 2'
-    return 'Daine'
+    return b
   }
 
-  const scopeLabels: Record<BarangayScope, string> = {
-    all: 'All Daine',
-    daine1: 'Daine 1',
-    daine2: 'Daine 2'
-  }
+  const currentScopeLabel = scope === 'all'
+    ? 'All Barangays'
+    : (barangays.find((item) => item.slug === scope || item.id === scope)?.short_name ||
+       (scope === 'daine1' ? 'Daine 1' : scope === 'daine2' ? 'Daine 2' : activeBarangay.short_name))
 
   return (
     <nav aria-label="Main Navigation" className="bg-[#0038A8] dark:bg-[#00205c] text-white shadow-md sticky top-0 z-50 border-b border-white/10 backdrop-blur-md">
@@ -223,6 +229,22 @@ export function NavBar() {
                           <p className="text-xs text-muted-foreground mt-0.5">Resident accounts & permissions</p>
                         </div>
                       </Link>
+
+                      {isSuperAdmin && (
+                        <Link
+                          to="/admin/barangays"
+                          onClick={() => setServicesOpen(false)}
+                          className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors group min-h-[44px]"
+                        >
+                          <div className="p-2 rounded-md bg-teal-500/10 text-teal-600 dark:text-teal-400 group-hover:bg-teal-500 group-hover:text-white transition-colors">
+                            <Building2 className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold leading-tight">Barangay Registry</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">Pluggable multi-tenant manager</p>
+                          </div>
+                        </Link>
+                      )}
                     </>
                   ) : (
                     <>
@@ -380,8 +402,8 @@ export function NavBar() {
           {/* Right Controls: Compact Scope Filter + Quick Search + Actions */}
           <div className="flex items-center gap-2">
             
-            {/* Compact Barangay Scope Switcher (For Guests and Admins) */}
-            {(!user || role === 'admin' || role === 'moderator') ? (
+            {/* Compact Barangay Scope Switcher (For Guests, Admins, Super Admins) */}
+            {(!user || isAdmin) ? (
               <div className="relative hidden sm:block" ref={scopeRef}>
                 <button
                   type="button"
@@ -393,36 +415,58 @@ export function NavBar() {
                     setCommunityOpen(false)
                   }}
                   className="inline-flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/25 text-xs font-bold text-white transition-all border border-white/25 cursor-pointer shadow-sm btn-tactile backdrop-blur-md"
-                  aria-label={`${scopeLabels[scope]} - Select Barangay View`}
+                  aria-label={`${currentScopeLabel} - Select Barangay View`}
                 >
                   <MapPin className="h-3.5 w-3.5 text-[#FCD116]" />
-                  <span>{scopeLabels[scope]}</span>
+                  <span>{currentScopeLabel}</span>
                   <ChevronDown className={`h-3 w-3 text-white/80 transition-transform duration-200 ${scopeOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {scopeOpen && (
-                  <div className="absolute right-0 mt-2 w-52 bg-card text-card-foreground border border-border rounded-xl shadow-xl p-1.5 z-50 animate-in fade-in-0 zoom-in-95 duration-150">
+                  <div className="absolute right-0 mt-2 w-56 bg-card text-card-foreground border border-border rounded-xl shadow-xl p-1.5 z-50 animate-in fade-in-0 zoom-in-95 duration-150">
                     <p className="px-3 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                      Select Barangay View
+                      Select Barangay Jurisdiction
                     </p>
-                    {(['all', 'daine1', 'daine2'] as const).map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => {
-                          setScope(s)
-                          setScopeOpen(false)
-                        }}
-                        className={`w-full flex items-center justify-between min-h-[44px] px-3 py-2 text-xs rounded-lg font-semibold transition-colors cursor-pointer ${
-                          scope === s
-                            ? 'bg-primary/10 text-primary font-bold shadow-xs'
-                            : 'hover:bg-accent hover:text-accent-foreground text-foreground'
-                        }`}
-                      >
-                        <span>{s === 'all' ? 'All Daine' : s === 'daine1' ? 'Barangay Daine 1' : 'Barangay Daine 2'}</span>
-                        {scope === s && <Check className="h-4 w-4 text-primary font-bold" />}
-                      </button>
-                    ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setScope('all')
+                        setScopeOpen(false)
+                      }}
+                      className={`w-full flex items-center justify-between min-h-[44px] px-3 py-2 text-xs rounded-lg font-semibold transition-colors cursor-pointer ${
+                        scope === 'all'
+                          ? 'bg-primary/10 text-primary font-bold shadow-xs'
+                          : 'hover:bg-accent hover:text-accent-foreground text-foreground'
+                      }`}
+                    >
+                      <span>All Barangays</span>
+                      {scope === 'all' && <Check className="h-4 w-4 text-primary font-bold" />}
+                    </button>
+                    {barangays.map((b) => {
+                      const isSelected = scope !== 'all' && (activeBarangay.id === b.id || scope === b.slug || (scope === 'daine1' && b.slug === 'daine-1') || (scope === 'daine2' && b.slug === 'daine-2'))
+                      return (
+                        <button
+                          key={b.id}
+                          type="button"
+                          onClick={() => {
+                            setTenantSlug(b.slug)
+                            setScope(b.slug === 'daine-1' ? 'daine1' : b.slug === 'daine-2' ? 'daine2' : b.slug)
+                            setScopeOpen(false)
+                          }}
+                          className={`w-full flex items-center justify-between min-h-[44px] px-3 py-2 text-xs rounded-lg font-semibold transition-colors cursor-pointer ${
+                            isSelected
+                              ? 'bg-primary/10 text-primary font-bold shadow-xs'
+                              : 'hover:bg-accent hover:text-accent-foreground text-foreground'
+                          }`}
+                        >
+                          <div className="text-left">
+                            <span className="block font-medium">{b.name}</span>
+                            <span className="block text-[10px] text-muted-foreground">{b.code_prefix} &bull; {b.municipality}</span>
+                          </div>
+                          {isSelected && <Check className="h-4 w-4 text-primary font-bold ml-2 shrink-0" />}
+                        </button>
+                      )
+                    })}
                   </div>
                 )}
               </div>
@@ -562,30 +606,47 @@ export function NavBar() {
           <div className="px-4 pt-3 space-y-4">
             
             {/* Mobile Scope Selector */}
-            {(!user || role === 'admin' || role === 'moderator') && (
+            {(!user || isAdmin) && (
               <div className="glass-dock p-3 rounded-2xl bg-white/10 dark:bg-white/5 border border-white/20">
                 <div className="flex items-center justify-between mb-2.5 px-1">
                   <p className="text-[11px] font-extrabold text-white tracking-wider flex items-center gap-1.5 uppercase">
                     <MapPin className="h-3.5 w-3.5 text-[#FCD116]" />
                     Barangay Jurisdiction
                   </p>
-                  <span className="text-[11px] text-white/80 font-bold">{scopeLabels[scope]}</span>
+                  <span className="text-[11px] text-white/80 font-bold">{currentScopeLabel}</span>
                 </div>
-                <div className="grid grid-cols-3 gap-1.5 p-1 bg-black/25 rounded-xl">
-                  {(['all', 'daine1', 'daine2'] as const).map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => setScope(s)}
-                      className={`min-h-[44px] flex items-center justify-center px-2 py-2 text-xs font-bold rounded-lg transition-all btn-tactile cursor-pointer ${
-                        scope === s
-                          ? 'bg-white text-[#0038A8] shadow-md'
-                          : 'text-white/85 hover:text-white hover:bg-white/15 active:bg-white/20'
-                      }`}
-                    >
-                      {s === 'all' ? 'All Daine' : s === 'daine1' ? 'Daine 1' : 'Daine 2'}
-                    </button>
-                  ))}
+                <div className="flex flex-wrap gap-1.5 p-1 bg-black/25 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => setScope('all')}
+                    className={`min-h-[44px] flex-1 min-w-[85px] flex items-center justify-center px-2 py-2 text-xs font-bold rounded-lg transition-all btn-tactile cursor-pointer ${
+                      scope === 'all'
+                        ? 'bg-white text-[#0038A8] shadow-md'
+                        : 'text-white/85 hover:text-white hover:bg-white/15 active:bg-white/20'
+                    }`}
+                  >
+                    All Barangays
+                  </button>
+                  {barangays.map((b) => {
+                    const isSelected = scope !== 'all' && (activeBarangay.id === b.id || scope === b.slug || (scope === 'daine1' && b.slug === 'daine-1') || (scope === 'daine2' && b.slug === 'daine-2'))
+                    return (
+                      <button
+                        key={b.id}
+                        type="button"
+                        onClick={() => {
+                          setTenantSlug(b.slug)
+                          setScope(b.slug === 'daine-1' ? 'daine1' : b.slug === 'daine-2' ? 'daine2' : b.slug)
+                        }}
+                        className={`min-h-[44px] flex-1 min-w-[85px] flex items-center justify-center px-2 py-2 text-xs font-bold rounded-lg transition-all btn-tactile cursor-pointer ${
+                          isSelected
+                            ? 'bg-white text-[#0038A8] shadow-md'
+                            : 'text-white/85 hover:text-white hover:bg-white/15 active:bg-white/20'
+                        }`}
+                      >
+                        {b.short_name}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
             )}
@@ -597,6 +658,16 @@ export function NavBar() {
                   Staff Desk & Administration
                 </p>
                 <div className="space-y-1">
+                  {isSuperAdmin && (
+                    <Link
+                      to="/admin/barangays"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                    >
+                      <Building2 className="h-4 w-4 text-emerald-200" />
+                      Barangay Registry
+                    </Link>
+                  )}
                   <Link
                     to="/admin/documents"
                     onClick={() => setIsOpen(false)}

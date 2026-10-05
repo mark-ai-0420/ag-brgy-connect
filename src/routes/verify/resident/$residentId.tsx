@@ -51,7 +51,6 @@ const getResidentVerificationData = createServerFn({ method: 'GET' })
       const prefix = isDaine2 ? 'BD2-RES-' : 'BD1-RES-'
 
       return {
-        id: profile.id,
         full_name: profile.full_name,
         barangay: profile.barangay,
         purok: profile.purok,

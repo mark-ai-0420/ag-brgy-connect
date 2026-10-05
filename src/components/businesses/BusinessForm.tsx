@@ -102,7 +102,7 @@ export const HOURS_PRESETS = [
   'Open 24/7 (Always Open)',
 ] as const
 
-export const PUROK_COORDINATE_PRESETS: Record<'daine_1' | 'daine_2', Record<string, { lat: number; lng: number; label: string }>> = {
+export const PUROK_COORDINATE_PRESETS: Record<string, Record<string, { lat: number; lng: number; label: string }>> = {
   daine_1: {
     'Purok 1': { lat: 14.1962, lng: 120.8785, label: 'Purok 1 (North Area)' },
     'Purok 2': { lat: 14.1955, lng: 120.8798, label: 'Purok 2 (Brgy Hall & Plaza)' },

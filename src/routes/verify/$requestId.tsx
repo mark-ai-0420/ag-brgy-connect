@@ -31,7 +31,6 @@ import { toast } from 'sonner'
 export interface VerifiedDocument {
   id: string
   control_number?: string | null
-  requester_id?: string
   document_type: string
   status: string
   purpose?: string | null
@@ -127,8 +126,10 @@ const getVerificationData = createServerFn({ method: 'GET' })
         ? (request.profiles[0] as any)?.full_name
         : (request.profiles as any)?.full_name
 
+      const { requester_id: _strippedId, profiles: _strippedProfiles, ...cleanRequest } = request
+
       return {
-        ...request,
+        ...cleanRequest,
         control_number: request.control_number || `BD1-${request.id.slice(0, 8).toUpperCase()}`,
         resident_name: residentName || 'Bona Fide Resident',
       } as VerifiedDocument

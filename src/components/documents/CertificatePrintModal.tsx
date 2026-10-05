@@ -18,18 +18,26 @@ import { format } from 'date-fns'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { getTenantBarangay, type Barangay, DEFAULT_BARANGAYS } from '#/server/tenant'
+import { escapeHtml } from '#/lib/utils'
 
 const getOfficialsForPrint = createServerFn({ method: 'GET' })
-  .validator((data: { barangay?: string }) => data)
+  .validator((data: { barangay?: string; barangay_id?: string }) => data)
   .handler(async ({ data }) => {
     const supabase = createSupabaseServerClient()
-    const query = supabase
+    let query = supabase
       .from('barangay_officials')
-      .select('name, position')
+      .select('name, position, barangay, barangay_id')
       .in('position', ['Punong Barangay', 'Barangay Secretary'])
 
-    if (data.barangay) {
-      query.eq('barangay', data.barangay)
+    if (data.barangay_id) {
+      query = query.eq('barangay_id', data.barangay_id)
+    } else if (data.barangay) {
+      if (data.barangay.includes('-') && data.barangay.length > 20) {
+        query = query.eq('barangay_id', data.barangay)
+      } else {
+        query = query.eq('barangay', data.barangay)
+      }
     }
 
     const { data: officials } = await query
@@ -45,6 +53,9 @@ export interface DocumentRequest {
   status: string
   notes?: string
   barangay?: string
+  barangay_id?: string
+  barangay_name?: string
+  barangay_code_prefix?: string
 }
 
 export interface CertificatePrintModalProps {
@@ -68,18 +79,28 @@ const CERT_DESIGN_HEIGHT = 1123
 
 export function CertificatePrintModal({ open, onOpenChange, request }: CertificatePrintModalProps) {
   const [officials, setOfficials] = useState<{ name: string; position: string }[]>([])
+  const [barangayMeta, setBarangayMeta] = useState<Barangay>(DEFAULT_BARANGAYS[0])
   const [previewZoom, setPreviewZoom] = useState(0.65)
   const containerRef = useRef<HTMLDivElement>(null)
   const certRef = useRef<HTMLDivElement>(null)
 
-  /* Fetch officials when modal opens */
+  /* Fetch officials and tenant details when modal opens */
   useEffect(() => {
-    if (open) {
-      getOfficialsForPrint({ data: { barangay: request?.barangay } })
+    if (open && request) {
+      getOfficialsForPrint({
+        data: {
+          barangay: request.barangay,
+          barangay_id: request.barangay_id,
+        },
+      })
         .then(setOfficials)
         .catch(console.error)
+
+      getTenantBarangay({ data: request.barangay_id || request.barangay })
+        .then(setBarangayMeta)
+        .catch(console.error)
     }
-  }, [open, request?.barangay])
+  }, [open, request?.barangay, request?.barangay_id])
 
   /* Auto-zoom: scale certificate smoothly to fit preview container */
   const recalcZoom = useCallback(() => {
@@ -118,18 +139,19 @@ export function CertificatePrintModal({ open, onOpenChange, request }: Certifica
     officials.find((o) => o.position === 'Punong Barangay')?.name || 'HON. PUNONG BARANGAY'
 
   const barangayTitle =
-    request.barangay === 'daine_1'
-      ? 'BARANGAY DAINE 1'
-      : request.barangay === 'daine_2'
-        ? 'BARANGAY DAINE 2'
-        : 'BARANGAY DAINE'
+    request.barangay_name?.toUpperCase() ||
+    barangayMeta.name.toUpperCase()
 
-  const prefix = request.barangay === 'daine_1' ? 'BD1-' : request.barangay === 'daine_2' ? 'BD2-' : 'BD-'
+  const prefix = request.barangay_code_prefix
+    ? `${request.barangay_code_prefix}-`
+    : `${barangayMeta.code_prefix}-`
+
   const docTitle = DOCUMENT_TITLES[request.document_type] || 'BARANGAY CERTIFICATION'
   const controlNo = `${prefix}${request.id.slice(0, 8).toUpperCase()}`
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
     'https://ag-brgy-connect.vercel.app/verify/' + request.id,
   )}`
+  const sealUrl = barangayMeta.seal_url || '/logo.jpg'
 
   const dateObj = request.created_at ? new Date(request.created_at) : new Date()
   const dayFormatted = format(dateObj, 'do')
@@ -164,7 +186,7 @@ export function CertificatePrintModal({ open, onOpenChange, request }: Certifica
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>${docTitle} - ${request.resident_name}</title>
+<title>${escapeHtml(docTitle)} - ${escapeHtml(request.resident_name)}</title>
 ${headContent}
 <style>
   @page {
@@ -397,7 +419,7 @@ ${headContent}
             {/* Watermark Logo in Background */}
             <div className="absolute inset-0 flex items-center justify-center opacity-[0.05] pointer-events-none select-none">
               <img
-                src="/logo.jpg"
+                src={sealUrl}
                 alt="Official Watermark"
                 className="w-[420px] h-[420px] object-contain grayscale"
               />
@@ -406,10 +428,10 @@ ${headContent}
             {/* TOP SECTION: Republic of the Philippines Letterhead */}
             <div className="relative z-10">
               <header className="flex items-center justify-between border-b-2 border-amber-900/70 pb-4 mb-5 text-center">
-                {/* Left Municipal / Barangay Seal (preserving /logo.jpg) */}
+                {/* Left Municipal / Barangay Seal */}
                 <div className="w-24 h-24 shrink-0 flex items-center justify-center">
                   <img
-                    src="/logo.jpg"
+                    src={sealUrl}
                     alt="Barangay Logo"
                     className="w-20 h-20 object-contain rounded-full shadow-sm border-2 border-amber-900/40 p-0.5 bg-white"
                   />
@@ -421,7 +443,7 @@ ${headContent}
                     Republic of the Philippines
                   </p>
                   <p className="text-xs uppercase tracking-[0.18em] text-slate-700 font-sans font-semibold">
-                    Province of Cavite • Municipality of Indang
+                    Province of {barangayMeta.province} • Municipality of {barangayMeta.municipality}
                   </p>
                   <h1 className="text-2xl font-black tracking-wider text-amber-950 uppercase font-sans pt-1">
                     {barangayTitle}
@@ -446,7 +468,7 @@ ${headContent}
                       <circle cx="50" cy="48" r="4" fill="currentColor" />
                     </svg>
                     <span className="text-[7px] font-sans font-black tracking-wider uppercase text-amber-950 mt-0.5">
-                      SEAL OF INDANG
+                      SEAL OF {barangayMeta.municipality.toUpperCase()}
                     </span>
                   </div>
                 </div>
@@ -532,7 +554,7 @@ ${headContent}
                       OFFICIAL DRY SEAL
                     </span>
                     <span className="text-[6px] text-amber-800 font-semibold leading-tight">
-                      BARANGAY DAINE
+                      {barangayTitle}
                     </span>
                   </div>
 

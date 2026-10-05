@@ -14,6 +14,7 @@ import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
 import { Toaster } from '#/components/ui/sonner'
 import { AuthProvider } from '#/hooks/useAuth'
+import { TenantProvider } from '#/lib/tenant/TenantContext'
 import { BarangayScopeProvider } from '#/hooks/useBarangayScope'
 import { NavBar } from '#/components/layout/Navbar'
 import { Footer } from '#/components/layout/Footer'
@@ -153,24 +154,26 @@ function RootComponent() {
 
   return (
     <AuthProvider>
-      <BarangayScopeProvider>
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring min-h-[48px] min-w-[48px]"
-        >
-          Skip to main content
-        </a>
-        <OfflineIndicator />
-        <NavBar />
-        <main id="main-content" tabIndex={-1} className="flex-1 pb-28 md:pb-0 focus:outline-none">
-          <Outlet />
-        </main>
-        <Footer />
-        <PWAInstallBanner />
-        {!shouldSuppressFloating && <EmergencySpeedDial />}
-        {!shouldSuppressFloating && <KaDaineChatbot />}
-        <SessionTimeoutModal />
-      </BarangayScopeProvider>
+      <TenantProvider>
+        <BarangayScopeProvider>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring min-h-[48px] min-w-[48px]"
+          >
+            Skip to main content
+          </a>
+          <OfflineIndicator />
+          <NavBar />
+          <main id="main-content" tabIndex={-1} className="flex-1 pb-28 md:pb-0 focus:outline-none">
+            <Outlet />
+          </main>
+          <Footer />
+          <PWAInstallBanner />
+          {!shouldSuppressFloating && <EmergencySpeedDial />}
+          {!shouldSuppressFloating && <KaDaineChatbot />}
+          <SessionTimeoutModal />
+        </BarangayScopeProvider>
+      </TenantProvider>
     </AuthProvider>
   )
 }

@@ -104,11 +104,22 @@ export const fullNameSchema = z
   )
 
 /**
- * Dual-Barangay Scoping Schema
+ * Generic & Multi-Tenant Barangay Scoping Schema
+ * Supports legacy 'daine_1' / 'daine_2', slugs, or UUIDs
  */
-export const barangayUnitSchema = z.enum(['daine_1', 'daine_2'] as const, {
-  message: 'Please select your barangay jurisdiction (Barangay Daine 1 or Daine 2)',
-})
+export const barangayUnitSchema = z
+  .string({ message: 'Please select your barangay jurisdiction' })
+  .min(1, 'Please select your barangay jurisdiction')
+
+/**
+ * Resolves Puroks for the specified barangay with fallback to OFFICIAL_PUROKS
+ */
+export function getBarangayPuroks(puroks?: string[] | null): readonly string[] {
+  if (puroks && Array.isArray(puroks) && puroks.length > 0) {
+    return puroks
+  }
+  return OFFICIAL_PUROKS
+}
 
 /**
  * Purok / Sitio Selection Schema

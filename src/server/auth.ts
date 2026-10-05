@@ -1,20 +1,24 @@
 import { createServerFn } from '@tanstack/react-start';
 import { createSupabaseServerClient } from '#/lib/supabase.server';
 
-export type AdminJurisdiction = 'daine_1' | 'daine_2' | 'both';
+export type AdminJurisdiction = 'daine_1' | 'daine_2' | 'both' | string;
 
 export function assertAdmin(
   role: string | null | undefined,
   options: { allowModerator?: boolean } = { allowModerator: true }
-): 'admin' | 'moderator' {
+): 'super_admin' | 'admin' | 'moderator' {
+  if (role === 'super_admin') return 'super_admin';
   if (role === 'admin') return 'admin';
   if (options.allowModerator && role === 'moderator') return 'moderator';
   throw new Error('Forbidden: Insufficient administrative privileges');
 }
 
 export function assertAdminScope(scope: unknown): AdminJurisdiction {
-  if (scope === 'daine_1' || scope === 'daine_2' || scope === 'both') {
-    return scope;
+  if (!scope || scope === 'both' || scope === 'all') {
+    return 'both';
+  }
+  if (typeof scope === 'string') {
+    return scope as AdminJurisdiction;
   }
   throw new Error('Forbidden: Unassigned or invalid admin jurisdiction scope');
 }
@@ -27,26 +31,38 @@ export const getAuthSession = createServerFn({ method: 'GET' })
       error: userError,
     } = await supabase.auth.getUser();
     
-    if (userError || !user) return { session: null, user: null, role: null, admin_scope: null, barangay: null };
+    if (userError || !user) {
+      return { 
+        session: null, 
+        user: null, 
+        role: null, 
+        admin_scope: null, 
+        barangay: null,
+        barangay_id: null,
+        user_role_barangay_id: null,
+      };
+    }
     
     const { data: userRole } = await supabase
       .from('user_roles')
-      .select('role, barangay')
+      .select('role, barangay, barangay_id')
       .eq('user_id', user.id)
       .maybeSingle();
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('barangay')
+      .select('barangay, barangay_id')
       .eq('id', user.id)
       .maybeSingle();
       
     return { 
       session: { user }, 
       user, 
-      role: userRole?.role ?? 'resident',
-      admin_scope: (userRole?.barangay as AdminJurisdiction) ?? null,
-      barangay: profile?.barangay ?? 'daine_1'
+      role: (userRole?.role as any) ?? 'resident',
+      admin_scope: (userRole?.barangay as AdminJurisdiction) ?? (userRole?.role === 'super_admin' ? 'both' : null),
+      barangay: profile?.barangay ?? 'daine_1',
+      barangay_id: profile?.barangay_id ?? userRole?.barangay_id ?? null,
+      user_role_barangay_id: userRole?.barangay_id ?? null,
     };
   });
 

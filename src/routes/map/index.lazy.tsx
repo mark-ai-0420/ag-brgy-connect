@@ -45,6 +45,7 @@ import { Badge } from '#/components/ui/badge'
 import { Input } from '#/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '#/components/ui/tabs'
 import { useBarangayScope, type BarangayScope } from '#/hooks/useBarangayScope'
+import { useTenant } from '#/lib/tenant/TenantContext'
 import { useNetworkStatus } from '#/hooks/useNetworkStatus'
 import { cn } from '#/lib/utils'
 import { toast } from 'sonner'
@@ -864,6 +865,7 @@ export const Route = createLazyFileRoute('/map/')({
 function MapRouteComponent() {
   const loadedBusinesses = MapRoute.useLoaderData() as MapBusiness[] | undefined
   const { scope, setScope } = useBarangayScope()
+  const { activeBarangay } = useTenant()
   const { isOffline } = useNetworkStatus()
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -873,6 +875,19 @@ function MapRouteComponent() {
   const [isMobileDrawerExpanded, setIsMobileDrawerExpanded] = useState(false)
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [isLocating, setIsLocating] = useState(false)
+
+  const activeCenter = useMemo(() => {
+    if (scope === 'all') return ALL_DAINE_CENTER
+    if (activeBarangay && activeBarangay.map_center_lat && activeBarangay.map_center_lng) {
+      return {
+        lat: activeBarangay.map_center_lat,
+        lng: activeBarangay.map_center_lng,
+        zoom: activeBarangay.map_default_zoom || 16,
+      }
+    }
+    if (scope === 'daine2') return DAINE_2_CENTER
+    return DAINE_1_CENTER
+  }, [scope, activeBarangay])
 
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any>(null)
@@ -954,10 +969,8 @@ function MapRouteComponent() {
   // Active reference center for distance calculation (uses user GPS when available)
   const referenceCenter = useMemo(() => {
     if (userLocation) return userLocation
-    if (scope === 'daine1') return DAINE_1_CENTER
-    if (scope === 'daine2') return DAINE_2_CENTER
-    return ALL_DAINE_CENTER
-  }, [userLocation, scope])
+    return activeCenter
+  }, [userLocation, activeCenter])
 
   // Stats calculation based on current scope
   const totalEvacCapacity = useMemo(() => {
@@ -1011,16 +1024,18 @@ function MapRouteComponent() {
       setSelectedSpotId(null)
 
       if (mapInstanceRef.current) {
-        if (newScope === 'daine1') {
-          mapInstanceRef.current.flyTo([DAINE_1_CENTER.lat, DAINE_1_CENTER.lng], DAINE_1_CENTER.zoom, { duration: 1.2 })
+        if (newScope === 'all') {
+          mapInstanceRef.current.flyTo([ALL_DAINE_CENTER.lat, ALL_DAINE_CENTER.lng], ALL_DAINE_CENTER.zoom, { duration: 1.0 })
         } else if (newScope === 'daine2') {
           mapInstanceRef.current.flyTo([DAINE_2_CENTER.lat, DAINE_2_CENTER.lng], DAINE_2_CENTER.zoom, { duration: 1.2 })
-        } else {
-          mapInstanceRef.current.flyTo([ALL_DAINE_CENTER.lat, ALL_DAINE_CENTER.lng], ALL_DAINE_CENTER.zoom, { duration: 1.0 })
+        } else if (newScope === 'daine1') {
+          mapInstanceRef.current.flyTo([DAINE_1_CENTER.lat, DAINE_1_CENTER.lng], DAINE_1_CENTER.zoom, { duration: 1.2 })
+        } else if (activeBarangay) {
+          mapInstanceRef.current.flyTo([activeBarangay.map_center_lat, activeBarangay.map_center_lng], activeBarangay.map_default_zoom || 16, { duration: 1.2 })
         }
       }
     },
-    [setScope]
+    [setScope, activeBarangay]
   )
 
   // Center map on spot selection & open popup
@@ -1050,8 +1065,7 @@ function MapRouteComponent() {
         mapInstanceRef.current = null
       }
 
-      const initialCenter =
-        scope === 'daine1' ? DAINE_1_CENTER : scope === 'daine2' ? DAINE_2_CENTER : ALL_DAINE_CENTER
+      const initialCenter = activeCenter
 
       const map = L.map(mapContainerRef.current, {
         center: [initialCenter.lat, initialCenter.lng],
@@ -1256,7 +1270,7 @@ function MapRouteComponent() {
     setSearchQuery('')
     setSelectedSpotId(null)
     if (mapInstanceRef.current) {
-      const center = scope === 'daine1' ? DAINE_1_CENTER : scope === 'daine2' ? DAINE_2_CENTER : ALL_DAINE_CENTER
+      const center = activeCenter
       mapInstanceRef.current.flyTo([center.lat, center.lng], center.zoom, { duration: 1 })
     }
   }

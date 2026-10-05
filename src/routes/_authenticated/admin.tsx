@@ -43,7 +43,7 @@ export const Route = createFileRoute('/_authenticated/admin')({
   beforeLoad: ({ context }) => {
     const auth = (context as { auth?: { role?: string } }).auth
     const role = auth?.role
-    if (role !== 'admin' && role !== 'moderator') {
+    if (role !== 'admin' && role !== 'moderator' && role !== 'super_admin') {
       throw redirect({ to: '/' })
     }
   },
@@ -76,17 +76,25 @@ const NAV_GROUPS = [
     ],
   },
   {
-    group: 'Governance & Security',
+    group: 'Governance & Multi-Tenant',
     items: [
       { to: '/admin/officials', icon: Users, label: 'Barangay Officials', exact: false },
       { to: '/admin/emergency', icon: Phone, label: 'Emergency Dispatch', exact: false },
       { to: '/admin/users', icon: Shield, label: 'Users & Permissions', exact: false },
+      { to: '/admin/barangays', icon: Building2, label: 'Barangay Registry', exact: false, badge: 'Tenants' },
     ],
   },
 ] as const
 
 // Slide-over drawer items for More... tab
 const MORE_DRAWER_ITEMS = [
+  {
+    to: '/admin/barangays',
+    icon: Building2,
+    title: 'Barangay Registry',
+    description: 'Pluggable multi-tenant barangays, GIS map centers & hotlines',
+    badge: 'Tenants',
+  },
   {
     to: '/admin/businesses',
     icon: Store,
@@ -156,7 +164,7 @@ function AdminLayout() {
     .join('')
     .toUpperCase() || 'SO'
 
-  const roleLabel = role === 'admin' ? 'Administrator' : role === 'moderator' ? 'Moderator' : 'Staff'
+  const roleLabel = role === 'super_admin' ? 'Super Administrator' : role === 'admin' ? 'Administrator' : role === 'moderator' ? 'Moderator' : 'Staff'
 
   // Check if current route is active
   const isTabActive = (to: string, exact?: boolean) => {

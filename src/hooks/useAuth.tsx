@@ -3,12 +3,13 @@ import { getAuthSession, clearAuthCache } from '#/server/auth';
 import { supabase } from '#/lib/supabase';
 import type { User } from '@supabase/supabase-js';
 
-type UserRole = 'admin' | 'moderator' | 'business_owner' | 'resident' | null;
+type UserRole = 'super_admin' | 'admin' | 'moderator' | 'business_owner' | 'resident' | null;
 
 interface AuthContextType {
   user: User | null;
   role: UserRole;
   barangay: string | null;
+  barangay_id: string | null;
   admin_scope: string | null;
   isLoading: boolean;
   refreshAuth: () => Promise<void>;
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   role: null,
   barangay: null,
+  barangay_id: null,
   admin_scope: null,
   isLoading: true,
   refreshAuth: async () => {},
@@ -29,6 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<UserRole>(null);
   const [barangay, setBarangay] = useState<string | null>(null);
+  const [barangayId, setBarangayId] = useState<string | null>(null);
   const [adminScope, setAdminScope] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -44,11 +47,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(auth.user ?? null);
       setRole((auth.role as UserRole) ?? null);
       setBarangay(auth.barangay ?? null);
+      setBarangayId(auth.barangay_id ?? null);
       setAdminScope(auth.admin_scope ?? null);
     } catch {
       setUser(null);
       setRole(null);
       setBarangay(null);
+      setBarangayId(null);
       setAdminScope(null);
     } finally {
       setIsLoading(false);
@@ -80,12 +85,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       role,
       barangay,
+      barangay_id: barangayId,
       admin_scope: adminScope,
       isLoading,
       refreshAuth,
       setUserState,
     }),
-    [user, role, barangay, adminScope, isLoading, refreshAuth, setUserState]
+    [user, role, barangay, barangayId, adminScope, isLoading, refreshAuth, setUserState]
   );
 
   return (

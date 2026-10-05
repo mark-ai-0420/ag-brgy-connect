@@ -1,6 +1,7 @@
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { createSupabaseServerClient } from '#/lib/supabase.server';
+import { getTenantBarangay } from '#/server/tenant';
 
 export interface TrackingStage {
   step: number;
@@ -17,7 +18,8 @@ export interface DocumentTrackingResult {
     control_number: string;
     document_type: string;
     document_title: string;
-    barangay: 'daine_1' | 'daine_2';
+    barangay: string;
+    barangay_id?: string;
     barangay_name: string;
     status: 'pending' | 'in_review' | 'ready' | 'completed' | 'rejected';
     status_label: string;
@@ -91,10 +93,11 @@ export const trackDocumentRequest = createServerFn({ method: 'POST' })
       }
 
       const req = records[0];
-      const isDaine2 = req.barangay === 'daine_2';
-      const barangayUnit = isDaine2 ? 'daine_2' : 'daine_1';
-      const barangayName = isDaine2 ? 'Barangay Daine 2' : 'Barangay Daine 1';
-      const ctrlNo = req.control_number || `${isDaine2 ? 'BD2-' : 'BD1-'}${req.id.slice(0, 8).toUpperCase()}`;
+      const tenant = await getTenantBarangay({ data: req.barangay_id || req.barangay });
+      const barangayUnit = tenant.slug;
+      const barangayName = req.barangay_name || tenant.name;
+      const codePrefix = req.barangay_code_prefix || tenant.code_prefix || (req.barangay === 'daine_2' ? 'BD2' : 'BD1');
+      const ctrlNo = req.control_number || `${codePrefix}-${req.id.slice(0, 8).toUpperCase()}`;
       const docTitle = DOCUMENT_TITLES[req.document_type] || req.document_type.replace(/_/g, ' ').toUpperCase();
 
       let statusLabel = 'Submitted';
@@ -157,17 +160,11 @@ export const trackDocumentRequest = createServerFn({ method: 'POST' })
         },
       ];
 
-      const hallInfo = isDaine2
-        ? {
-            address: 'Barangay Daine 2 Hall, Purok 3, Indang, Cavite',
-            hours: 'Monday – Friday: 8:00 AM – 5:00 PM',
-            contact: '0917-123-0002 / (046) 415-0200',
-          }
-        : {
-            address: 'Barangay Daine 1 Hall, Sitio Centro, Purok 2, Indang, Cavite',
-            hours: 'Monday – Friday: 8:00 AM – 5:00 PM',
-            contact: '0917-123-0001 / (046) 415-0100',
-          };
+      const hallInfo = {
+        address: `${tenant.name} Hall, ${tenant.municipality}, ${tenant.province}`,
+        hours: 'Monday – Friday: 8:00 AM – 5:00 PM',
+        contact: tenant.emergency_hotline || tenant.police_hotline || '(046) 415-0100',
+      };
 
       return {
         found: true,
@@ -177,6 +174,7 @@ export const trackDocumentRequest = createServerFn({ method: 'POST' })
           document_type: req.document_type,
           document_title: docTitle,
           barangay: barangayUnit,
+          barangay_id: req.barangay_id || tenant.id,
           barangay_name: barangayName,
           status: req.status,
           status_label: statusLabel,
