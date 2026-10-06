@@ -129,56 +129,56 @@ interface Step {
 const bentoServices: BentoServiceCard[] = [
   {
     to: '/documents',
-    icon: <FileCheck className="h-8 w-8 text-blue-600 dark:text-blue-400" />,
+    icon: <FileCheck className="h-8 w-8 text-primary" />,
     badge: 'Official E-Services',
     title: 'Online Document Requests & Clearances',
     description:
       'Request Barangay Clearance, Indigency Certificate, Residency Proof, and Business Clearances 24/7 without standing in line. Real-time digital status verification.',
-    color: 'text-blue-600 dark:text-blue-400',
-    accentColor: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300',
-    bgColor: 'from-blue-500/10 via-blue-500/5 to-transparent',
+    color: 'text-primary',
+    accentColor: 'border-primary/20 bg-primary/10 text-primary',
+    bgColor: '',
     colSpan: 'lg:col-span-7',
     actionLabel: 'Request Document',
     highlights: ['Barangay Clearance', 'Indigency Certificate', 'Certificate of Residency', 'Business Permit'],
   },
   {
     to: '/complaints',
-    icon: <ShieldAlert className="h-8 w-8 text-red-600 dark:text-red-400" />,
+    icon: <ShieldAlert className="h-8 w-8 text-primary" />,
     badge: 'Public Safety Desk',
     title: 'Incident & Blotter Reporting',
     description:
       'File complaints, community grievances, or safety concerns securely with direct desk routing to Barangay Peace & Order officers.',
-    color: 'text-red-600 dark:text-red-400',
-    accentColor: 'border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300',
-    bgColor: 'from-red-500/10 via-red-500/5 to-transparent',
+    color: 'text-primary',
+    accentColor: 'border-border bg-muted/60 text-foreground',
+    bgColor: '',
     colSpan: 'lg:col-span-5',
     actionLabel: 'File Incident Report',
     highlights: ['Blotter Records', 'Lupon Mediation', 'Safety Alerts'],
   },
   {
     to: '/directory',
-    icon: <Store className="h-8 w-8 text-blue-600 dark:text-blue-400" />,
+    icon: <Store className="h-8 w-8 text-primary" />,
     badge: 'Commercial Hub',
     title: 'Verified Business Directory',
     description:
       'Discover registered local enterprises, agriculture suppliers, services, and neighborhood trade across Barangay Daine I & II.',
-    color: 'text-blue-600 dark:text-blue-400',
-    accentColor: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300',
-    bgColor: 'from-blue-500/10 via-blue-500/5 to-transparent',
+    color: 'text-primary',
+    accentColor: 'border-border bg-muted/60 text-foreground',
+    bgColor: '',
     colSpan: 'lg:col-span-5',
     actionLabel: 'Explore Directory',
     highlights: ['Registered Stores', 'Local Services', 'Agri Products'],
   },
   {
     to: '/emergency',
-    icon: <Phone className="h-8 w-8 text-red-600 dark:text-red-400" />,
+    icon: <Phone className="h-8 w-8 text-rose-600 dark:text-rose-400" />,
     badge: '24/7 Response Hotline',
     title: 'Emergency Hotlines & Responders',
     description:
       'Immediate speed-dial access to Indang Police (PNP), BFP Fire Station, Municipal Health Office (MHO) RHU Ambulance, and Barangay Tanod.',
-    color: 'text-red-600 dark:text-red-400',
-    accentColor: 'border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300',
-    bgColor: 'from-red-500/10 via-red-500/5 to-transparent',
+    color: 'text-rose-600 dark:text-rose-400',
+    accentColor: 'border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-400',
+    bgColor: '',
     colSpan: 'lg:col-span-7',
     actionLabel: 'Emergency Contacts',
     highlights: ['PNP Indang', 'BFP Fire Rescue', 'Cavite RHU Ambulance', 'Tanod Patrol'],
@@ -253,14 +253,14 @@ function Home() {
     <div className="flex flex-col min-h-[100dvh]">
       {/* ── Dual-Zone Hero Section ───────────────────────────────────────── */}
       <section className="hero-gradient relative min-h-[90dvh] flex items-center overflow-hidden" id="hero">
-        {/* Dynamic Philippine Flag Accent Bar */}
+        {/* Dignified Philippine Flag Accent Bar */}
         <div
           aria-hidden="true"
-          className="absolute bottom-0 left-0 right-0 h-1.5 flex shadow-lg shadow-black/20 z-20"
+          className="absolute bottom-0 left-0 right-0 h-1.5 flex z-20 shadow-xs"
         >
-          <div className="flex-1 bg-[#0038A8] shadow-[0_0_12px_#0038A8]" />
-          <div className="flex-1 bg-[#FCD116] shadow-[0_0_12px_#FCD116]" />
-          <div className="flex-1 bg-[#CE1126] shadow-[0_0_12px_#CE1126]" />
+          <div className="w-[45%] bg-[#0C2B64]" />
+          <div className="w-[10%] bg-[#C98A0C]" />
+          <div className="w-[45%] bg-[#B91C1C]" />
         </div>
 
         <div className="page-container relative z-10 py-16 md:py-24 lg:py-28">
@@ -268,8 +268,8 @@ function Home() {
             {/* Left Zone: Hero Content & Navigation */}
             <div className="lg:col-span-7 space-y-6">
               {/* High-contrast Eyebrow Badge */}
-              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/15 border border-white/30 text-white text-xs sm:text-sm font-bold backdrop-blur-md shadow-md">
-                <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#FCD116] animate-pulse ring-4 ring-[#FCD116]/30" />
+              <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-white text-xs sm:text-sm font-semibold shadow-xs">
+                <span className="inline-block h-2 w-2 rounded-full bg-[#E5A824]" />
                 <span className="tracking-wide">Barangay Daine, Indang, Cavite</span>
               </div>
 
@@ -277,7 +277,7 @@ function Home() {
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.08] tracking-tight">
                 Barangay Daine
                 <br />
-                <span className="text-[#FCD116] drop-shadow-[0_4px_24px_rgba(252,209,22,0.45)]">
+                <span className="text-[#F3BA42]">
                   Connected.
                 </span>
               </h1>
@@ -286,43 +286,43 @@ function Home() {
                 Official digital portal of Barangay Daine, Indang, Cavite for public services, document clearances, and 24/7 community assistance.
               </p>
 
-              {/* CTAs with >=44px touch targets */}
+              {/* CTAs with >=44px touch targets & WCAG AAA contrast */}
               <div className="flex flex-wrap gap-4 items-center pt-3">
                 <Link
                   to="/documents"
-                  className="btn-tactile inline-flex items-center justify-center gap-2.5 px-7 py-3.5 min-h-[48px] rounded-xl font-extrabold text-base bg-[#FCD116] text-[#0038A8] hover:bg-[#FFE033] shadow-xl shadow-yellow-500/25 ring-2 ring-[#FCD116]/60 hover:ring-[#FCD116] transition-all duration-200 group"
+                  className="btn-tactile inline-flex items-center justify-center gap-2.5 px-7 py-3.5 min-h-[48px] rounded-xl font-bold text-base bg-white text-[#0C2B64] hover:bg-slate-100 shadow-sm transition-all duration-150 group"
                   id="hero-cta-documents"
                 >
                   <span>Online Services &amp; Clearances</span>
-                  <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
+                  <ArrowRight className="h-5 w-5 transition-transform duration-150 group-hover:translate-x-1" />
                 </Link>
                 <Link
                   to="/directory"
                   id="hero-cta-directory"
-                  className="btn-tactile inline-flex items-center justify-center gap-2.5 px-7 py-3.5 min-h-[48px] rounded-xl font-bold text-base text-white border border-white/40 bg-white/10 backdrop-blur-md hover:bg-white/20 hover:border-white/80 shadow-lg shadow-black/10 transition-all duration-200 group"
+                  className="btn-tactile inline-flex items-center justify-center gap-2.5 px-7 py-3.5 min-h-[48px] rounded-xl font-medium text-base text-white border border-white/25 bg-white/10 hover:bg-white/15 transition-all duration-150 group"
                 >
                   <span>Explore Directory &amp; Hotlines</span>
                 </Link>
               </div>
             </div>
 
-            {/* Right Zone: Glassmorphic Hero Instant Tracking Dock */}
+            {/* Right Zone: Hero Instant Tracking Dock */}
             <div className="lg:col-span-5 w-full">
-              <div className="glass-dock rounded-2xl p-6 sm:p-7 border border-white/25 shadow-2xl space-y-5 bg-white/10 dark:bg-card/90">
+              <div className="rounded-2xl p-6 sm:p-7 border border-border shadow-lg space-y-5 bg-card text-card-foreground">
                 {/* Header with Icon */}
                 <div className="flex items-start gap-3.5">
-                  <div className="w-12 h-12 rounded-xl bg-white/15 backdrop-blur-sm border border-white/25 flex items-center justify-center text-[#FCD116] shrink-0 shadow-inner">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
                     <QrCode className="h-6 w-6" />
                   </div>
                   <div className="space-y-0.5">
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/15 text-[#FCD116] text-[11px] font-bold uppercase tracking-wider">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-bold uppercase tracking-wider">
                       <CheckCircle2 className="h-3 w-3" />
                       Public Document Verification
                     </div>
-                    <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                    <h2 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
                       Track Document Instantly
                     </h2>
-                    <p className="text-xs sm:text-sm text-white/85">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       Real-time clearance, permit &amp; indigency status
                     </p>
                   </div>
@@ -338,7 +338,7 @@ function Home() {
                       value={trackingInput}
                       onChange={(e) => setTrackingInput(e.target.value.toUpperCase())}
                       placeholder="e.g. BRGY-2026-0042"
-                      className="min-h-[48px] pl-11 pr-11 text-sm sm:text-base font-mono uppercase tracking-wider rounded-xl bg-background text-foreground border-input shadow-inner focus-visible:ring-2 focus-visible:ring-[#0038A8]"
+                      className="min-h-[48px] pl-11 pr-11 text-sm sm:text-base font-mono uppercase tracking-wider rounded-xl bg-background text-foreground border-input shadow-inner focus-visible:ring-2 focus-visible:ring-primary"
                       aria-label="Document Tracking Reference Number"
                     />
                     {trackingInput && (
@@ -356,7 +356,7 @@ function Home() {
                   <Button
                     id="hero-tracking-submit"
                     type="submit"
-                    className="btn-tactile min-h-[48px] w-full font-extrabold text-sm sm:text-base rounded-xl bg-[#FCD116] text-[#0038A8] hover:bg-[#FFE033] shadow-lg shadow-yellow-500/25 transition-all flex items-center justify-center gap-2"
+                    className="btn-tactile min-h-[48px] w-full font-bold text-sm sm:text-base rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <QrCode className="h-5 w-5" />
                     <span>Track Document</span>
@@ -365,25 +365,25 @@ function Home() {
                 </form>
 
                 {/* Sample Reference Chips (BRGY-2026-0042, BRGY-2026-0089) with >=44px touch targets */}
-                <div className="pt-3 border-t border-white/15 space-y-2">
-                  <span className="text-xs text-white/80 font-semibold block">Quick Reference Samples:</span>
+                <div className="pt-3 border-t border-border/40 space-y-2">
+                  <span className="text-xs text-muted-foreground font-semibold block">Quick Reference Samples:</span>
                   <div className="flex flex-wrap items-center gap-2.5">
                     <button
                       type="button"
                       onClick={() => handleSampleClick('BRGY-2026-0042')}
-                      className="min-h-[44px] px-3.5 py-2 inline-flex items-center gap-1.5 text-[#FCD116] font-mono text-xs sm:text-sm font-bold border border-white/25 bg-white/15 hover:bg-white/25 rounded-xl transition-all cursor-pointer shadow-xs active:scale-95"
+                      className="min-h-[44px] px-3.5 py-2 inline-flex items-center gap-2 text-foreground bg-muted/60 hover:bg-muted font-mono text-xs sm:text-sm font-semibold border border-border rounded-xl transition-all cursor-pointer shadow-2xs active:scale-95"
                       aria-label="Track sample code BRGY-2026-0042"
                     >
-                      <span className="h-2 w-2 rounded-full bg-[#FCD116]" />
+                      <span className="h-2 w-2 rounded-full bg-primary" />
                       BRGY-2026-0042
                     </button>
                     <button
                       type="button"
                       onClick={() => handleSampleClick('BRGY-2026-0089')}
-                      className="min-h-[44px] px-3.5 py-2 inline-flex items-center gap-1.5 text-[#FCD116] font-mono text-xs sm:text-sm font-bold border border-white/25 bg-white/15 hover:bg-white/25 rounded-xl transition-all cursor-pointer shadow-xs active:scale-95"
+                      className="min-h-[44px] px-3.5 py-2 inline-flex items-center gap-2 text-foreground bg-muted/60 hover:bg-muted font-mono text-xs sm:text-sm font-semibold border border-border rounded-xl transition-all cursor-pointer shadow-2xs active:scale-95"
                       aria-label="Track sample code BRGY-2026-0089"
                     >
-                      <span className="h-2 w-2 rounded-full bg-[#FCD116]" />
+                      <span className="h-2 w-2 rounded-full bg-primary" />
                       BRGY-2026-0089
                     </button>
                   </div>
@@ -438,11 +438,11 @@ function Home() {
                 className={`${svc.colSpan} group`}
                 id={`bento-service-card-${idx}`}
               >
-                <div className={`card-hover h-full rounded-3xl border border-border bg-card p-6 sm:p-8 flex flex-col justify-between shadow-sm relative overflow-hidden bg-gradient-to-br ${svc.bgColor}`}>
+                <div className="card-hover h-full rounded-2xl border border-border bg-card p-6 sm:p-8 flex flex-col justify-between shadow-xs relative overflow-hidden">
                   <div className="space-y-4 relative z-10">
                     {/* Top row: Icon & Status Badge */}
                     <div className="flex items-center justify-between gap-3">
-                      <div className="w-14 h-14 rounded-2xl bg-background border border-border shadow-xs flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+                      <div className="w-14 h-14 rounded-2xl bg-muted/60 border border-border shadow-xs flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
                         {svc.icon}
                       </div>
                       <span className={`text-xs font-bold px-3 py-1 rounded-full border ${svc.accentColor}`}>
@@ -452,7 +452,7 @@ function Home() {
 
                     {/* Title and Description */}
                     <div>
-                      <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
                         {svc.title}
                       </h3>
                       <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
@@ -466,9 +466,9 @@ function Home() {
                         {svc.highlights.map((tag) => (
                           <span
                             key={tag}
-                            className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-background/80 text-foreground/80 border border-border/80 shadow-2xs"
+                            className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-muted/40 text-foreground/80 border border-border/80 shadow-2xs"
                           >
-                            <CheckCircle2 className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                            <CheckCircle2 className="h-3 w-3 text-primary" />
                             {tag}
                           </span>
                         ))}
@@ -492,7 +492,7 @@ function Home() {
           </div>
 
           {/* Quick Track Document Banner */}
-          <div className="mt-8 bg-gradient-to-r from-[#0038A8] via-[#002d87] to-[#1E3A8A] rounded-2xl p-6 sm:p-8 text-white shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          <div className="mt-8 civic-header rounded-2xl p-6 sm:p-8 text-white shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 border border-white/10">
             <div className="flex items-start sm:items-center gap-4">
               <div className="w-13 h-13 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center text-[#FCD116] shrink-0 shadow-inner">
                 <QrCode className="h-7 w-7" />
@@ -510,7 +510,7 @@ function Home() {
             </div>
             <Button
               asChild
-              className="btn-tactile w-full sm:w-auto px-6 py-3.5 min-h-[48px] text-sm sm:text-base font-extrabold bg-[#FCD116] text-[#0038A8] hover:bg-[#FFE033] shadow-md rounded-xl shrink-0 transition-transform"
+              className="btn-tactile w-full sm:w-auto px-6 py-3.5 min-h-[48px] text-sm sm:text-base font-extrabold bg-white text-[#0C2B64] hover:bg-slate-100 shadow-md rounded-xl shrink-0 transition-transform"
               id="home-track-document-btn"
             >
               <Link to="/track">
@@ -579,19 +579,19 @@ function Home() {
                               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                             />
                           ) : (
-                            <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-500/5 via-blue-500/10 to-blue-500/5 text-blue-600 dark:text-blue-400 group-hover:text-primary transition-colors">
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-muted/50 text-muted-foreground group-hover:text-primary transition-colors">
                               <Megaphone className="h-7 w-7 text-red-600 dark:text-red-400 mb-1" />
-                              <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Barangay Notice</span>
+                              <span className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Barangay Notice</span>
                             </div>
                           )}
                           <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
                             {item.pinned && (
-                              <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-[#FCD116] text-[#0038A8] shadow-xs flex items-center gap-1">
-                                <Pin className="h-2.5 w-2.5 fill-[#0038A8]" /> Pinned
+                              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#FCD116] text-[#0C2B64] shadow-xs flex items-center gap-1">
+                                <Pin className="h-3 w-3 fill-[#0C2B64]" /> Pinned
                               </span>
                             )}
                             {item.category && (
-                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-background/90 text-foreground shadow-xs border">
+                              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-card/95 text-foreground shadow-xs border border-border">
                                 {item.category}
                               </span>
                             )}
@@ -599,7 +599,7 @@ function Home() {
                         </div>
 
                         <CardHeader className="p-4 pb-1">
-                          <span className="text-[11px] font-medium text-muted-foreground">
+                          <span className="text-xs font-medium text-muted-foreground">
                             {format(parseISO(item.created_at), 'MMMM d, yyyy')}
                           </span>
                           <CardTitle className="text-sm sm:text-base font-bold line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
@@ -667,20 +667,20 @@ function Home() {
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                               />
                             ) : (
-                              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-amber-500/5 via-amber-500/10 to-amber-500/5 text-amber-600 dark:text-amber-400 group-hover:text-amber-700 transition-colors">
+                              <div className="w-full h-full flex flex-col items-center justify-center bg-muted/50 text-muted-foreground group-hover:text-foreground transition-colors">
                                 <Calendar className="h-7 w-7 text-amber-600 dark:text-amber-400 mb-1" />
-                                <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Community Assembly</span>
+                                <span className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Community Assembly</span>
                               </div>
                             )}
 
                             {/* Floating Date Badge */}
-                            <div className="absolute bottom-2.5 left-2.5 bg-background/95 backdrop-blur-md rounded-xl px-2.5 py-1 shadow-md border text-center pointer-events-none">
-                              <span className="block text-[10px] font-extrabold uppercase text-blue-600 dark:text-blue-400 tracking-wider leading-none">{format(dateObj, 'MMM')}</span>
+                            <div className="absolute bottom-2.5 left-2.5 bg-card/95 backdrop-blur-md rounded-xl px-2.5 py-1 shadow-md border border-border text-center pointer-events-none">
+                              <span className="block text-xs font-bold uppercase text-primary tracking-wider leading-none">{format(dateObj, 'MMM')}</span>
                               <span className="block text-base font-black text-foreground leading-none mt-0.5">{format(dateObj, 'd')}</span>
                             </div>
 
                             <div className="absolute top-2.5 right-2.5">
-                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-background/90 text-foreground shadow-xs border">
+                              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-card/95 text-foreground shadow-xs border border-border">
                                 {event.category || 'Event'}
                               </span>
                             </div>
@@ -741,8 +741,12 @@ function Home() {
             {/* Desktop Connector Line */}
             <div
               aria-hidden="true"
-              className="hidden md:block absolute top-8 left-[calc(16.66%+1.5rem)] right-[calc(16.66%+1.5rem)] h-0.5 bg-gradient-to-r from-[#0038A8]/40 via-[#CE1126]/40 to-[#FCD116]/40"
-            />
+              className="hidden md:flex absolute top-8 left-[calc(16.66%+1.5rem)] right-[calc(16.66%+1.5rem)] h-0.5 overflow-hidden rounded-full opacity-60"
+            >
+              <div className="w-[45%] bg-[#0C2B64]" />
+              <div className="w-[10%] bg-[#C98A0C]" />
+              <div className="w-[45%] bg-[#B91C1C]" />
+            </div>
 
             {steps.map((step, i) => (
               <div key={i} className="relative flex flex-col items-center text-center">
@@ -751,7 +755,7 @@ function Home() {
                   <div className="w-16 h-16 rounded-2xl bg-card shadow-md border border-border flex items-center justify-center text-blue-600 dark:text-blue-400 relative z-10">
                     {step.icon}
                   </div>
-                  <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#0038A8] text-white text-[10px] font-extrabold flex items-center justify-center shadow-md z-20">
+                  <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shadow-md z-20">
                     {i + 1}
                   </span>
                 </div>
@@ -767,14 +771,11 @@ function Home() {
       {/* ── CTA Banner ───────────────────────────────────────────────────── */}
       <section
         id="cta-banner"
-        className="relative overflow-hidden py-20 md:py-24"
-        style={{
-          background: 'linear-gradient(135deg, #002d87 0%, #0038A8 40%, #0e47c7 70%, #CE1126 100%)',
-        }}
+        className="relative overflow-hidden py-16 md:py-20 bg-[#0C2B64] dark:bg-[#07142E] border-t border-border text-white shadow-inner"
       >
         <div className="page-container relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="text-center md:text-left space-y-3">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white">
               Ready to connect with
               <br className="hidden md:block" />
               {' '}your barangay?
@@ -788,15 +789,15 @@ function Home() {
             <Link
               to="/auth/sign-in"
               id="cta-sign-in"
-              className="btn-tactile w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 min-h-[48px] rounded-xl font-extrabold text-base bg-[#FCD116] text-[#0038A8] hover:bg-[#FFE033] shadow-xl shadow-black/25 ring-2 ring-[#FCD116]/60 hover:ring-[#FCD116] transition-all duration-200 whitespace-nowrap group"
+              className="btn-tactile w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 min-h-[48px] rounded-xl font-bold text-base bg-white text-[#0C2B64] hover:bg-slate-100 shadow-sm transition-all duration-150 whitespace-nowrap group"
             >
               <span>Sign In to BrgyConnect</span>
-              <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
+              <ArrowRight className="h-5 w-5 transition-transform duration-150 group-hover:translate-x-1" />
             </Link>
             <Link
               to="/directory"
               id="cta-explore-services"
-              className="btn-tactile w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 min-h-[48px] rounded-xl font-bold text-base text-white border border-white/40 bg-white/10 backdrop-blur-md hover:bg-white/20 hover:border-white/80 shadow-lg shadow-black/10 transition-all duration-200 whitespace-nowrap"
+              className="btn-tactile w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 min-h-[48px] rounded-xl font-semibold text-base text-white border border-white/25 bg-white/10 hover:bg-white/15 shadow-xs transition-all duration-150 whitespace-nowrap"
             >
               <span>Explore Directory &amp; Hotlines</span>
             </Link>

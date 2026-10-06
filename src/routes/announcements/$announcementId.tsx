@@ -29,7 +29,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   General: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 font-semibold',
   Advisory: 'bg-amber-100 text-amber-900 dark:bg-amber-900/50 dark:text-amber-200 border border-amber-300 font-semibold',
   Emergency: 'bg-red-100 text-red-900 dark:bg-red-900/50 dark:text-red-200 border border-red-300 font-semibold',
-  Programs: 'bg-purple-100 text-purple-900 dark:bg-purple-900/50 dark:text-purple-200 border border-purple-300 font-semibold',
+  Programs: 'bg-sky-100 text-sky-900 dark:bg-sky-900/50 dark:text-sky-200 border border-sky-300 font-semibold',
   Infrastructure: 'bg-orange-100 text-orange-900 dark:bg-orange-900/50 dark:text-orange-200 border border-orange-300 font-semibold',
   Health: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-900/50 dark:text-emerald-200 border border-emerald-300 font-semibold',
 }

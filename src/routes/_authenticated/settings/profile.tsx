@@ -300,7 +300,7 @@ function ProfileSettingsPage() {
                   ) : (
                     <div className="flex flex-col items-center justify-center text-muted-foreground p-3 text-center">
                       <User className="h-12 w-12 text-muted-foreground/50 mb-1" />
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">
                         No ID Photo
                       </span>
                     </div>
@@ -472,7 +472,7 @@ function ProfileSettingsPage() {
                           Age: {calculatedAge}
                         </Badge>
                         {seniorCitizen && (
-                          <Badge variant="secondary" className="text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30">
+                          <Badge variant="secondary" className="text-[11px] font-bold px-2 py-0 bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30">
                             Senior Citizen
                           </Badge>
                         )}
@@ -560,7 +560,7 @@ function ProfileSettingsPage() {
                       </div>
                     </div>
                     {selectedBarangay === 'daine_1' && (
-                      <Badge className="bg-[#0038A8] text-white text-[10px] px-2 py-0.5">Selected</Badge>
+                      <Badge className="bg-[#0038A8] text-white text-[11px] font-bold uppercase tracking-wider px-2 py-0.5">Selected</Badge>
                     )}
                   </label>
 
@@ -584,7 +584,7 @@ function ProfileSettingsPage() {
                       </div>
                     </div>
                     {selectedBarangay === 'daine_2' && (
-                      <Badge className="bg-[#0038A8] text-white text-[10px] px-2 py-0.5">Selected</Badge>
+                      <Badge className="bg-[#0038A8] text-white text-[11px] font-bold uppercase tracking-wider px-2 py-0.5">Selected</Badge>
                     )}
                   </label>
                 </div>
@@ -668,7 +668,7 @@ function ProfileSettingsPage() {
                 <div>
                   <h2 id="emergency-heading" className="text-sm font-bold text-foreground flex items-center gap-2">
                     Emergency Contact Points
-                    <Badge variant="outline" className="text-[10px] border-red-500/30 text-[#CE1126] dark:text-red-400 font-bold px-1.5 py-0">
+                    <Badge variant="outline" className="text-[11px] border-red-500/30 text-[#CE1126] dark:text-red-400 font-bold uppercase tracking-wider px-1.5 py-0">
                       Disaster Ready
                     </Badge>
                   </h2>

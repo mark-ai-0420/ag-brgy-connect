@@ -178,7 +178,7 @@ function AdminLayout() {
       {/* ── Desktop Sidebar Navigation (>= 1024px) ──────────────────────────────────── */}
       <aside className="w-64 xl:w-72 bg-card border-r border-border shrink-0 hidden lg:flex flex-col shadow-sm select-none">
         {/* Barangay Administration Desk Header */}
-        <div className="relative border-b border-border/80 p-4 bg-card/60 backdrop-blur-xs">
+        <div className="relative border-b border-border p-4 bg-card">
           {/* Flag Tricolor Strip */}
           <div className="absolute top-0 left-0 right-0 h-1 flex">
             <div className="w-[45%] bg-[#0038A8]" />
@@ -187,7 +187,7 @@ function AdminLayout() {
           </div>
 
           <div className="flex items-center gap-3 pt-2">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#0038A8] to-[#1a52c8] flex items-center justify-center text-white shadow-md shadow-blue-600/20 shrink-0">
+            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-xs shrink-0">
               <Building2 className="h-5 w-5" />
             </div>
             <div className="min-w-0 flex-1">
@@ -195,7 +195,7 @@ function AdminLayout() {
                 <h2 className="font-extrabold text-sm tracking-tight text-foreground truncate">
                   Barangay Administration Desk
                 </h2>
-                <Badge variant="outline" className="text-[10px] font-bold px-1.5 py-0 bg-primary/10 text-primary border-primary/25 uppercase">
+                <Badge variant="outline" className="text-[11px] font-bold px-1.5 py-0 bg-primary/10 text-primary border-primary/25 uppercase tracking-wider">
                   Admin
                 </Badge>
               </div>
@@ -206,37 +206,37 @@ function AdminLayout() {
           </div>
         </div>
 
-        {/* ── Scope Selector (Daine 1 vs Daine 2 vs All) ────────────────────────── */}
-        <div className="p-3 border-b border-border/60 bg-muted/20">
-          <div className="flex items-center justify-between mb-1.5 px-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-              <SlidersHorizontal className="h-3 w-3 text-primary" />
+        {/* ── Scope Selector (Consolidated vs Daine 1 vs Daine 2) ────────────────────────── */}
+        <div className="p-3 border-b border-border bg-muted/20">
+          <div className="flex items-center justify-between mb-2 px-1">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <SlidersHorizontal className="h-3.5 w-3.5 text-primary" />
               Jurisdiction Scope
             </span>
-            <span className="text-[10px] font-medium text-primary px-1.5 py-0.2 bg-primary/10 rounded-sm">
+            <span className="px-2.5 py-1 text-xs font-semibold text-primary bg-primary/10 rounded-md">
               {selectedScope === 'all' ? 'Consolidated' : selectedScope === 'daine_1' ? 'Daine 1' : 'Daine 2'}
             </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-1 bg-muted/70 p-1 rounded-xl border border-border/60">
+          <div className="grid grid-cols-3 gap-1 bg-muted/80 p-1 rounded-xl border border-border">
             <button
               type="button"
               onClick={() => setSelectedScope('all')}
-              className={`min-h-[34px] text-xs font-semibold rounded-lg transition-all flex items-center justify-center px-1.5 cursor-pointer ${
+              className={`min-h-[36px] text-xs font-bold rounded-lg transition-all flex items-center justify-center px-1.5 cursor-pointer ${
                 selectedScope === 'all'
-                  ? 'bg-primary text-primary-foreground shadow-xs font-bold'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background/70'
               }`}
             >
-              All
+              Consolidated
             </button>
             <button
               type="button"
               onClick={() => setSelectedScope('daine_1')}
-              className={`min-h-[34px] text-xs font-semibold rounded-lg transition-all flex items-center justify-center px-1.5 cursor-pointer ${
+              className={`min-h-[36px] text-xs font-bold rounded-lg transition-all flex items-center justify-center px-1 cursor-pointer ${
                 selectedScope === 'daine_1'
-                  ? 'bg-primary text-primary-foreground shadow-xs font-bold'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background/70'
               }`}
             >
               Daine 1
@@ -244,10 +244,10 @@ function AdminLayout() {
             <button
               type="button"
               onClick={() => setSelectedScope('daine_2')}
-              className={`min-h-[34px] text-xs font-semibold rounded-lg transition-all flex items-center justify-center px-1.5 cursor-pointer ${
+              className={`min-h-[36px] text-xs font-bold rounded-lg transition-all flex items-center justify-center px-1 cursor-pointer ${
                 selectedScope === 'daine_2'
-                  ? 'bg-primary text-primary-foreground shadow-xs font-bold'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
+                  ? 'bg-primary text-primary-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background/70'
               }`}
             >
               Daine 2
@@ -259,7 +259,7 @@ function AdminLayout() {
         <nav className="flex-1 p-3 space-y-4 overflow-y-auto" aria-label="Admin Navigation">
           {NAV_GROUPS.map((group) => (
             <div key={group.group} className="space-y-1">
-              <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 mb-1">
+              <div className="px-3 text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
                 {group.group}
               </div>
               {group.items.map((item) => {
@@ -278,7 +278,7 @@ function AdminLayout() {
                       <span className="truncate">{label}</span>
                     </div>
                     {badge && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground group-[.active]:bg-primary-foreground/20 group-[.active]:text-primary-foreground">
+                      <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider bg-muted text-muted-foreground group-[.active]:bg-primary-foreground/20 group-[.active]:text-primary-foreground">
                         {badge}
                       </span>
                     )}
@@ -293,7 +293,7 @@ function AdminLayout() {
         <div className="p-3 border-t border-border/80 bg-muted/20 space-y-2">
           <div className="flex items-center gap-3 p-2 rounded-xl bg-card border border-border/70 shadow-xs">
             <Avatar className="h-9 w-9 border border-primary/20 shrink-0">
-              <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-bold text-xs">
+              <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
                 {userInitials}
               </AvatarFallback>
             </Avatar>
@@ -302,10 +302,10 @@ function AdminLayout() {
                 <p className="text-xs font-bold text-foreground truncate">{userName}</p>
                 <Badge
                   variant={role === 'admin' ? 'default' : 'secondary'}
-                  className={`text-[9px] font-bold px-1.5 py-0 shrink-0 uppercase ${
-                    role === 'admin'
-                      ? 'bg-amber-500 hover:bg-amber-600 text-white border-none'
-                      : 'bg-indigo-600 hover:bg-indigo-700 text-white border-none'
+                  className={`text-[11px] font-bold px-1.5 py-0 shrink-0 uppercase tracking-wider ${
+                    role === 'admin' || role === 'super_admin'
+                      ? 'bg-amber-400 hover:bg-amber-500 text-amber-950 border-none'
+                      : 'bg-primary hover:bg-primary/90 text-primary-foreground border-none'
                   }`}
                 >
                   {roleLabel}
@@ -354,7 +354,7 @@ function AdminLayout() {
               to={to}
               preload="intent"
               activeOptions={{ exact: !!exact }}
-              className="flex-1 min-h-[50px] flex flex-col items-center justify-center gap-1 py-1 rounded-xl text-muted-foreground text-[11px] font-semibold transition-all relative hover:text-foreground touch-target [&.active]:text-primary [&.active]:font-extrabold"
+              className="flex-1 min-h-[50px] flex flex-col items-center justify-center gap-1 py-1 rounded-xl text-muted-foreground text-xs font-semibold transition-all relative hover:text-foreground touch-target [&.active]:text-primary [&.active]:font-extrabold"
             >
               <div className="relative flex items-center justify-center">
                 <div
@@ -368,7 +368,7 @@ function AdminLayout() {
                   <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary ring-2 ring-card animate-pulse" />
                 )}
               </div>
-              <span className="truncate max-w-[76px] text-center leading-none tracking-tight">
+              <span className="truncate max-w-[80px] text-center leading-none tracking-tight">
                 {label}
               </span>
             </Link>
@@ -380,12 +380,12 @@ function AdminLayout() {
           <SheetTrigger asChild>
             <button
               type="button"
-              className="flex-1 min-h-[50px] flex flex-col items-center justify-center gap-1 py-1 rounded-xl text-muted-foreground text-[11px] font-semibold transition-all hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none touch-target cursor-pointer"
+              className="flex-1 min-h-[50px] flex flex-col items-center justify-center gap-1 py-1 rounded-xl text-muted-foreground text-xs font-semibold transition-all hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none touch-target cursor-pointer"
             >
               <div className="p-1 rounded-lg text-muted-foreground">
                 <MoreHorizontal className="h-5 w-5 shrink-0" />
               </div>
-              <span className="truncate max-w-[76px] text-center leading-none tracking-tight">
+              <span className="truncate max-w-[80px] text-center leading-none tracking-tight">
                 More...
               </span>
             </button>
@@ -432,20 +432,20 @@ function AdminLayout() {
                 <button
                   type="button"
                   onClick={() => setSelectedScope('all')}
-                  className={`min-h-[38px] text-xs font-semibold rounded-lg transition-all flex items-center justify-center px-2 cursor-pointer ${
+                  className={`min-h-[44px] text-xs font-bold rounded-lg transition-all flex items-center justify-center px-2 cursor-pointer ${
                     selectedScope === 'all'
-                      ? 'bg-primary text-primary-foreground shadow-xs font-bold'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
                       : 'bg-card text-muted-foreground hover:text-foreground border border-border/60'
                   }`}
                 >
-                  All Scope
+                  Consolidated
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectedScope('daine_1')}
-                  className={`min-h-[38px] text-xs font-semibold rounded-lg transition-all flex items-center justify-center px-2 cursor-pointer ${
+                  className={`min-h-[44px] text-xs font-bold rounded-lg transition-all flex items-center justify-center px-2 cursor-pointer ${
                     selectedScope === 'daine_1'
-                      ? 'bg-primary text-primary-foreground shadow-xs font-bold'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
                       : 'bg-card text-muted-foreground hover:text-foreground border border-border/60'
                   }`}
                 >
@@ -454,9 +454,9 @@ function AdminLayout() {
                 <button
                   type="button"
                   onClick={() => setSelectedScope('daine_2')}
-                  className={`min-h-[38px] text-xs font-semibold rounded-lg transition-all flex items-center justify-center px-2 cursor-pointer ${
+                  className={`min-h-[44px] text-xs font-bold rounded-lg transition-all flex items-center justify-center px-2 cursor-pointer ${
                     selectedScope === 'daine_2'
-                      ? 'bg-primary text-primary-foreground shadow-xs font-bold'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
                       : 'bg-card text-muted-foreground hover:text-foreground border border-border/60'
                   }`}
                 >
@@ -483,7 +483,7 @@ function AdminLayout() {
                         <span className="font-bold text-xs text-foreground truncate group-[.active]:text-primary">
                           {title}
                         </span>
-                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-sm bg-muted text-muted-foreground shrink-0">
+                        <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider bg-muted text-muted-foreground shrink-0">
                           {badge}
                         </span>
                       </div>

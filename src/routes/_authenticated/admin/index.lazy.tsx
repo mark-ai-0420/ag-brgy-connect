@@ -69,10 +69,10 @@ const STATUS_COLORS: Record<string, { bg: string; text: string; border: string; 
     hex: '#3b82f6',
   },
   ready: {
-    bg: 'bg-indigo-500/10 dark:bg-indigo-950/40',
-    text: 'text-indigo-700 dark:text-indigo-300',
-    border: 'border-indigo-500/30',
-    hex: '#6366f1',
+    bg: 'bg-sky-500/10 dark:bg-sky-950/40',
+    text: 'text-sky-700 dark:text-sky-300',
+    border: 'border-sky-500/30',
+    hex: '#0284c7',
   },
   completed: {
     bg: 'bg-emerald-500/10 dark:bg-emerald-950/40',
@@ -88,9 +88,9 @@ const STATUS_COLORS: Record<string, { bg: string; text: string; border: string; 
   },
 }
 
-// Chart color palette
-const RESOLUTION_COLORS = ['#10b981', '#f59e0b', '#ef4444', '#6366f1']
-const MSME_SECTOR_COLORS = ['#0038A8', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6']
+// Dignified Civic Analytics color palette
+const RESOLUTION_COLORS = ['#059669', '#D97706', '#E11D48', '#0C2B64']
+const MSME_SECTOR_COLORS = ['#0C2B64', '#0284C7', '#059669', '#D97706', '#0284C7']
 
 const formatStatus = (status: string) => {
   return status
@@ -159,7 +159,7 @@ function AdminDashboardRoute() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* ── 1. Municipal Operations Executive Banner ──────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-br from-card via-card to-muted/40 p-6 sm:p-8 shadow-sm">
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-xs">
         {/* Flag Tricolor Accent Ribbon */}
         <div className="absolute top-0 left-0 right-0 h-1.5 flex">
           <div className="w-[45%] bg-[#0038A8]" />
@@ -208,10 +208,10 @@ function AdminDashboardRoute() {
 
       {/* ── 2. Urgent Attention Alert Box (if backlog exists) ────────────────── */}
       {totalPendingActionItems > 0 && (
-        <div className="relative overflow-hidden rounded-2xl border-2 border-amber-500/30 bg-amber-500/10 dark:bg-amber-950/20 p-4 sm:p-5 shadow-xs">
+        <div className="relative overflow-hidden rounded-2xl border border-amber-500/40 bg-amber-500/10 dark:bg-amber-950/25 p-4 sm:p-5 shadow-xs">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-start sm:items-center gap-3.5">
-              <div className="h-10 w-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20 animate-pulse">
+              <div className="h-10 w-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm">
                 <AlertTriangle className="h-5 w-5" />
               </div>
               <div className="space-y-0.5">
@@ -219,7 +219,7 @@ function AdminDashboardRoute() {
                   <h3 className="font-extrabold text-sm sm:text-base text-foreground">
                     Action Required: {totalPendingActionItems} Items Pending Triage
                   </h3>
-                  <Badge variant="outline" className="bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-500/40 text-[10px] font-extrabold uppercase">
+                  <Badge variant="outline" className="bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-500/40 text-xs font-bold uppercase">
                     Urgent Queue
                   </Badge>
                 </div>
@@ -235,7 +235,7 @@ function AdminDashboardRoute() {
                   asChild
                   size="sm"
                   variant="secondary"
-                  className="min-h-[44px] px-3.5 rounded-xl text-xs font-bold bg-card hover:bg-card/80 border border-border shadow-xs cursor-pointer"
+                  className="min-h-[44px] px-3.5 rounded-xl text-xs font-bold bg-card hover:bg-muted border border-border shadow-xs cursor-pointer"
                 >
                   <Link to="/admin/documents">
                     Triage Documents ({stats.pendingDocRequests})
@@ -274,12 +274,12 @@ function AdminDashboardRoute() {
       {/* ── 3. High-Contrast Stat Cards Deck ─────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         {/* Card 1: MSME Businesses */}
-        <Card className="border-border/80 hover:border-primary/50 transition-all shadow-xs group bg-card">
+        <Card className="border border-border bg-card hover:border-primary/40 transition-colors shadow-xs group">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               MSME Businesses
             </CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-muted text-muted-foreground group-hover:text-primary transition-colors flex items-center justify-center">
               <Store className="h-4 w-4" />
             </div>
           </CardHeader>
@@ -288,7 +288,7 @@ function AdminDashboardRoute() {
               <div className="text-3xl font-extrabold tracking-tight text-foreground">
                 {stats.totalBusinesses}
               </div>
-              <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-[11px] font-bold gap-1">
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/25 text-xs font-semibold gap-1">
                 <TrendingUp className="h-3 w-3" />
                 +14.2%
               </Badge>
@@ -303,12 +303,12 @@ function AdminDashboardRoute() {
         </Card>
 
         {/* Card 2: Document Requests */}
-        <Card className="border-border/80 hover:border-primary/50 transition-all shadow-xs group bg-card">
+        <Card className="border border-border bg-card hover:border-primary/40 transition-colors shadow-xs group">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Doc Requests
             </CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-muted text-muted-foreground group-hover:text-primary transition-colors flex items-center justify-center">
               <FileText className="h-4 w-4" />
             </div>
           </CardHeader>
@@ -317,7 +317,7 @@ function AdminDashboardRoute() {
               <div className="text-3xl font-extrabold tracking-tight text-foreground">
                 {stats.totalDocRequests}
               </div>
-              <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-[11px] font-bold gap-1">
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/25 text-xs font-semibold gap-1">
                 <TrendingUp className="h-3 w-3" />
                 +8.5%
               </Badge>
@@ -332,12 +332,12 @@ function AdminDashboardRoute() {
         </Card>
 
         {/* Card 3: Blotter Cases */}
-        <Card className="border-border/80 hover:border-primary/50 transition-all shadow-xs group bg-card">
+        <Card className="border border-border bg-card hover:border-primary/40 transition-colors shadow-xs group">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Blotter & Peace
             </CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-muted text-muted-foreground group-hover:text-primary transition-colors flex items-center justify-center">
               <ShieldAlert className="h-4 w-4" />
             </div>
           </CardHeader>
@@ -346,14 +346,14 @@ function AdminDashboardRoute() {
               <div className="text-3xl font-extrabold tracking-tight text-foreground">
                 {stats.totalComplaints}
               </div>
-              <Badge className="bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30 text-[11px] font-bold gap-1">
+              <Badge variant="outline" className="bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/25 text-xs font-semibold gap-1">
                 <TrendingDown className="h-3 w-3" />
                 -5.1%
               </Badge>
             </div>
             <div className="flex items-center justify-between text-xs pt-1 border-t border-border/60">
               <span className="text-muted-foreground font-medium">In Mediation:</span>
-              <span className="font-bold text-red-600 dark:text-red-400">
+              <span className="font-bold text-amber-600 dark:text-amber-400">
                 {stats.pendingComplaints} unreviewed
               </span>
             </div>
@@ -361,12 +361,12 @@ function AdminDashboardRoute() {
         </Card>
 
         {/* Card 4: Announcements */}
-        <Card className="border-border/80 hover:border-primary/50 transition-all shadow-xs group bg-card">
+        <Card className="border border-border bg-card hover:border-primary/40 transition-colors shadow-xs group">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Civic Advisories
             </CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-muted text-muted-foreground group-hover:text-primary transition-colors flex items-center justify-center">
               <Megaphone className="h-4 w-4" />
             </div>
           </CardHeader>
@@ -375,7 +375,7 @@ function AdminDashboardRoute() {
               <div className="text-3xl font-extrabold tracking-tight text-foreground">
                 {stats.totalAnnouncements}
               </div>
-              <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-[11px] font-bold gap-1">
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/25 text-xs font-semibold gap-1">
                 <TrendingUp className="h-3 w-3" />
                 +20.0%
               </Badge>
@@ -388,12 +388,12 @@ function AdminDashboardRoute() {
         </Card>
 
         {/* Card 5: Events */}
-        <Card className="border-border/80 hover:border-primary/50 transition-all shadow-xs group bg-card">
+        <Card className="border border-border bg-card hover:border-primary/40 transition-colors shadow-xs group">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Community Events
             </CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-muted text-muted-foreground group-hover:text-primary transition-colors flex items-center justify-center">
               <Calendar className="h-4 w-4" />
             </div>
           </CardHeader>
@@ -402,14 +402,16 @@ function AdminDashboardRoute() {
               <div className="text-3xl font-extrabold tracking-tight text-foreground">
                 {stats.totalEvents}
               </div>
-              <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-[11px] font-bold gap-1">
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/25 text-xs font-semibold gap-1">
                 <TrendingUp className="h-3 w-3" />
                 +12.5%
               </Badge>
             </div>
             <div className="flex items-center justify-between text-xs pt-1 border-t border-border/60">
               <span className="text-muted-foreground font-medium">Assembly Status:</span>
-              <span className="font-bold text-purple-600 dark:text-purple-400">Scheduled</span>
+              <Badge variant="outline" className="bg-sky-50 text-sky-800 dark:bg-sky-950/40 dark:text-sky-300 border-sky-300 text-[11px] font-bold">
+                Scheduled
+              </Badge>
             </div>
           </CardContent>
         </Card>
@@ -441,12 +443,12 @@ function AdminDashboardRoute() {
                 <AreaChart data={MONTHLY_REQUESTS_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorClearances" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#0038A8" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#0038A8" stopOpacity={0.0} />
+                      <stop offset="5%" stopColor="#0C2B64" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="#0C2B64" stopOpacity={0.0} />
                     </linearGradient>
                     <linearGradient id="colorCertificates" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
+                      <stop offset="5%" stopColor="#059669" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="#059669" stopOpacity={0.0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
@@ -464,7 +466,7 @@ function AdminDashboardRoute() {
                     type="monotone"
                     dataKey="clearances"
                     name="Clearances"
-                    stroke="#0038A8"
+                    stroke="#0C2B64"
                     strokeWidth={2.5}
                     fillOpacity={1}
                     fill="url(#colorClearances)"
@@ -473,7 +475,7 @@ function AdminDashboardRoute() {
                     type="monotone"
                     dataKey="certifications"
                     name="Certifications"
-                    stroke="#10b981"
+                    stroke="#059669"
                     strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#colorCertificates)"
@@ -491,7 +493,7 @@ function AdminDashboardRoute() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-base font-bold flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                  <Clock className="h-5 w-5 text-primary" />
                   Clearance Turnaround Velocity
                 </CardTitle>
                 <CardDescription className="text-xs text-muted-foreground mt-0.5">
@@ -523,9 +525,9 @@ function AdminDashboardRoute() {
                     type="monotone"
                     dataKey="hours"
                     name="Actual Processing (Hours)"
-                    stroke="#6366f1"
+                    stroke="#0C2B64"
                     strokeWidth={3}
-                    dot={{ r: 4, fill: '#6366f1' }}
+                    dot={{ r: 4, fill: '#0C2B64' }}
                     activeDot={{ r: 6 }}
                   />
                   <Line
@@ -784,10 +786,10 @@ function AdminDashboardRoute() {
             <Button
               asChild
               variant="outline"
-              className="justify-start min-h-[50px] p-3 rounded-xl border-border/80 hover:border-purple-500/50 hover:bg-purple-500/5 transition-all text-left group cursor-pointer"
+              className="justify-start min-h-[50px] p-3 rounded-xl border-border/80 hover:border-primary/50 hover:bg-primary/5 transition-all text-left group cursor-pointer"
             >
               <Link to="/admin/events">
-                <div className="h-9 w-9 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center mr-3 shrink-0 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center mr-3 shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                   <Calendar className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -879,7 +881,7 @@ function AdminDashboardRoute() {
                 >
                   <span>{tab === 'all' ? 'All Requests' : formatStatus(tab)}</span>
                   <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                    className={`text-[11px] px-1.5 py-0.5 rounded-full font-bold ${
                       activeActivityTab === tab
                         ? 'bg-primary-foreground/20 text-primary-foreground'
                         : 'bg-background text-muted-foreground'

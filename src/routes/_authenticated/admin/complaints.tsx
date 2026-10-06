@@ -94,8 +94,8 @@ const STATUS_CONFIG: Record<
   scheduled_hearing: {
     label: 'Mediation Scheduled',
     badge:
-      'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-200 font-bold',
-    dot: 'bg-amber-500',
+      'bg-sky-100 text-sky-900 border-sky-300 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-700 font-bold',
+    dot: 'bg-sky-500',
     icon: Gavel,
   },
   resolved: {
@@ -477,7 +477,7 @@ Under Republic Act No. 7160, failure to appear may result in legal sanctions for
       <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
+            <span className="p-2 rounded-xl bg-primary/10 text-primary">
               <Gavel className="h-5 w-5" />
             </span>
             <div>
@@ -558,13 +558,13 @@ Under Republic Act No. 7160, failure to appear may result in legal sanctions for
           {/* Summons Document Preview Box */}
           <div className="rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-card p-5 space-y-4 font-serif text-xs text-foreground shadow-inner">
             <div className="text-center border-b border-border/80 pb-3 space-y-0.5">
-              <p className="uppercase text-[10px] tracking-widest text-muted-foreground font-sans font-bold">
+              <p className="uppercase text-xs tracking-widest text-muted-foreground font-sans font-bold">
                 Republic of the Philippines • Province of Cavite • Municipality of Indang
               </p>
-              <p className="font-sans font-black text-sm uppercase text-purple-950 dark:text-purple-300">
+              <p className="font-sans font-black text-sm uppercase text-foreground">
                 {barangayTitle}
               </p>
-              <p className="text-[10px] font-sans font-bold tracking-wider text-muted-foreground uppercase">
+              <p className="text-xs font-sans font-bold tracking-wider text-muted-foreground uppercase">
                 OFFICE OF THE LUPONG TAGAPAMAYAPA
               </p>
             </div>
@@ -617,7 +617,7 @@ Under Republic Act No. 7160, failure to appear may result in legal sanctions for
           <Button
             type="button"
             onClick={handlePrintSummons}
-            className="min-h-[44px] px-6 font-bold text-xs gap-2 bg-purple-700 hover:bg-purple-800 text-white btn-tactile touch-target cursor-pointer"
+            className="min-h-[44px] px-6 font-bold text-xs gap-2 bg-primary hover:bg-primary/90 text-primary-foreground btn-tactile touch-target cursor-pointer"
           >
             <Printer className="h-4 w-4" />
             Print Official Summons (KP-9)
@@ -693,7 +693,7 @@ function HearingSchedulerModal({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
+            <span className="p-2 rounded-xl bg-primary/10 text-primary">
               <Calendar className="h-5 w-5" />
             </span>
             <div>
@@ -807,7 +807,7 @@ function HearingSchedulerModal({
           <Button
             onClick={handleSchedule}
             disabled={loading}
-            className="min-h-[44px] px-6 font-bold bg-purple-700 hover:bg-purple-800 text-white btn-tactile cursor-pointer"
+            className="min-h-[44px] px-6 font-bold bg-primary hover:bg-primary/90 text-primary-foreground btn-tactile cursor-pointer"
           >
             {loading ? 'Scheduling...' : 'Confirm Schedule & Set Status'}
           </Button>
@@ -1215,55 +1215,55 @@ function AdminComplaintsRoute() {
           </CardContent>
         </Card>
 
-        <Card className="border-amber-300 dark:border-amber-900/60 bg-amber-50/40 dark:bg-amber-950/20 shadow-2xs">
+        <Card className="border border-border bg-card shadow-xs">
           <CardContent className="p-4 space-y-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
               Pending Summon
             </span>
-            <p className="text-2xl font-black text-amber-950 dark:text-amber-200">{counts.pending ?? 0}</p>
-            <span className="text-[11px] text-amber-800/80 dark:text-amber-400">Needs Patawag</span>
+            <p className="text-2xl font-black text-foreground">{counts.pending ?? 0}</p>
+            <span className="text-xs text-muted-foreground">Needs Patawag</span>
           </CardContent>
         </Card>
 
-        <Card className="border-blue-300 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 shadow-2xs">
+        <Card className="border border-border bg-card shadow-xs">
           <CardContent className="p-4 space-y-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-900 dark:text-blue-300">
+            <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">
               Investigating
             </span>
-            <p className="text-2xl font-black text-blue-950 dark:text-blue-200">{counts.investigating ?? 0}</p>
-            <span className="text-[11px] text-blue-800/80 dark:text-blue-400">Tanod / Lupon check</span>
+            <p className="text-2xl font-black text-foreground">{counts.investigating ?? 0}</p>
+            <span className="text-xs text-muted-foreground">Tanod / Lupon check</span>
           </CardContent>
         </Card>
 
-        <Card className="border-purple-300 dark:border-purple-900/60 bg-purple-50/40 dark:bg-purple-950/20 shadow-2xs">
+        <Card className="border border-border bg-card shadow-xs">
           <CardContent className="p-4 space-y-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-purple-900 dark:text-purple-300">
+            <span className="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-400">
               Hearings Set
             </span>
             <p className="text-2xl font-black text-foreground">
               {counts.scheduled_hearing ?? 0}
             </p>
-            <span className="text-[11px] text-purple-800/80 dark:text-purple-400">Scheduled sessions</span>
+            <span className="text-xs text-muted-foreground">Scheduled sessions</span>
           </CardContent>
         </Card>
 
-        <Card className="border-emerald-300 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-2xs">
+        <Card className="border border-border bg-card shadow-xs">
           <CardContent className="p-4 space-y-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
               Settled (Kasunduan)
             </span>
-            <p className="text-2xl font-black text-emerald-950 dark:text-emerald-200">{counts.resolved ?? 0}</p>
-            <span className="text-[11px] text-emerald-800/80 dark:text-emerald-400">Amicable settlement</span>
+            <p className="text-2xl font-black text-foreground">{counts.resolved ?? 0}</p>
+            <span className="text-xs text-muted-foreground">Amicable settlement</span>
           </CardContent>
         </Card>
 
-        <Card className="border-rose-300 dark:border-rose-900/60 bg-rose-50/40 dark:bg-rose-950/20 shadow-2xs">
+        <Card className="border border-border bg-card shadow-xs">
           <CardContent className="p-4 space-y-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-rose-900 dark:text-rose-300">
+            <span className="text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-400">
               Escalated / CFA
             </span>
-            <p className="text-2xl font-black text-rose-950 dark:text-rose-200">{counts.dismissed ?? 0}</p>
-            <span className="text-[11px] text-rose-800/80 dark:text-rose-400">Court referral</span>
+            <p className="text-2xl font-black text-foreground">{counts.dismissed ?? 0}</p>
+            <span className="text-xs text-muted-foreground">Court referral</span>
           </CardContent>
         </Card>
       </div>
@@ -1369,7 +1369,7 @@ function AdminComplaintsRoute() {
                 >
                   <span>{label}</span>
                   <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                    className={`text-[11px] px-1.5 py-0.5 rounded-full font-bold ${
                       isSelected ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-foreground'
                     }`}
                   >
@@ -1404,15 +1404,15 @@ function AdminComplaintsRoute() {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-muted/40">
-                <TableRow>
-                  <TableHead className="w-[150px] font-bold text-xs">Docket Reference</TableHead>
-                  <TableHead className="font-bold text-xs">Incident & Category</TableHead>
-                  <TableHead className="font-bold text-xs">Complainant</TableHead>
-                  <TableHead className="font-bold text-xs">Date & Location</TableHead>
-                  <TableHead className="font-bold text-xs">Priority</TableHead>
-                  <TableHead className="font-bold text-xs">Status Badge</TableHead>
-                  <TableHead className="text-right font-bold text-xs pr-6">Lupon Actions</TableHead>
+              <TableHeader className="bg-muted/50 border-b border-border">
+                <TableRow className="border-b border-border hover:bg-transparent">
+                  <TableHead className="w-[150px] font-bold text-xs uppercase tracking-wider text-muted-foreground">Docket Reference</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Incident & Category</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Complainant</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Date & Location</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Priority</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Status Badge</TableHead>
+                  <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground pr-6">Lupon Actions</TableHead>
                 </TableRow>
               </TableHeader>
 
@@ -1439,7 +1439,7 @@ function AdminComplaintsRoute() {
                     return (
                       <TableRow
                         key={complaint.id}
-                        className="hover:bg-muted/40 transition-colors group border-b border-border/60"
+                        className="hover:bg-muted/50 transition-colors group border-b border-border"
                       >
                         {/* Case Docket Reference */}
                         <TableCell className="align-top py-3.5">
@@ -1525,15 +1525,14 @@ function AdminComplaintsRoute() {
                             {/* Generate Summons Notice (Patawag) */}
                             <Button
                               type="button"
-                              variant="outline"
                               onClick={() => {
                                 setSelectedComplaint(complaint)
                                 setSummonsModalOpen(true)
                               }}
-                              className="min-h-[44px] px-3 font-bold text-xs gap-1.5 text-purple-950 dark:text-purple-200 border-purple-300 dark:border-purple-800 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/60 shadow-2xs cursor-pointer touch-target"
+                              className="min-h-[44px] px-3 font-bold text-xs gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xs cursor-pointer touch-target"
                               title="Generate Official Summons (KP-9)"
                             >
-                              <Gavel className="h-4 w-4 text-purple-700 dark:text-purple-400" />
+                              <Gavel className="h-4 w-4" />
                               <span>Summons</span>
                             </Button>
 
@@ -1608,9 +1607,9 @@ function AdminComplaintsRoute() {
 
                                 <DropdownMenuItem
                                   onClick={() => handleFastStatusUpdate(complaint, 'scheduled_hearing')}
-                                  className="min-h-[40px] cursor-pointer gap-2 font-semibold text-xs text-purple-700 dark:text-purple-400"
+                                  className="min-h-[40px] cursor-pointer gap-2 font-semibold text-xs text-sky-700 dark:text-sky-400"
                                 >
-                                  <Gavel className="h-4 w-4 text-purple-600" />
+                                  <Gavel className="h-4 w-4 text-sky-600 dark:text-sky-400" />
                                   <span>Mediation Scheduled</span>
                                 </DropdownMenuItem>
 

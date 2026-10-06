@@ -120,7 +120,7 @@ function getProgressInfo(status?: string) {
         percent: 25,
         percentLabel: '25%',
         statusLabel: 'Stage 1 of 4: Request Submitted & Pending Intake',
-        color: 'from-blue-600 via-blue-700 to-indigo-600',
+        color: 'bg-primary',
         badgeColor: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/80 dark:text-blue-300 dark:border-blue-800',
         estimator: 'Standard turnaround: 1-2 business days (Monday to Friday, 8:00 AM - 5:00 PM)',
       }
@@ -130,7 +130,7 @@ function getProgressInfo(status?: string) {
         percent: 50,
         percentLabel: '50%',
         statusLabel: 'Stage 2 of 4: Secretary Review & Requirements Check',
-        color: 'from-blue-600 via-indigo-600 to-violet-600',
+        color: 'bg-primary',
         badgeColor: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/80 dark:text-blue-300 dark:border-blue-800',
         estimator: 'Standard turnaround: 1-2 business days (In verification)',
       }
@@ -140,8 +140,8 @@ function getProgressInfo(status?: string) {
         percent: 75,
         percentLabel: '75%',
         statusLabel: 'Stage 3 of 4: Captain Approval & Official Seal Generation',
-        color: 'from-indigo-600 via-blue-600 to-teal-600',
-        badgeColor: 'bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-950/80 dark:text-indigo-300 dark:border-indigo-800',
+        color: 'bg-primary',
+        badgeColor: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/80 dark:text-blue-300 dark:border-blue-800',
         estimator: 'Standard turnaround: 1-2 business days (Awaiting final executive sign-off)',
       }
     case 'ready_for_pickup':
@@ -150,7 +150,7 @@ function getProgressInfo(status?: string) {
         percent: 100,
         percentLabel: '100%',
         statusLabel: 'Stage 4 of 4: Ready for Immediate Hall Pickup & Digital Verification',
-        color: 'from-emerald-500 via-emerald-600 to-teal-600',
+        color: 'bg-emerald-600',
         badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-800',
         estimator: 'Document Certified & Ready for Hall Pickup or Digital Verification',
       }
@@ -160,7 +160,7 @@ function getProgressInfo(status?: string) {
         percent: 100,
         percentLabel: '100%',
         statusLabel: 'Stage 4 of 4: Document Issued & Released',
-        color: 'from-emerald-500 via-teal-600 to-emerald-600',
+        color: 'bg-emerald-600',
         badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-800',
         estimator: 'Official Document Released & Verified in Civic Registry',
       }
@@ -170,7 +170,7 @@ function getProgressInfo(status?: string) {
         percent: 100,
         percentLabel: '100%',
         statusLabel: 'Requires Attention: Action Needed with Barangay Staff',
-        color: 'from-red-500 via-rose-600 to-red-700',
+        color: 'bg-destructive',
         badgeColor: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-950/80 dark:text-red-300 dark:border-red-800',
         estimator: 'Requires Attention: Please contact or visit your Barangay Hall Receiving Desk',
       }
@@ -179,7 +179,7 @@ function getProgressInfo(status?: string) {
         percent: 25,
         percentLabel: '25%',
         statusLabel: 'Stage 1 of 4: Request Submitted & Pending Intake',
-        color: 'from-blue-600 via-blue-700 to-indigo-600',
+        color: 'bg-primary',
         badgeColor: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/80 dark:text-blue-300 dark:border-blue-800',
         estimator: 'Standard turnaround: 1-2 business days (Monday to Friday, 8:00 AM - 5:00 PM)',
       }
@@ -404,22 +404,16 @@ function TrackDocumentRoute() {
   return (
     <div className="min-h-[100dvh] pb-16 bg-slate-50/60 dark:bg-background">
       {/* ── Hero Banner with Official Document Tracking & Verification ─────────────────────────── */}
-      <header className="relative overflow-hidden bg-gradient-to-r from-[#002675] via-[#0038A8] to-[#1E3A8A] text-white py-12 px-4 sm:px-6 lg:px-8 shadow-md">
-        {/* National Flag color accent top stripe */}
+      <header className="relative overflow-hidden civic-header text-white py-12 px-4 sm:px-6 lg:px-8 shadow-md">
+        {/* Philippine National Flag Tricolor Accent Bar */}
         <div
-          className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-[#0038A8] via-[#FCD116] to-[#CE1126]"
+          className="absolute top-0 right-0 left-0 h-1.5 flex"
           aria-hidden="true"
-        />
-
-        {/* Ambient subtle glow */}
-        <div
-          className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-[#FCD116]/10 blur-3xl pointer-events-none"
-          aria-hidden="true"
-        />
-        <div
-          className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-[#CE1126]/10 blur-3xl pointer-events-none"
-          aria-hidden="true"
-        />
+        >
+          <div className="w-[45%] bg-[#0038A8]" />
+          <div className="w-[10%] bg-[#FCD116]" />
+          <div className="w-[45%] bg-[#CE1126]" />
+        </div>
 
         <div className="container mx-auto max-w-4xl text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-[#FCD116] text-xs font-bold mb-4 backdrop-blur-md shadow-xs">
@@ -493,7 +487,7 @@ function TrackDocumentRoute() {
                     replace: true,
                   })
                 }}
-                className="min-h-[44px] px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-[#FCD116] font-mono border border-white/20 transition-all cursor-pointer text-xs font-bold inline-flex items-center justify-center active:scale-[0.97] touch-target shadow-xs"
+                className="min-h-[44px] px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono border border-white/20 transition-all cursor-pointer text-xs font-semibold inline-flex items-center justify-center active:scale-[0.97] touch-target shadow-xs"
                 title={`Track sample code ${sample}`}
               >
                 {sample}
@@ -509,7 +503,7 @@ function TrackDocumentRoute() {
                   <History className="h-3.5 w-3.5 text-[#FCD116]" />
                   Recent Cached Searches ({cachedRecords.length}/3 saved offline)
                 </span>
-                <span className="text-[11px] text-white/70">Available without internet</span>
+                <span className="text-xs font-semibold text-white/80">Available without internet</span>
               </div>
               <div className="flex flex-wrap gap-2.5">
                 {cachedRecords.map((item) => (
@@ -530,7 +524,7 @@ function TrackDocumentRoute() {
                   >
                     <WifiOff className="h-3.5 w-3.5 text-amber-300 shrink-0" />
                     <span className="font-bold text-[#FCD116]">{item.result.request?.control_number || item.code}</span>
-                    <span className="text-[11px] opacity-80 truncate max-w-[130px]">
+                    <span className="text-xs text-white/90 truncate max-w-[130px]">
                       {item.result.request?.document_title}
                     </span>
                   </button>
@@ -569,13 +563,17 @@ function TrackDocumentRoute() {
             
             {/* Civic Status Card */}
             <Card className="border shadow-xl rounded-2xl overflow-hidden bg-card">
-              {/* Flag accent stripe */}
+              {/* Philippine National Flag Tricolor Accent Bar */}
               <div
-                className="h-2 bg-gradient-to-r from-[#0038A8] via-[#FCD116] to-[#CE1126]"
+                className="h-1.5 flex w-full"
                 aria-hidden="true"
-              />
+              >
+                <div className="w-[45%] bg-[#0038A8]" />
+                <div className="w-[10%] bg-[#FCD116]" />
+                <div className="w-[45%] bg-[#CE1126]" />
+              </div>
 
-              <CardHeader className="p-6 sm:p-8 bg-gradient-to-b from-muted/40 to-transparent border-b">
+              <CardHeader className="p-6 sm:p-8 bg-muted/30 border-b">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                   <div className="space-y-3">
                     {/* Issuing Barangay & Action Badges */}
@@ -679,7 +677,7 @@ function TrackDocumentRoute() {
                       <span>{req.status_label}</span>
                     </div>
 
-                    <span className="text-[11px] text-muted-foreground hidden sm:block font-mono">
+                    <span className="text-xs text-muted-foreground hidden sm:block font-mono">
                       Updated: {formatDateTime(req.updated_at)}
                     </span>
                   </div>
@@ -697,7 +695,7 @@ function TrackDocumentRoute() {
                   return (
                     <div
                       id="tracker-progress-summary"
-                      className="p-5 rounded-2xl bg-gradient-to-b from-muted/50 to-muted/20 border space-y-4 shadow-xs"
+                      className="p-5 rounded-2xl bg-card border space-y-4 shadow-xs"
                     >
                       {/* Header with Progress text, Percentage pill, and Turnaround window */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -729,7 +727,7 @@ function TrackDocumentRoute() {
                         className="w-full h-3 bg-muted rounded-full overflow-hidden p-0.5 border border-border/60"
                       >
                         <div
-                          className={`h-full w-full transition-transform duration-500 ease-out rounded-full bg-gradient-to-r ${progress.color}`}
+                          className={`h-full w-full transition-transform duration-500 ease-out rounded-full ${progress.color}`}
                           style={{ transform: `scaleX(${progress.percent / 100})`, transformOrigin: 'left' }}
                         />
                       </div>
@@ -757,21 +755,21 @@ function TrackDocumentRoute() {
                           <span className="font-semibold text-foreground">
                             {isReady || isCompleted ? (
                               <span className="text-emerald-700 dark:text-emerald-400">
-                                ⚡ Document Status: {progress.estimator}
+                                Document Status: {progress.estimator}
                               </span>
                             ) : isRejected ? (
                               <span className="text-red-700 dark:text-red-400">
-                                ⚠️ Notice: {progress.estimator}
+                                Notice: {progress.estimator}
                               </span>
                             ) : (
                               <span>
-                                ⚡ Standard turnaround: 1–2 business days (Mon–Fri, 8:00 AM – 5:00 PM)
+                                Standard turnaround: 1–2 business days (Mon–Fri, 8:00 AM – 5:00 PM)
                               </span>
                             )}
                           </span>
                         </div>
 
-                        <span className="text-[11px] text-muted-foreground font-mono">
+                        <span className="text-xs text-muted-foreground font-mono">
                           Ref: {req.control_number}
                         </span>
                       </div>
@@ -831,11 +829,11 @@ function TrackDocumentRoute() {
 
                             <Badge
                               variant="outline"
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${
                                 isCompleted
                                   ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
                                   : isCurrent
-                                    ? 'bg-blue-100 text-blue-900 border-blue-300 dark:bg-blue-950 dark:text-blue-300 font-black'
+                                    ? 'bg-blue-100 text-blue-900 border-blue-300 dark:bg-blue-950 dark:text-blue-300 font-bold'
                                     : isRejected
                                       ? 'bg-red-100 text-red-800 border-red-300 dark:bg-red-950 dark:text-red-300'
                                       : 'bg-muted text-muted-foreground border-border'
@@ -855,7 +853,7 @@ function TrackDocumentRoute() {
                           </p>
 
                           {stage.timestamp && (
-                            <div className="pt-2 border-t border-border/50 text-[10px] text-muted-foreground flex items-center gap-1.5 font-medium">
+                            <div className="pt-2 border-t border-border/50 text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
                               <Clock className="h-3 w-3 shrink-0 text-primary/70" />
                               <span className="truncate">{formatDateTime(stage.timestamp)}</span>
                             </div>
@@ -916,13 +914,13 @@ function TrackDocumentRoute() {
 
                 {/* ── 4. Digital Certificate Verification Action (When ready or completed) ── */}
                 {(req.status === 'ready' || req.status === 'completed') && (
-                  <div className="rounded-xl p-5 bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-emerald-950/40 border border-emerald-300 dark:border-emerald-800 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="rounded-xl p-5 bg-card border-2 border-emerald-600/50 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex items-start sm:items-center gap-3.5">
                       <div className="p-3 bg-emerald-600 text-white rounded-xl shadow-md shrink-0">
                         <ShieldCheck className="h-7 w-7" />
                       </div>
                       <div>
-                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-200/70 text-emerald-950 dark:bg-emerald-900/70 dark:text-emerald-200 mb-1">
+                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-semibold bg-emerald-200/70 text-emerald-950 dark:bg-emerald-900/70 dark:text-emerald-200 mb-1">
                           <QrCode className="h-3 w-3" /> QR Authenticated
                         </div>
                         <h3 className="font-bold text-base text-emerald-950 dark:text-emerald-100">
@@ -946,17 +944,15 @@ function TrackDocumentRoute() {
                   </div>
                 )}
 
-                {/* ── 5. Operating Hours & Pickup Instructions Cards ───────────── */}
+                {/* ── 5. Operating Hours & Pickup Instructions Sections ───────────── */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {/* Hall Info Card */}
-                  <Card className="border bg-card shadow-xs">
-                    <CardHeader className="p-4 pb-2 bg-muted/20 border-b">
-                      <h3 className="text-sm font-bold flex items-center gap-2">
-                        <Building2 className="h-4 w-4 text-primary" />
-                        Issuing Barangay Operations Center
-                      </h3>
-                    </CardHeader>
-                    <CardContent className="p-4 space-y-3 text-xs text-muted-foreground">
+                  {/* Hall Info Container */}
+                  <div className="rounded-xl border border-border/70 bg-muted/20 p-5 space-y-4">
+                    <h3 className="text-sm font-bold flex items-center gap-2 pb-2 border-b border-border/50 text-foreground">
+                      <Building2 className="h-4 w-4 text-primary" />
+                      Issuing Barangay Operations Center
+                    </h3>
+                    <div className="space-y-3 text-xs text-muted-foreground">
                       <div className="flex items-start gap-2.5">
                         <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                         <div>
@@ -985,20 +981,18 @@ function TrackDocumentRoute() {
                           </a>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
 
-                  {/* Pickup Instructions Card */}
-                  <Card className="border bg-card shadow-xs">
-                    <CardHeader className="p-4 pb-2 bg-muted/20 border-b">
-                      <h3 className="text-sm font-bold flex items-center gap-2">
-                        <FileCheck2 className="h-4 w-4 text-emerald-600" />
-                        Pickup Requirements & Guidelines
-                      </h3>
-                    </CardHeader>
-                    <CardContent className="p-4 space-y-3 text-xs text-muted-foreground">
+                  {/* Pickup Requirements Container */}
+                  <div className="rounded-xl border border-border/70 bg-muted/20 p-5 space-y-4">
+                    <h3 className="text-sm font-bold flex items-center gap-2 pb-2 border-b border-border/50 text-foreground">
+                      <FileCheck2 className="h-4 w-4 text-emerald-600" />
+                      Pickup Requirements & Guidelines
+                    </h3>
+                    <div className="space-y-3 text-xs text-muted-foreground">
                       <div className="flex items-start gap-2">
-                        <span className="w-5 h-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">
+                        <span className="w-5 h-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs shrink-0 mt-0.5">
                           1
                         </span>
                         <span>
@@ -1007,7 +1001,7 @@ function TrackDocumentRoute() {
                       </div>
 
                       <div className="flex items-start gap-2">
-                        <span className="w-5 h-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">
+                        <span className="w-5 h-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs shrink-0 mt-0.5">
                           2
                         </span>
                         <span>
@@ -1016,15 +1010,15 @@ function TrackDocumentRoute() {
                       </div>
 
                       <div className="flex items-start gap-2">
-                        <span className="w-5 h-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">
+                        <span className="w-5 h-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs shrink-0 mt-0.5">
                           3
                         </span>
                         <span>
                           If claiming through an authorized representative, provide an <strong>Authorization Letter</strong> and copies of IDs for both individuals.
                         </span>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
 
@@ -1056,7 +1050,7 @@ function TrackDocumentRoute() {
           <section aria-label="Document Not Found" className="animate-in fade-in-50 duration-200">
             <Card className="border shadow-lg rounded-2xl overflow-hidden bg-card">
               <div
-                className="h-2 bg-gradient-to-r from-amber-500 to-red-500"
+                className="h-1.5 bg-amber-500 w-full"
                 aria-hidden="true"
               />
               <CardContent className="p-8 sm:p-10 text-center space-y-6 max-w-xl mx-auto">
@@ -1175,7 +1169,7 @@ function TrackDocumentRoute() {
             </div>
 
             {/* Public Services Info Banner */}
-            <Card className="border shadow-sm rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white p-6 sm:p-8">
+            <Card className="border shadow-sm rounded-2xl civic-header text-white p-6 sm:p-8">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                 <div className="space-y-2 text-center sm:text-left">
                   {/* Sequential Level 2 Heading (h2) */}

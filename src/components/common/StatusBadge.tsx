@@ -35,14 +35,14 @@ const statusConfig: Record<StatusDomain, Partial<Record<AllStatuses, { label: st
   complaint: {
     pending: { label: 'Pending', icon: Clock, className: 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300' },
     investigating: { label: 'Investigating', icon: Search, className: 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300' },
-    scheduled_hearing: { label: 'Scheduled Hearing', icon: MapPin, className: 'bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300' },
+    scheduled_hearing: { label: 'Scheduled Hearing', icon: MapPin, className: 'bg-sky-100 text-sky-800 dark:bg-sky-950/40 dark:text-sky-300 border border-sky-300' },
     resolved: { label: 'Resolved', icon: CheckCircle, className: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300' },
     dismissed: { label: 'Dismissed', icon: XCircle, className: 'bg-gray-100 text-gray-800 dark:bg-gray-800/40 dark:text-gray-300' },
   },
   role: {
     admin: { label: 'Admin', icon: Shield, className: 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300' },
     moderator: { label: 'Moderator', icon: Eye, className: 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300' },
-    business_owner: { label: 'Business Owner', icon: MapPin, className: 'bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300' },
+    business_owner: { label: 'Business Owner', icon: MapPin, className: 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-300' },
     resident: { label: 'Resident', icon: UserIcon, className: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300' },
   },
 }

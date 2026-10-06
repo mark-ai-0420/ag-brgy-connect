@@ -147,7 +147,7 @@ export function NotificationBell({ userId, className = '' }: NotificationBellPro
         >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <span className="absolute top-2 right-2 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-[#CE1126] text-[10px] font-bold text-white shadow-sm ring-2 ring-primary">
+            <span className="absolute top-2 right-2 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-[#CE1126] text-[11px] font-bold text-white shadow-sm ring-2 ring-primary">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
@@ -249,7 +249,7 @@ export function NotificationBell({ userId, className = '' }: NotificationBellPro
                   <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
                     {notif.message}
                   </p>
-                  <div className="flex items-center justify-between mt-1 text-[10px] text-muted-foreground/80">
+                  <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground/80">
                     <span>
                       {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true })}
                     </span>

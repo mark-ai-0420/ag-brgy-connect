@@ -210,7 +210,7 @@ export const reviewBusinessClaim = createServerFn({ method: 'POST' })
       // Notify the resident
       await supabase.from('notifications').insert({
         user_id: claim.claimant_id,
-        title: '🎉 Business Ownership Claim Approved!',
+        title: 'Business Ownership Claim Approved',
         message: `Your claim for "${businessName}" has been verified and approved by the Barangay. You can now manage your store hours, photos, and services from your dashboard.`,
         type: 'system',
         link: `/directory/${claim.business_id}`,

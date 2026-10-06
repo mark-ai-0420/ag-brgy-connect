@@ -561,7 +561,7 @@ function AdminBarangaysRoute() {
           </CardHeader>
           <CardContent className="text-xs text-muted-foreground flex items-center justify-between">
             <span>{isSuperAdmin ? 'Super-Admin Mode' : 'Admin Mode'}</span>
-            <Badge variant="outline" className="text-[10px] uppercase font-mono">
+            <Badge variant="outline" className="text-[11px] font-bold uppercase tracking-wider font-mono">
               RLS Isolated
             </Badge>
           </CardContent>
@@ -657,11 +657,11 @@ function AdminBarangaysRoute() {
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-sm truncate">{b.name}</span>
-                            <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0">
+                            <Badge variant="secondary" className="font-mono text-[11px] font-bold px-1.5 py-0">
                               {b.code_prefix}
                             </Badge>
                             {isCurrentlyActiveTenant && (
-                              <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-[10px]">
+                              <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-[11px] font-bold uppercase tracking-wider">
                                 Current View
                               </Badge>
                             )}

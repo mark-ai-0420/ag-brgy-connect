@@ -89,7 +89,7 @@ export function PWAInstallBanner() {
             <div>
               <h4 className="text-sm font-bold text-foreground leading-tight flex items-center gap-1.5">
                 Install BrgyConnect App
-                <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold uppercase">
+                <span className="text-[11px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
                   PWA
                 </span>
               </h4>

@@ -55,17 +55,17 @@ const ROLE_CONFIG: Record<
   moderator: {
     label: 'Barangay Official',
     icon: Shield,
-    color: 'text-indigo-700 dark:text-indigo-300',
-    bg: 'bg-indigo-50 dark:bg-indigo-950/40',
-    border: 'border-indigo-200 dark:border-indigo-800',
+    color: 'text-primary dark:text-sky-400',
+    bg: 'bg-primary/10 dark:bg-primary/20',
+    border: 'border-primary/20 dark:border-primary/40',
     desc: 'Authorized to review document requests, complaints, announcements, and events in jurisdiction.',
   },
   business_owner: {
     label: 'MSME Merchant',
     icon: Store,
-    color: 'text-purple-700 dark:text-purple-300',
-    bg: 'bg-purple-50 dark:bg-purple-950/40',
-    border: 'border-purple-200 dark:border-purple-800',
+    color: 'text-amber-700 dark:text-amber-300',
+    bg: 'bg-amber-50 dark:bg-amber-950/40',
+    border: 'border-amber-200 dark:border-amber-800',
     desc: 'Registered local business merchant with MSME directory privileges.',
   },
   resident: {
@@ -427,7 +427,7 @@ function AdminUsersRoute() {
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">LGU Staff / Admins</p>
               <p className="text-2xl font-bold text-foreground mt-0.5">{staffCount}</p>
             </div>
-            <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+            <div className="h-10 w-10 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary shrink-0">
               <Shield className="h-5 w-5" />
             </div>
           </CardContent>
@@ -439,7 +439,7 @@ function AdminUsersRoute() {
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">MSME Merchants</p>
               <p className="text-2xl font-bold text-foreground mt-0.5">{msmeCount}</p>
             </div>
-            <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0">
+            <div className="h-10 w-10 rounded-full bg-amber-500/10 dark:bg-amber-950/50 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
               <Store className="h-5 w-5" />
             </div>
           </CardContent>
@@ -541,14 +541,14 @@ function AdminUsersRoute() {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/30">
-                  <TableHead className="w-[260px]">Resident Profile</TableHead>
-                  <TableHead>Barangay & Purok</TableHead>
-                  <TableHead>Contact & Address</TableHead>
-                  <TableHead>Verification</TableHead>
-                  <TableHead>Current Role</TableHead>
-                  <TableHead className="text-right w-[200px]">Role & Jurisdiction</TableHead>
+              <TableHeader className="bg-muted/50 border-b border-border">
+                <TableRow className="border-b border-border hover:bg-transparent">
+                  <TableHead className="w-[260px] font-bold text-xs uppercase tracking-wider text-muted-foreground">Resident Profile</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Barangay & Purok</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Contact & Address</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Verification</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Current Role</TableHead>
+                  <TableHead className="text-right w-[200px] font-bold text-xs uppercase tracking-wider text-muted-foreground pr-6">Role & Jurisdiction</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -567,7 +567,7 @@ function AdminUsersRoute() {
                     const RoleIcon = roleConfig.icon
 
                     return (
-                      <TableRow key={user.id} className="hover:bg-muted/30 transition-colors">
+                      <TableRow key={user.id} className="hover:bg-muted/50 transition-colors border-b border-border">
                         {/* Profile Info */}
                         <TableCell className="py-3.5">
                           <div className="flex items-center gap-3">

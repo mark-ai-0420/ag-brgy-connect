@@ -200,29 +200,23 @@ function SignUp() {
   }
 
   return (
-    <main className="min-h-[100dvh] w-full flex flex-col justify-center items-center relative px-4 py-10 bg-gradient-to-br from-slate-50 via-sky-50/40 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 overflow-x-hidden">
-      {/* Decorative ambient civic glow */}
-      <div 
-        aria-hidden="true" 
-        className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[500px] bg-gradient-to-b from-[#0038A8]/15 via-[#CE1126]/10 to-transparent blur-3xl opacity-70" 
-      />
-
+    <main className="min-h-[100dvh] w-full flex flex-col justify-center items-center relative px-3 sm:px-4 py-10 bg-background overflow-x-hidden">
       {/* Back button */}
       <div className="w-full max-w-lg mb-4 flex items-center justify-between">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 min-h-[44px] px-3 py-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors rounded-xl hover:bg-black/5 dark:hover:bg-white/5 btn-tactile cursor-pointer"
+          className="inline-flex items-center gap-2 min-h-[44px] px-3 py-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors rounded-xl hover:bg-muted btn-tactile cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Portal Home
         </Link>
-        <Badge variant="outline" className="bg-background/80 backdrop-blur-md text-[11px] font-semibold text-muted-foreground border-border/80">
+        <Badge variant="outline" className="bg-card text-[11px] font-semibold text-muted-foreground border-border/80">
           Official Resident Enrollment
         </Badge>
       </div>
 
-      {/* Glassmorphic Registration Card */}
-      <div className="glass-dock card-hover w-full max-w-lg p-6 sm:p-8 rounded-3xl border border-white/40 dark:border-white/10 shadow-xl backdrop-blur-xl bg-card/90 dark:bg-slate-900/85 space-y-6 relative z-10">
+      {/* Solid Civic Registration Card */}
+      <div className="w-full max-w-lg p-4 sm:p-8 rounded-3xl border border-border shadow-xl bg-card space-y-6 relative z-10">
         {/* Header & Seal */}
         <div className="space-y-3 text-center">
           <div className="relative inline-block">
@@ -343,7 +337,7 @@ function SignUp() {
                           <Building2 className="h-3.5 w-3.5" />
                           <span>Daine 1</span>
                         </div>
-                        <span className="text-[10px] font-normal opacity-80">Gov. Ferrer Zone</span>
+                        <span className="text-[11px] font-medium opacity-90">Gov. Ferrer Zone</span>
                       </button>
 
                       <button
@@ -359,7 +353,7 @@ function SignUp() {
                           <Building2 className="h-3.5 w-3.5" />
                           <span>Daine 2</span>
                         </div>
-                        <span className="text-[10px] font-normal opacity-80">Heritage & Agro</span>
+                        <span className="text-[11px] font-medium opacity-90">Heritage & Agro</span>
                       </button>
                     </div>
                   </FormControl>
@@ -378,7 +372,7 @@ function SignUp() {
                     <FormLabel className="text-xs font-bold text-foreground">
                       Purok / Sitio
                     </FormLabel>
-                    <span className="text-[11px] text-muted-foreground">Select or type</span>
+                    <span className="text-xs text-muted-foreground">Select or type</span>
                   </div>
                   <FormControl>
                     <div className="space-y-2">
@@ -388,7 +382,7 @@ function SignUp() {
                             key={p}
                             type="button"
                             onClick={() => field.onChange(p)}
-                            className={`min-h-[38px] px-2 py-1 text-[11px] font-bold rounded-lg border transition-all btn-tactile cursor-pointer ${
+                            className={`min-h-[44px] px-2 py-1 text-xs font-bold rounded-lg border transition-all btn-tactile cursor-pointer ${
                               field.value === p
                                 ? 'border-[#0038A8] bg-[#0038A8] text-white shadow-xs'
                                 : 'border-border/80 bg-background/80 hover:bg-muted text-foreground'
@@ -449,7 +443,7 @@ function SignUp() {
                     </div>
                   </FormControl>
                   {/* Password requirement checklist badge */}
-                  <div className="flex items-center gap-1.5 pt-0.5 text-[11px]">
+                  <div className="flex items-center gap-1.5 pt-0.5 text-xs">
                     <div
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium transition-colors ${
                         hasMinLength
@@ -458,7 +452,7 @@ function SignUp() {
                       }`}
                     >
                       {hasMinLength ? (
-                        <Check className="h-3 w-3 stroke-[3]" />
+                        <Check className="h-3.5 w-3.5 stroke-[3]" />
                       ) : (
                         <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
                       )}
@@ -541,8 +535,8 @@ function SignUp() {
             </Link>
           </p>
 
-          <div className="flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground pt-1">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+          <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground pt-1">
+            <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             <span>Republic of the Philippines • Barangay e-Governance</span>
           </div>
         </div>

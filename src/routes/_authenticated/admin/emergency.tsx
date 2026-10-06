@@ -514,7 +514,7 @@ function AdminEmergencyRoute() {
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Dual Scope (All Daine)</p>
               <p className="text-2xl font-bold text-foreground mt-0.5">{dualScopeCount}</p>
             </div>
-            <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+            <div className="h-10 w-10 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary shrink-0">
               <Building2 className="h-5 w-5" />
             </div>
           </CardContent>
@@ -538,7 +538,7 @@ function AdminEmergencyRoute() {
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Daine 2 Lines</p>
               <p className="text-2xl font-bold text-foreground mt-0.5">{daine2Count}</p>
             </div>
-            <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0">
+            <div className="h-10 w-10 rounded-full bg-rose-100 dark:bg-rose-900/50 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
               <LifeBuoy className="h-5 w-5" />
             </div>
           </CardContent>
@@ -657,12 +657,12 @@ function AdminEmergencyRoute() {
                         {/* Dual Jurisdiction Badges */}
                         {contact.scope && (
                           <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border ${
+                            className={`text-[11px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border ${
                               contact.scope === 'both'
                                 ? 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700'
                                 : contact.scope === 'daine_1'
                                   ? 'bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800'
-                                  : 'bg-purple-50 text-purple-800 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800'
+                                  : 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
                             }`}
                           >
                             {contact.scope === 'both' ? 'All Daine (Dual)' : contact.scope === 'daine_1' ? 'Daine 1 Only' : 'Daine 2 Only'}
@@ -670,7 +670,7 @@ function AdminEmergencyRoute() {
                         )}
 
                         {contact.label && (
-                          <Badge variant="outline" className="text-[10px] font-medium px-2 py-0.5">
+                          <Badge variant="outline" className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5">
                             {contact.label}
                           </Badge>
                         )}

@@ -168,7 +168,7 @@ function BusinessDetail() {
     : 'https://www.openstreetmap.org/?mlat=14.1875&mlon=120.8452#map=16/14.1875/120.8452')
 
   return (
-    <div className="min-h-[100dvh] container mx-auto py-8 md:py-10 px-4 md:px-6 max-w-6xl pb-28 md:pb-10">
+    <div className="min-h-[100dvh] container mx-auto py-8 md:py-10 px-3 sm:px-4 md:px-6 max-w-6xl pb-28 md:pb-10">
       {/* Back button */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <Button variant="ghost" asChild className="-ml-2 text-muted-foreground hover:text-foreground min-h-[44px] px-3 font-semibold rounded-xl">
@@ -189,7 +189,7 @@ function BusinessDetail() {
 
       {/* Unclaimed Business Alert Banner */}
       {!business.is_claimed && (
-        <Card className="mb-6 border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent rounded-2xl shadow-sm">
+        <Card className="mb-6 border-amber-500/40 bg-card rounded-2xl shadow-sm">
           <CardContent className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-300 text-xs font-bold border border-amber-500/30">
@@ -265,7 +265,7 @@ function BusinessDetail() {
                 )}
               </div>
             ) : (
-              <div className="h-3 bg-gradient-to-r from-primary via-teal-600 to-emerald-600" />
+              <div className="h-2 bg-primary" />
             )}
 
             <CardHeader className="pb-4 pt-6 px-6">
@@ -279,7 +279,7 @@ function BusinessDetail() {
                 <span
                   className={`inline-flex items-center gap-1 text-[11px] font-extrabold px-3 py-1 rounded-full shadow-2xs ${
                     isDaine2
-                      ? 'bg-purple-100 text-purple-900 dark:bg-purple-950/80 dark:text-purple-200 border border-purple-300 dark:border-purple-800'
+                      ? 'bg-rose-100 text-rose-900 dark:bg-rose-950/80 dark:text-rose-200 border border-rose-300 dark:border-rose-800'
                       : 'bg-blue-100 text-blue-900 dark:bg-blue-950/80 dark:text-blue-200 border border-blue-300 dark:border-blue-800'
                   }`}
                 >
@@ -470,7 +470,7 @@ function BusinessDetail() {
                     <p>{business.hours}</p>
                     <div>
                       <span
-                        className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full border ${openStatus.badgeClass}`}
+                        className={`inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${openStatus.badgeClass}`}
                       >
                         {openStatus.label === 'Open Now' || openStatus.label === 'Open 24/7' ? (
                           <>

@@ -33,8 +33,8 @@ const CATEGORY_STYLES: Record<string, { dot: string; badge: string }> = {
   Sports:     { dot: 'bg-amber-500', badge: 'bg-amber-100 text-amber-950 dark:bg-amber-900/30 dark:text-amber-200 border border-amber-300 font-semibold' },
   Environment:{ dot: 'bg-emerald-500',  badge: 'bg-emerald-100 text-emerald-950 dark:bg-emerald-900/30 dark:text-emerald-200 border border-emerald-300 font-semibold' },
   Health:     { dot: 'bg-green-500',  badge: 'bg-green-100 text-green-950 dark:bg-green-900/30 dark:text-green-200 border border-green-300 font-semibold' },
-  Cultural:   { dot: 'bg-purple-500', badge: 'bg-purple-100 text-purple-950 dark:bg-purple-900/30 dark:text-purple-200 border border-purple-300 font-semibold' },
-  Community:  { dot: 'bg-indigo-500', badge: 'bg-indigo-100 text-indigo-950 dark:bg-indigo-900/30 dark:text-indigo-200 border border-indigo-300 font-semibold' },
+  Cultural:   { dot: 'bg-sky-500',    badge: 'bg-sky-100 text-sky-950 dark:bg-sky-900/30 dark:text-sky-200 border border-sky-300 font-semibold' },
+  Community:  { dot: 'bg-blue-500',   badge: 'bg-blue-100 text-blue-950 dark:bg-blue-900/30 dark:text-blue-200 border border-blue-300 font-semibold' },
   Other:      { dot: 'bg-slate-500',  badge: 'bg-slate-100 text-slate-950 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 font-semibold' },
 }
 

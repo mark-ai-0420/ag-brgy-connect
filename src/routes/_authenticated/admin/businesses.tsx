@@ -126,8 +126,8 @@ const CATEGORY_CONFIG: Record<string, { icon: any; color: string; bg: string; bo
   'Sari-Sari Store': { icon: Store, color: 'text-blue-700 dark:text-blue-300', bg: 'bg-blue-50 dark:bg-blue-950/40', border: 'border-blue-200 dark:border-blue-800' },
   'Eatery / Carenderia': { icon: Utensils, color: 'text-amber-700 dark:text-amber-300', bg: 'bg-amber-50 dark:bg-amber-950/40', border: 'border-amber-200 dark:border-amber-800' },
   'Water Station': { icon: Droplet, color: 'text-sky-700 dark:text-sky-300', bg: 'bg-sky-50 dark:bg-sky-950/40', border: 'border-sky-200 dark:border-sky-800' },
-  'Laundry': { icon: Shirt, color: 'text-indigo-700 dark:text-indigo-300', bg: 'bg-indigo-50 dark:bg-indigo-950/40', border: 'border-indigo-200 dark:border-indigo-800' },
-  'Salon': { icon: Scissors, color: 'text-pink-700 dark:text-pink-300', bg: 'bg-pink-50 dark:bg-pink-950/40', border: 'border-pink-200 dark:border-pink-800' },
+  'Laundry': { icon: Shirt, color: 'text-sky-700 dark:text-sky-300', bg: 'bg-sky-50 dark:bg-sky-950/40', border: 'border-sky-200 dark:border-sky-800' },
+  'Salon': { icon: Scissors, color: 'text-amber-800 dark:text-amber-300', bg: 'bg-amber-50 dark:bg-amber-950/40', border: 'border-amber-200 dark:border-amber-800' },
   'Repair Shop': { icon: Wrench, color: 'text-orange-700 dark:text-orange-300', bg: 'bg-orange-50 dark:bg-orange-950/40', border: 'border-orange-200 dark:border-orange-800' },
   'Clinic': { icon: Stethoscope, color: 'text-rose-700 dark:text-rose-300', bg: 'bg-rose-50 dark:bg-rose-950/40', border: 'border-rose-200 dark:border-rose-800' },
   'Pharmacy': { icon: Pill, color: 'text-emerald-700 dark:text-emerald-300', bg: 'bg-emerald-50 dark:bg-emerald-950/40', border: 'border-emerald-200 dark:border-emerald-800' },
@@ -463,14 +463,14 @@ function AdminBusinessesRoute() {
           <div className="overflow-x-auto">
             {statusFilter === 'claims' ? (
               <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/30">
-                    <TableHead className="w-[280px]">Target Business</TableHead>
-                    <TableHead>Claimant & Role</TableHead>
-                    <TableHead>Ownership Statement & Proof</TableHead>
-                    <TableHead>Submitted</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right w-[200px]">Action</TableHead>
+                <TableHeader className="bg-muted/50 border-b border-border">
+                  <TableRow className="border-b border-border hover:bg-transparent">
+                    <TableHead className="w-[280px] font-bold text-xs uppercase tracking-wider text-muted-foreground">Target Business</TableHead>
+                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Claimant & Role</TableHead>
+                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Ownership Statement & Proof</TableHead>
+                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Submitted</TableHead>
+                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Status</TableHead>
+                    <TableHead className="text-right w-[200px] font-bold text-xs uppercase tracking-wider text-muted-foreground pr-6">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -489,7 +489,7 @@ function AdminBusinessesRoute() {
                       const biz = claim.businesses
                       const isPending = claim.status === 'pending'
                       return (
-                        <TableRow key={claim.id} className="hover:bg-muted/30 transition-colors">
+                        <TableRow key={claim.id} className="hover:bg-muted/50 transition-colors border-b border-border">
                           <TableCell className="align-top py-3.5">
                             <div className="flex items-start gap-2.5">
                               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
@@ -518,7 +518,7 @@ function AdminBusinessesRoute() {
                                 {claim.claimant_name}
                               </p>
                               <p className="text-xs text-muted-foreground">{claim.claimant_phone}</p>
-                              <Badge variant="outline" className="text-[10px] font-semibold bg-muted mt-1">
+                              <Badge variant="outline" className="text-[11px] font-bold uppercase tracking-wider bg-muted mt-1">
                                 Role: {claim.relationship}
                               </Badge>
                             </div>
@@ -557,7 +557,7 @@ function AdminBusinessesRoute() {
                               {claim.status}
                             </span>
                             {claim.admin_notes && (
-                              <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1" title={claim.admin_notes}>
+                              <p className="text-xs text-muted-foreground mt-1 line-clamp-1" title={claim.admin_notes}>
                                 Note: {claim.admin_notes}
                               </p>
                             )}
@@ -586,14 +586,14 @@ function AdminBusinessesRoute() {
               </Table>
             ) : (
               <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/30">
-                    <TableHead className="w-[280px]">Business & Storefront</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>GPS & Purok Verification</TableHead>
-                    <TableHead>Photos & Proof</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right w-[240px]">Actions (1-Click)</TableHead>
+                <TableHeader className="bg-muted/50 border-b border-border">
+                  <TableRow className="border-b border-border hover:bg-transparent">
+                    <TableHead className="w-[280px] font-bold text-xs uppercase tracking-wider text-muted-foreground">Business & Storefront</TableHead>
+                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Category</TableHead>
+                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">GPS & Purok Verification</TableHead>
+                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Photos & Proof</TableHead>
+                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Status</TableHead>
+                    <TableHead className="text-right w-[240px] font-bold text-xs uppercase tracking-wider text-muted-foreground pr-6">Actions (1-Click)</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -615,7 +615,7 @@ function AdminBusinessesRoute() {
                       const hasGps = Boolean(biz.latitude && biz.longitude)
 
                     return (
-                      <TableRow key={biz.id} className="hover:bg-muted/30 transition-colors">
+                      <TableRow key={biz.id} className="hover:bg-muted/50 transition-colors border-b border-border">
                         {/* Business details */}
                         <TableCell className="align-top py-3.5">
                           <div className="flex items-start gap-3">
@@ -1189,7 +1189,7 @@ function AdminBusinessesRoute() {
                       }}
                     >
                       <img src={detailBiz.photo_url} alt="Storefront" className="w-full h-full object-cover" />
-                      <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">Storefront</span>
+                      <span className="absolute bottom-1 left-1 bg-black/70 text-white text-[11px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Storefront</span>
                     </div>
                   )}
                   {detailBiz.menu_image_url && (
@@ -1201,7 +1201,7 @@ function AdminBusinessesRoute() {
                       }}
                     >
                       <img src={detailBiz.menu_image_url} alt="Menu" className="w-full h-full object-cover" />
-                      <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">Menu</span>
+                      <span className="absolute bottom-1 left-1 bg-black/70 text-white text-[11px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Menu</span>
                     </div>
                   )}
                   {detailBiz.misc_image_url && (
@@ -1213,7 +1213,7 @@ function AdminBusinessesRoute() {
                       }}
                     >
                       <img src={detailBiz.misc_image_url} alt="Showcase" className="w-full h-full object-cover" />
-                      <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">Showcase</span>
+                      <span className="absolute bottom-1 left-1 bg-black/70 text-white text-[11px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Showcase</span>
                     </div>
                   )}
                   {!detailBiz.photo_url && !detailBiz.menu_image_url && !detailBiz.misc_image_url && (

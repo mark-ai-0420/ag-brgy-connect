@@ -46,7 +46,20 @@ export const getOfficials = createServerFn({ method: 'GET' }).handler(async () =
       .from('barangay_officials')
       .select('id, name, position, committee, photo_url, contact_number, term, display_order, barangay, barangay_id')
       .order('display_order', { ascending: true })
-    if (error) console.error('Error fetching officials:', error)
+
+    if (error) {
+      // Fallback query without barangay_id
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from('barangay_officials')
+        .select('id, name, position, committee, photo_url, contact_number, term, display_order, barangay')
+        .order('display_order', { ascending: true })
+
+      if (fallbackError) {
+        console.error('Error fetching officials:', fallbackError)
+        return []
+      }
+      return (fallbackData as Official[]) ?? []
+    }
     return (data as Official[]) ?? []
   } catch (error) {
     console.error('Error in getOfficials:', error)
@@ -90,11 +103,11 @@ const COMMITTEE_COLORS: Record<string, { bg: string; text: string; border: strin
   Appropriations: { bg: 'bg-emerald-50 dark:bg-emerald-950/40', text: 'text-emerald-800 dark:text-emerald-300', border: 'border-emerald-300 dark:border-emerald-800' },
   'Peace & Order': { bg: 'bg-blue-50 dark:bg-blue-950/40', text: 'text-blue-800 dark:text-blue-300', border: 'border-blue-300 dark:border-blue-800' },
   'Health & Sanitation': { bg: 'bg-teal-50 dark:bg-teal-950/40', text: 'text-teal-800 dark:text-teal-300', border: 'border-teal-300 dark:border-teal-800' },
-  'Education & Culture': { bg: 'bg-indigo-50 dark:bg-indigo-950/40', text: 'text-indigo-800 dark:text-indigo-300', border: 'border-indigo-300 dark:border-indigo-800' },
+  'Education & Culture': { bg: 'bg-blue-50 dark:bg-blue-950/40', text: 'text-blue-800 dark:text-blue-300', border: 'border-blue-300 dark:border-blue-800' },
   'Agriculture & Livelihood': { bg: 'bg-amber-50 dark:bg-amber-950/40', text: 'text-amber-800 dark:text-amber-300', border: 'border-amber-300 dark:border-amber-800' },
   'Infrastructure & Public Works': { bg: 'bg-orange-50 dark:bg-orange-950/40', text: 'text-orange-800 dark:text-orange-300', border: 'border-orange-300 dark:border-orange-800' },
   'Environment & Clean and Green': { bg: 'bg-green-50 dark:bg-green-950/40', text: 'text-green-800 dark:text-green-300', border: 'border-green-300 dark:border-green-800' },
-  'Youth & Sports Development': { bg: 'bg-purple-50 dark:bg-purple-950/40', text: 'text-purple-800 dark:text-purple-300', border: 'border-purple-300 dark:border-purple-800' },
+  'Youth & Sports Development': { bg: 'bg-sky-50 dark:bg-sky-950/40', text: 'text-sky-800 dark:text-sky-300', border: 'border-sky-300 dark:border-sky-800' },
   Executive: { bg: 'bg-amber-50 dark:bg-amber-950/50', text: 'text-amber-900 dark:text-amber-200', border: 'border-amber-400 dark:border-amber-700' },
   Records: { bg: 'bg-slate-50 dark:bg-slate-900/60', text: 'text-slate-800 dark:text-slate-300', border: 'border-slate-300 dark:border-slate-700' },
   Finance: { bg: 'bg-emerald-50 dark:bg-emerald-950/40', text: 'text-emerald-800 dark:text-emerald-300', border: 'border-emerald-300 dark:border-emerald-800' },
@@ -148,9 +161,9 @@ function PunongBarangaySpotlight({ official }: { official: Official }) {
   const contactPhone = official.contact_number || '+63 918 123 4567'
 
   return (
-    <Card className="overflow-hidden border-2 border-amber-400/90 dark:border-amber-500/80 bg-gradient-to-br from-amber-50/50 via-card to-background dark:from-amber-950/20 dark:via-card dark:to-background shadow-xl ring-1 ring-amber-400/30 rounded-3xl">
+    <Card className="overflow-hidden border-2 border-amber-500/80 bg-card shadow-lg rounded-3xl">
       {/* Top Banner Ribbon */}
-      <div className="bg-gradient-to-r from-[#002675] via-[#0038A8] to-[#1E3A8A] text-white px-6 py-3 flex items-center justify-between flex-wrap gap-2">
+      <div className="bg-[#002675] text-white px-6 py-3 flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <Award className="h-5 w-5 text-[#FCD116]" />
           <span className="text-xs font-black uppercase tracking-wider text-white">
@@ -287,19 +300,19 @@ function OfficialCard({ official }: { official: Official }) {
                 />
               )}
             </div>
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 ring-2 ring-background flex items-center justify-center text-white text-[10px]" title="Active in Office">
+            <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 ring-2 ring-background flex items-center justify-center text-white text-xs" title="Active in Office">
               <CheckCircle2 className="h-3.5 w-3.5" />
             </div>
           </div>
 
           <div className="min-w-0 flex-1">
-            <span className="inline-block text-[11px] font-black uppercase tracking-wider text-[#002878] dark:text-[#93c5fd]">
+            <span className="inline-block text-xs font-bold uppercase tracking-wider text-[#002878] dark:text-[#93c5fd]">
               {official.position}
             </span>
             <h3 className="text-base sm:text-lg font-black text-foreground leading-snug tracking-tight truncate group-hover:text-primary transition-colors">
               {official.name}
             </h3>
-            <span className="text-[11px] font-semibold text-muted-foreground">
+            <span className="text-xs font-medium text-muted-foreground">
               {official.term || '2023 - 2026'}
             </span>
           </div>
@@ -308,7 +321,7 @@ function OfficialCard({ official }: { official: Official }) {
         {/* Committee Assignment Badge */}
         {official.committee && (
           <div className={`p-2.5 rounded-xl border ${committeeStyle.bg} ${committeeStyle.border}`}>
-            <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Committee Assignment
             </p>
             <p className={`text-xs font-bold leading-tight mt-0.5 ${committeeStyle.text}`}>
@@ -321,11 +334,11 @@ function OfficialCard({ official }: { official: Official }) {
       <CardContent className="flex-1 space-y-2.5 text-xs text-muted-foreground pb-4 px-5">
         {/* Office Hours */}
         <div className="space-y-1 rounded-lg bg-muted/40 p-2.5 border border-border/50">
-          <div className="flex items-center gap-1.5 font-bold text-foreground text-[11px]">
+          <div className="flex items-center gap-1.5 font-bold text-foreground text-xs">
             <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
             <span>Consultation Schedule:</span>
           </div>
-          <p className="font-mono text-[11px] font-semibold text-foreground/80 leading-relaxed">
+          <p className="font-mono text-xs font-semibold text-foreground/80 leading-relaxed">
             {schedule}
           </p>
         </div>
@@ -402,12 +415,16 @@ function OfficialsRoute() {
   return (
     <div className="min-h-[100dvh] pb-20 bg-slate-50/50 dark:bg-background">
       {/* ── 1. Official Barangay Leaders Header ───────────────────────────────────────── */}
-      <header className="relative overflow-hidden bg-gradient-to-r from-[#002675] via-[#0038A8] to-[#1E3A8A] text-white py-12 px-4 sm:px-6 lg:px-8 shadow-md">
-        {/* Flag Accent Ribbon */}
+      <header className="relative overflow-hidden civic-header text-white py-12 px-4 sm:px-6 lg:px-8 shadow-md">
+        {/* Philippine National Flag Tricolor Accent Bar */}
         <div
-          className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-[#0038A8] via-[#FCD116] to-[#CE1126]"
+          className="absolute top-0 right-0 left-0 h-1.5 flex"
           aria-hidden="true"
-        />
+        >
+          <div className="w-[45%] bg-[#0038A8]" />
+          <div className="w-[10%] bg-[#FCD116]" />
+          <div className="w-[45%] bg-[#CE1126]" />
+        </div>
 
         <div className="container mx-auto max-w-6xl relative z-10">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
@@ -464,7 +481,7 @@ function OfficialsRoute() {
                   setSelectedBarangayTab('daine_1')
                   if (activeBarangayScope !== 'all') setScope('daine1')
                 }}
-                className={`flex-1 sm:flex-none min-h-[38px] px-5 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                className={`flex-1 sm:flex-none min-h-[44px] px-5 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
                   activeTab === 'daine_1'
                     ? 'bg-[#0038A8] text-white shadow-md'
                     : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
@@ -478,7 +495,7 @@ function OfficialsRoute() {
                   setSelectedBarangayTab('daine_2')
                   if (activeBarangayScope !== 'all') setScope('daine2')
                 }}
-                className={`flex-1 sm:flex-none min-h-[38px] px-5 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                className={`flex-1 sm:flex-none min-h-[44px] px-5 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
                   activeTab === 'daine_2'
                     ? 'bg-[#CE1126] text-white shadow-md'
                     : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
@@ -552,7 +569,7 @@ function OfficialsRoute() {
         <section aria-labelledby="administrative-roster-heading">
           <div className="flex items-center justify-between gap-2 mb-6">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-purple-100 text-purple-900 dark:bg-purple-950/50 dark:text-purple-300">
+              <div className="p-1.5 rounded-lg bg-sky-100 text-sky-900 dark:bg-sky-950/50 dark:text-sky-300">
                 <HeartHandshake className="h-4 w-4" />
               </div>
               <div>
@@ -578,7 +595,7 @@ function OfficialsRoute() {
         </section>
 
         {/* ── 6. Public Consultation & Hall Guidelines Card ──────────────────── */}
-        <Card className="rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/5 via-card to-background p-6 sm:p-8 shadow-md">
+        <Card className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="space-y-2 max-w-2xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">

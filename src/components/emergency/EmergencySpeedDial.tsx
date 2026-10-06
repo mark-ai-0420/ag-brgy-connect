@@ -20,20 +20,20 @@ export function EmergencySpeedDial() {
           className="mb-3 w-[320px] max-w-[calc(100vw-2rem)] bg-card text-card-foreground border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col glass-dock animate-in slide-in-from-bottom-3 fade-in-0 duration-200"
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-[#CE1126] to-[#a50e1e] text-white px-4 py-3.5 flex justify-between items-center shadow-sm">
+          <div className="bg-[#CE1126] text-white px-4 py-3.5 flex justify-between items-center shadow-sm">
             <div className="flex items-center gap-2.5">
               <div className="relative flex items-center justify-center">
-                <Siren className="w-5 h-5 text-yellow-300 animate-pulse" />
+                <Siren className="w-5 h-5 text-yellow-300" />
                 <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-yellow-400 rounded-full" />
               </div>
               <div>
                 <h3 className="font-extrabold text-sm leading-tight tracking-tight">Emergency Hotlines</h3>
-                <p className="text-[10px] text-white/85 font-medium">Quick Dial &bull; {scopeLabel}</p>
+                <p className="text-xs text-white/90 font-medium">Quick Dial &bull; {scopeLabel}</p>
               </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="hover:bg-white/20 active:bg-white/30 min-h-[40px] min-w-[40px] p-2 flex items-center justify-center rounded-full text-white transition-colors cursor-pointer"
+              className="hover:bg-white/20 active:bg-white/30 min-h-[44px] min-w-[44px] p-2 flex items-center justify-center rounded-full text-white transition-colors cursor-pointer"
               aria-label="Close emergency speed dial"
             >
               <X className="w-4 h-4" />

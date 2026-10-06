@@ -348,7 +348,7 @@ function AdminAnnouncementsRoute() {
                       {ann.pinned && <Badge variant="secondary" className="text-xs">Pinned</Badge>}
                       {ann.category && <Badge variant="outline" className="text-xs">{ann.category}</Badge>}
                       {ann.scope && (
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider ${
+                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider ${
                           ann.scope === 'both' ? 'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200' :
                           ann.scope === 'daine_1' ? 'bg-[#0038A8]/10 text-[#0038A8]' :
                           'bg-[#CE1126]/10 text-[#CE1126]'

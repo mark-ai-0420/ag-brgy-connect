@@ -160,7 +160,7 @@ export const DOCUMENT_TYPES = [
     fee: 50,
     turnaround: '2-3 Business Days',
     badge: 'Physical / Digital ID',
-    colorClass: 'text-indigo-600 bg-indigo-500/10 border-indigo-200 dark:border-indigo-800',
+    colorClass: 'text-blue-600 bg-blue-500/10 border-blue-200 dark:border-blue-800',
     requirements: ['Proof of Residency (6+ months)', '1x1 ID Photo (or captured on site)', '1 Valid ID'],
   },
   {
@@ -197,7 +197,7 @@ export const DOCUMENT_TYPES = [
     fee: 50,
     turnaround: '2-3 Business Days',
     badge: 'For MSMEs',
-    colorClass: 'text-purple-600 bg-purple-500/10 border-purple-200 dark:border-purple-800',
+    colorClass: 'text-sky-600 bg-sky-500/10 border-sky-200 dark:border-sky-800',
     requirements: ['DTI / SEC Registration', 'Barangay Inspection Clearance', 'Lease Contract / Proof of Location'],
   },
   {
@@ -301,7 +301,7 @@ function DocumentRequestRoute() {
     <div className="min-h-screen bg-slate-50/60 dark:bg-slate-950/40 pb-16">
       {/* Page Header */}
       <div className="bg-background border-b border-border/80 sticky top-0 z-20 backdrop-blur-md bg-background/95">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 max-w-7xl">
+        <div className="container mx-auto px-3 sm:px-6 lg:px-8 py-4 max-w-7xl">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
               <div className="h-11 w-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-xs border border-primary/20">
@@ -343,7 +343,7 @@ function DocumentRequestRoute() {
       </div>
 
       {/* Main Container */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
+      <div className="container mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
         {/* Staff Notice Banner */}
         {(role === 'admin' || role === 'moderator') && (
           <div className="mb-6 p-4 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50/90 dark:bg-blue-950/40 text-blue-950 dark:text-blue-100 flex items-start gap-3.5 shadow-xs">
@@ -373,7 +373,7 @@ function DocumentRequestRoute() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Badge className="bg-emerald-600 text-white dark:bg-emerald-700 border-none text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-lg shrink-0">
+            <Badge className="bg-emerald-600 text-white dark:bg-emerald-700 border-none text-[11px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-lg shrink-0">
               <CheckCircle2 className="h-3 w-3 mr-1" /> Ready for 1-Click
             </Badge>
           </div>
@@ -422,7 +422,7 @@ function DocumentRequestRoute() {
                               </div>
                               <div className="flex items-center gap-1.5">
                                 {doc.fee === 0 ? (
-                                  <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 text-[10px] font-black tracking-wide px-2 py-0.5 rounded-md">
+                                  <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 text-[11px] font-black tracking-wide px-2 py-0.5 rounded-md">
                                     FREE
                                   </Badge>
                                 ) : (
@@ -442,17 +442,17 @@ function DocumentRequestRoute() {
                               <h3 className="font-bold text-sm text-foreground tracking-tight line-clamp-1">
                                 {doc.title}
                               </h3>
-                              <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5 leading-snug">
+                              <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5 leading-snug">
                                 {doc.description}
                               </p>
                             </div>
 
-                            <div className="flex items-center justify-between pt-1 border-t border-border/40 text-[10px] text-muted-foreground font-medium">
+                            <div className="flex items-center justify-between pt-1 border-t border-border/40 text-xs text-muted-foreground font-medium">
                               <span className="flex items-center gap-1">
-                                <Clock className="h-3 w-3 text-muted-foreground/80" />
+                                <Clock className="h-3.5 w-3.5 text-muted-foreground/80" />
                                 {doc.turnaround}
                               </span>
-                              <span className="uppercase text-[9px] font-bold text-muted-foreground/70 tracking-wider">
+                              <span className="uppercase text-[11px] font-bold text-muted-foreground/70 tracking-wider">
                                 {doc.badge}
                               </span>
                             </div>
@@ -708,8 +708,8 @@ function DocumentRequestRoute() {
               {/* Right Column: Sticky Live Fee Calculation & Review Sidebar (5/12 cols) */}
               <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-24">
                 {/* Live Fee Calculation Card */}
-                <Card className="border-border/80 shadow-lg overflow-hidden">
-                  <CardHeader className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent pb-4 border-b border-border/60">
+                <Card className="border-border shadow-md overflow-hidden">
+                  <CardHeader className="bg-muted/40 pb-4 border-b border-border">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Award className="h-5 w-5 text-primary" />
@@ -733,11 +733,11 @@ function DocumentRequestRoute() {
                             {selectedDocConfig.title}
                           </h4>
                           {selectedDocConfig.fee === 0 ? (
-                            <Badge className="bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5">
+                            <Badge className="bg-emerald-600 text-white text-[11px] font-black uppercase tracking-wider px-2 py-0.5">
                               FREE
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-[10px] font-bold">
+                            <Badge variant="outline" className="text-[11px] font-bold">
                               ₱{selectedDocConfig.fee}.00
                             </Badge>
                           )}
@@ -792,7 +792,7 @@ function DocumentRequestRoute() {
                               <span className="text-emerald-600 dark:text-emerald-400 text-xl font-black">
                                 FREE
                               </span>
-                              <p className="text-[10px] font-normal text-muted-foreground">
+                              <p className="text-xs font-normal text-muted-foreground">
                                 0.00 PHP (Social Welfare Waiver)
                               </p>
                             </div>
@@ -801,7 +801,7 @@ function DocumentRequestRoute() {
                               <span className="text-primary text-xl font-black">
                                 ₱{selectedDocConfig.fee}.00
                               </span>
-                              <p className="text-[10px] font-normal text-muted-foreground">
+                              <p className="text-xs font-normal text-muted-foreground">
                                 Payable at Barangay Hall on release
                               </p>
                             </div>
@@ -816,7 +816,7 @@ function DocumentRequestRoute() {
                         <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
                         <span>Estimated Turnaround: {selectedDocConfig.turnaround}</span>
                       </div>
-                      <p className="text-[11px] text-blue-800 dark:text-blue-300 leading-relaxed">
+                      <p className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed">
                         Pickup at {currentBarangay === 'daine_2' ? 'Barangay Daine 2 Hall' : 'Barangay Daine 1 Hall'} during official office hours (Mon-Fri, 8:00 AM – 5:00 PM).
                       </p>
                     </div>
@@ -838,7 +838,7 @@ function DocumentRequestRoute() {
                     </div>
 
                     {/* Digital Security Note */}
-                    <div className="pt-2 border-t border-border/80 flex items-center gap-2.5 text-[11px] text-muted-foreground">
+                    <div className="pt-2 border-t border-border/80 flex items-center gap-2.5 text-xs text-muted-foreground">
                       <QrCode className="h-4 w-4 text-primary shrink-0" />
                       <span>
                         Includes authentic security Control No. and verifiable QR code scan on document.
@@ -868,7 +868,7 @@ function DocumentRequestRoute() {
                       <Button
                         variant="outline"
                         type="button"
-                        className="w-full min-h-[42px] text-xs font-semibold rounded-xl cursor-pointer"
+                        className="w-full min-h-[44px] text-xs font-semibold rounded-xl cursor-pointer"
                         onClick={() => navigate({ to: '/dashboard' })}
                       >
                         Cancel &amp; Return to Dashboard
@@ -882,7 +882,7 @@ function DocumentRequestRoute() {
                   <HelpCircle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   <div className="space-y-1">
                     <p className="font-bold text-foreground">Need urgent assistance?</p>
-                    <p className="text-[11px] leading-relaxed">
+                    <p className="text-xs leading-relaxed">
                       For rush processing or special circumstances, call the Barangay Secretariat directly or visit the hall during operating hours.
                     </p>
                   </div>

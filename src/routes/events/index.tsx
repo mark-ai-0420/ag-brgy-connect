@@ -52,17 +52,30 @@ function inferEventCategory(title: string, description: string | null): string {
 export const getEvents = createServerFn({ method: 'GET' }).handler(async () => {
   try {
     const supabase = createSupabaseServerClient()
+    let rawData: any[] = []
+
     const { data, error } = await supabase
       .from('events')
       .select('id, title, description, location, starts_at, ends_at, created_at, scope, barangay_id, image_url')
       .order('starts_at', { ascending: true })
     
     if (error) {
-      console.error('Error fetching events:', error)
-      return []
+      // Fallback query without barangay_id
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from('events')
+        .select('id, title, description, location, starts_at, ends_at, created_at, scope, image_url')
+        .order('starts_at', { ascending: true })
+
+      if (fallbackError) {
+        console.error('Error fetching events:', fallbackError)
+        return []
+      }
+      rawData = fallbackData ?? []
+    } else {
+      rawData = data ?? []
     }
 
-    const items: EventItem[] = (data ?? []).map((row: any) => ({
+    const items: EventItem[] = rawData.map((row: any) => ({
       ...row,
       category: inferEventCategory(row.title, row.description),
       organizer: row.scope === 'daine_1' 
@@ -124,16 +137,16 @@ const EVENT_TYPE_COLORS: Record<string, { badge: string; dot: string }> = {
     dot: 'bg-emerald-600',
   },
   Health: {
-    badge: 'bg-green-100 text-green-950 dark:bg-green-950/60 dark:text-green-200 border border-green-300 font-semibold',
-    dot: 'bg-green-600',
+    badge: 'bg-amber-100 text-amber-950 dark:bg-amber-950/60 dark:text-amber-200 border border-amber-300 font-semibold',
+    dot: 'bg-amber-500',
   },
   Cultural: {
-    badge: 'bg-purple-100 text-purple-950 dark:bg-purple-950/60 dark:text-purple-200 border border-purple-300 font-semibold',
-    dot: 'bg-purple-600',
+    badge: 'bg-sky-100 text-sky-950 dark:bg-sky-950/60 dark:text-sky-200 border border-sky-300 font-semibold',
+    dot: 'bg-sky-600',
   },
   Community: {
-    badge: 'bg-indigo-100 text-indigo-950 dark:bg-indigo-950/60 dark:text-indigo-200 border border-indigo-300 font-semibold',
-    dot: 'bg-indigo-600',
+    badge: 'bg-amber-100 text-amber-950 dark:bg-amber-950/60 dark:text-amber-200 border border-amber-300 font-semibold',
+    dot: 'bg-amber-500',
   },
   Other: {
     badge: 'bg-slate-100 text-slate-950 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 font-semibold',
@@ -193,8 +206,8 @@ function EventCard({ event }: { event: EventItem }) {
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/10 via-primary/5 to-secondary text-primary/60 group-hover:text-primary transition-colors p-4">
-            <div className="p-3.5 rounded-2xl bg-background/80 shadow-xs backdrop-blur-xs ring-1 ring-primary/15">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-muted/50 text-muted-foreground group-hover:text-primary transition-colors p-4">
+            <div className="p-3.5 rounded-2xl bg-card shadow-xs ring-1 ring-border">
               <Calendar className="h-7 w-7 text-primary" />
             </div>
             <span className="text-xs font-semibold text-foreground/70 mt-2.5">
@@ -205,13 +218,13 @@ function EventCard({ event }: { event: EventItem }) {
 
         {/* Floating Calendar Chip in font-mono */}
         <div className="absolute bottom-3 left-3 bg-card/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl px-3 py-1.5 shadow-lg border border-border text-center pointer-events-none ring-1 ring-black/5 flex flex-col items-center min-w-[58px]">
-          <span className="block text-[10px] font-black uppercase text-primary tracking-widest leading-none font-mono">
+          <span className="block text-xs font-bold uppercase text-primary tracking-widest leading-none font-mono">
             {monthStr}
           </span>
           <span className="block text-xl font-black text-foreground leading-tight font-mono">
             {dayStr}
           </span>
-          <span className="block text-[9px] font-bold text-muted-foreground leading-none font-mono">
+          <span className="block text-xs font-medium text-muted-foreground leading-none font-mono">
             {yearStr}
           </span>
         </div>
@@ -221,25 +234,25 @@ function EventCard({ event }: { event: EventItem }) {
           <div className="flex flex-wrap items-center gap-1.5">
             {/* Status Indicator */}
             {status === 'live' && (
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-black px-2.5 py-1 rounded-full bg-emerald-500 text-white shadow-md border border-emerald-400 backdrop-blur-md animate-pulse">
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-500 text-white shadow-md border border-emerald-400 backdrop-blur-md animate-pulse">
                 <span className="w-2 h-2 rounded-full bg-white animate-ping" />
                 LIVE NOW
               </span>
             )}
             {status === 'upcoming' && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-600 text-white shadow-md border border-blue-400 backdrop-blur-md">
+              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-600 text-white shadow-md border border-blue-400 backdrop-blur-md">
                 Upcoming
               </span>
             )}
             {status === 'concluded' && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-700/90 text-slate-200 shadow-xs backdrop-blur-md">
+              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-700/90 text-slate-200 shadow-xs backdrop-blur-md">
                 Concluded
               </span>
             )}
 
             {/* Category */}
             <span
-              className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full shadow-xs backdrop-blur-md ${categoryStyle.badge}`}
+              className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full shadow-xs backdrop-blur-md ${categoryStyle.badge}`}
             >
               <span className={`w-1.5 h-1.5 rounded-full ${categoryStyle.dot}`} />
               {category}
@@ -249,7 +262,7 @@ function EventCard({ event }: { event: EventItem }) {
           {/* Scope Badge */}
           {event.scope && (
             <span
-              className={`shrink-0 text-[10px] font-black px-2.5 py-1 rounded-full uppercase shadow-md backdrop-blur-md border border-white/20 ${
+              className={`shrink-0 text-xs font-bold px-2.5 py-1 rounded-full uppercase shadow-md backdrop-blur-md border border-white/20 ${
                 event.scope === 'both' || event.scope === 'all'
                   ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
                   : event.scope === 'daine_1'
@@ -278,12 +291,12 @@ function EventCard({ event }: { event: EventItem }) {
       <CardContent className="flex-1 space-y-2.5 text-xs text-muted-foreground pb-4 px-5">
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 shrink-0 text-primary" />
-          <span className="font-semibold text-foreground/90 font-mono text-[13px]">{formattedFullDate}</span>
+          <span className="font-semibold text-foreground/90 font-mono text-xs">{formattedFullDate}</span>
         </div>
 
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4 shrink-0 text-primary" />
-          <span className="font-mono text-[13px] font-medium text-foreground/80">{timeStr}</span>
+          <span className="font-mono text-xs font-medium text-foreground/80">{timeStr}</span>
         </div>
 
         {event.location && (
@@ -297,7 +310,7 @@ function EventCard({ event }: { event: EventItem }) {
               href={googleMapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[11px] font-bold text-[#002878] dark:text-[#93c5fd] hover:underline shrink-0 transition-colors p-1"
+              className="inline-flex items-center gap-1 text-xs font-bold text-[#002878] dark:text-[#93c5fd] hover:underline shrink-0 transition-colors p-1"
               title="Open venue in Google Maps"
             >
               <span>Map</span>
@@ -309,7 +322,7 @@ function EventCard({ event }: { event: EventItem }) {
         {event.organizer && (
           <div className="flex items-center gap-2 text-muted-foreground pt-1 border-t border-border/50">
             <Users className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
-            <span className="truncate text-[11px] font-medium">Organized by: <strong className="text-foreground/80">{event.organizer}</strong></span>
+            <span className="truncate text-xs font-medium">Organized by: <strong className="text-foreground/80">{event.organizer}</strong></span>
           </div>
         )}
       </CardContent>
@@ -399,22 +412,16 @@ function EventsRoute() {
   return (
     <div className="min-h-[100dvh] pb-20 bg-slate-50/50 dark:bg-background">
       {/* ── 1. Community Calendar & Assemblies Header ───────────────────────────────────────── */}
-      <header className="relative overflow-hidden bg-gradient-to-r from-[#002675] via-[#0038A8] to-[#1E3A8A] text-white py-12 px-4 sm:px-6 lg:px-8 shadow-md">
-        {/* Flag Ribbon */}
+      <header className="relative overflow-hidden civic-header text-white py-12 px-4 sm:px-6 lg:px-8 shadow-md">
+        {/* Philippine National Flag Tricolor Accent Bar */}
         <div
-          className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-[#0038A8] via-[#FCD116] to-[#CE1126]"
+          className="absolute top-0 right-0 left-0 h-1.5 flex"
           aria-hidden="true"
-        />
-
-        {/* Subtle Ambient Glow */}
-        <div
-          className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-[#FCD116]/10 blur-3xl pointer-events-none"
-          aria-hidden="true"
-        />
-        <div
-          className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-[#CE1126]/10 blur-3xl pointer-events-none"
-          aria-hidden="true"
-        />
+        >
+          <div className="w-[45%] bg-[#0038A8]" />
+          <div className="w-[10%] bg-[#FCD116]" />
+          <div className="w-[45%] bg-[#CE1126]" />
+        </div>
 
         <div className="container mx-auto max-w-6xl relative z-10">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">

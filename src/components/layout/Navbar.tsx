@@ -161,7 +161,7 @@ export function NavBar() {
        (scope === 'daine1' ? 'Daine 1' : scope === 'daine2' ? 'Daine 2' : activeBarangay.short_name))
 
   return (
-    <nav aria-label="Main Navigation" className="bg-[#0038A8] dark:bg-[#00205c] text-white shadow-md sticky top-0 z-50 border-b border-white/10 backdrop-blur-md">
+    <nav aria-label="Main Navigation" className="bg-[#0C2B64] dark:bg-[#07142E] text-white shadow-md sticky top-0 z-50 border-b border-white/10 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 gap-4">
           
@@ -177,7 +177,7 @@ export function NavBar() {
               />
               <div className="flex flex-col">
                 <span className="font-extrabold text-base leading-tight tracking-tight text-white">BrgyConnect</span>
-                <span className="text-[10px] text-white/90 font-medium leading-none tracking-wide">Barangay Daine &bull; Indang, Cavite</span>
+                <span className="text-xs text-white/80 font-medium leading-none tracking-wide">Barangay Daine &bull; Indang, Cavite</span>
               </div>
             </Link>
           </div>
@@ -196,8 +196,8 @@ export function NavBar() {
                   setCommunityOpen(false)
                   setScopeOpen(false)
                 }}
-                className={`min-h-[44px] flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-white/15 hover:text-white border border-transparent hover:border-white/15 cursor-pointer active:scale-[0.98] ${
-                  servicesOpen ? 'bg-white/20 text-white border-white/20' : 'text-white'
+                className={`min-h-[44px] flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-white/10 hover:text-white border border-transparent hover:border-white/10 cursor-pointer active:scale-[0.98] ${
+                  servicesOpen ? 'bg-white/15 text-white border-white/15' : 'text-white'
                 }`}
               >
                 {isAdmin ? 'Staff Desk' : 'Services'}
@@ -255,7 +255,7 @@ export function NavBar() {
                         onClick={() => setServicesOpen(false)}
                         className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors group min-h-[44px]"
                       >
-                        <div className="p-2 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                        <div className="p-2 rounded-md bg-sky-500/10 text-sky-600 dark:text-sky-400 group-hover:bg-sky-500 group-hover:text-white transition-colors">
                           <Users className="h-4 w-4" />
                         </div>
                         <div>
@@ -354,8 +354,8 @@ export function NavBar() {
                   setServicesOpen(false)
                   setScopeOpen(false)
                 }}
-                className={`min-h-[44px] flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-white/15 hover:text-white border border-transparent hover:border-white/15 cursor-pointer active:scale-[0.98] ${
-                  communityOpen ? 'bg-white/20 text-white border-white/20' : 'text-white'
+                className={`min-h-[44px] flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-white/10 hover:text-white border border-transparent hover:border-white/10 cursor-pointer active:scale-[0.98] ${
+                  communityOpen ? 'bg-white/15 text-white border-white/15' : 'text-white'
                 }`}
               >
                 Community
@@ -426,7 +426,7 @@ export function NavBar() {
             {/* Emergency Direct Link */}
             <Link
               to="/emergency"
-              className="min-h-[44px] flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white bg-[#CE1126] hover:bg-[#b00e1f] active:bg-[#960c1a] transition-all shadow-md btn-tactile cursor-pointer"
+              className="min-h-[44px] flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white bg-[#B91C1C] hover:bg-[#991B1B] active:bg-[#7F1D1D] transition-all shadow-sm btn-tactile cursor-pointer"
             >
               <PhoneCall className="h-4 w-4 text-white" />
               Emergency
@@ -448,7 +448,7 @@ export function NavBar() {
                     setServicesOpen(false)
                     setCommunityOpen(false)
                   }}
-                  className="inline-flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/25 text-xs font-bold text-white transition-all border border-white/25 cursor-pointer shadow-sm btn-tactile backdrop-blur-md"
+                  className="inline-flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 active:bg-white/20 text-xs font-semibold text-white transition-all border border-white/20 cursor-pointer shadow-xs btn-tactile backdrop-blur-md"
                   aria-label={`${currentScopeLabel} - Select Barangay View`}
                 >
                   <MapPin className="h-3.5 w-3.5 text-[#FCD116]" />
@@ -473,12 +473,12 @@ export function NavBar() {
                         )}
                         <div className="text-left">
                           <span className="block leading-tight font-bold">Locate Me (GPS)</span>
-                          <span className="block text-[10px] text-muted-foreground font-normal">Detect nearest barangay</span>
+                          <span className="block text-xs text-muted-foreground font-normal">Detect nearest barangay</span>
                         </div>
                       </button>
                     </div>
 
-                    <p className="px-3 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                    <p className="px-3 py-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
                       Select Barangay Jurisdiction
                     </p>
                     <button
@@ -515,7 +515,7 @@ export function NavBar() {
                         >
                           <div className="text-left">
                             <span className="block font-medium">{b.name}</span>
-                            <span className="block text-[10px] text-muted-foreground">{b.code_prefix} &bull; {b.municipality}</span>
+                            <span className="block text-xs text-muted-foreground">{b.code_prefix} &bull; {b.municipality}</span>
                           </div>
                           {isSelected && <Check className="h-4 w-4 text-primary font-bold ml-2 shrink-0" />}
                         </button>
@@ -543,7 +543,7 @@ export function NavBar() {
               title="Search (⌘K)"
             >
               <Search className="h-4 w-4 text-white/90" />
-              <kbd className="hidden sm:inline-flex pointer-events-none h-5 select-none items-center gap-0.5 rounded-md border border-white/30 bg-white/15 px-1.5 font-mono text-[10px] font-bold text-white shadow-xs">
+              <kbd className="hidden sm:inline-flex pointer-events-none h-5 select-none items-center gap-0.5 rounded-md border border-white/30 bg-white/15 px-1.5 font-mono text-[11px] font-bold text-white shadow-xs">
                 <span className="text-xs">⌘</span>K
               </kbd>
             </button>
@@ -634,7 +634,7 @@ export function NavBar() {
             ) : (
               <Link
                 to="/auth/sign-in"
-                className="hidden sm:inline-flex items-center min-h-[44px] px-4 py-2 rounded-xl text-xs font-bold bg-white text-[#0038A8] hover:bg-white/90 active:bg-white/80 shadow-md transition-all btn-tactile cursor-pointer"
+                className="hidden sm:inline-flex items-center min-h-[44px] px-4 py-2 rounded-xl text-xs font-bold bg-white text-[#0C2B64] hover:bg-white/90 active:bg-white/80 shadow-md transition-all btn-tactile cursor-pointer"
               >
                 Sign In
               </Link>
@@ -645,7 +645,7 @@ export function NavBar() {
               onClick={() => setIsOpen(!isOpen)}
               aria-expanded={isOpen}
               aria-controls="mobile-menu"
-              className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-xl hover:bg-white/15 active:bg-white/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none transition-colors cursor-pointer"
+              className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-xl hover:bg-white/10 active:bg-white/15 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none transition-colors cursor-pointer"
               aria-label="Toggle navigation menu"
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -656,7 +656,7 @@ export function NavBar() {
 
       {/* Mobile Menu Drawer */}
       {isOpen && (
-        <div id="mobile-menu" className="lg:hidden bg-[#002d87] dark:bg-[#001848] border-t border-white/15 pb-6 shadow-2xl animate-in slide-in-from-top-2 duration-150">
+        <div id="mobile-menu" className="lg:hidden bg-[#0C2B64] dark:bg-[#07142E] border-t border-white/15 pb-6 shadow-2xl animate-in slide-in-from-top-2 duration-150">
           <div className="px-4 pt-3 space-y-4">
             
             {/* Mobile Scope Selector */}
@@ -690,8 +690,8 @@ export function NavBar() {
                     onClick={() => setScope('all')}
                     className={`min-h-[44px] flex-1 min-w-[85px] flex items-center justify-center px-2 py-2 text-xs font-bold rounded-lg transition-all btn-tactile cursor-pointer ${
                       scope === 'all'
-                        ? 'bg-white text-[#0038A8] shadow-md'
-                        : 'text-white/85 hover:text-white hover:bg-white/15 active:bg-white/20'
+                        ? 'bg-white text-[#0C2B64] shadow-sm'
+                        : 'text-white/85 hover:text-white hover:bg-white/10 active:bg-white/15'
                     }`}
                   >
                     All Barangays
@@ -708,8 +708,8 @@ export function NavBar() {
                         }}
                         className={`min-h-[44px] flex-1 min-w-[85px] flex items-center justify-center px-2 py-2 text-xs font-bold rounded-lg transition-all btn-tactile cursor-pointer ${
                           isSelected
-                            ? 'bg-white text-[#0038A8] shadow-md'
-                            : 'text-white/85 hover:text-white hover:bg-white/15 active:bg-white/20'
+                            ? 'bg-white text-[#0C2B64] shadow-sm'
+                            : 'text-white/85 hover:text-white hover:bg-white/10 active:bg-white/15'
                         }`}
                       >
                         {b.short_name}
@@ -723,7 +723,7 @@ export function NavBar() {
             {/* Group 1: Navigation / Services / Admin Quick Links */}
             {isAdmin ? (
               <div>
-                <p className="text-[10px] font-bold text-white/75 uppercase tracking-wider mb-1.5 px-2">
+                <p className="text-[11px] font-bold text-white/75 uppercase tracking-wider mb-1.5 px-2">
                   Staff Desk & Administration
                 </p>
                 <div className="space-y-1">
@@ -731,7 +731,7 @@ export function NavBar() {
                     <Link
                       to="/admin/barangays"
                       onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                      className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/10 active:bg-white/15 transition-colors text-white"
                     >
                       <Building2 className="h-4 w-4 text-emerald-200" />
                       Barangay Registry
@@ -740,7 +740,7 @@ export function NavBar() {
                   <Link
                     to="/admin/documents"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/10 active:bg-white/15 transition-colors text-white"
                   >
                     <FileText className="h-4 w-4 text-blue-200" />
                     Document Issuance & Approvals
@@ -748,7 +748,7 @@ export function NavBar() {
                   <Link
                     to="/admin/complaints"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/10 active:bg-white/15 transition-colors text-white"
                   >
                     <ShieldAlert className="h-4 w-4 text-orange-200" />
                     Blotter & Incident Triage
@@ -756,7 +756,7 @@ export function NavBar() {
                   <Link
                     to="/admin/businesses"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/10 active:bg-white/15 transition-colors text-white"
                   >
                     <Store className="h-4 w-4 text-emerald-200" />
                     Business Directory Triage
@@ -764,15 +764,15 @@ export function NavBar() {
                   <Link
                     to="/admin/users"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/10 active:bg-white/15 transition-colors text-white"
                   >
-                    <Users className="h-4 w-4 text-purple-200" />
+                    <Users className="h-4 w-4 text-sky-200" />
                     User Directory & Roles
                   </Link>
                   <Link
                     to="/admin/officials"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/10 active:bg-white/15 transition-colors text-white"
                   >
                     <Users className="h-4 w-4 text-blue-200" />
                     Barangay Officials
@@ -780,31 +780,31 @@ export function NavBar() {
                   <Link
                     to="/admin/announcements"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/10 active:bg-white/15 transition-colors text-white"
                   >
-                    <Megaphone className="h-4 w-4 text-purple-200" />
+                    <Megaphone className="h-4 w-4 text-sky-200" />
                     Announcements Manager
                   </Link>
                   <Link
                     to="/admin/events"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/10 active:bg-white/15 transition-colors text-white"
                   >
-                    <Calendar className="h-4 w-4 text-pink-200" />
+                    <Calendar className="h-4 w-4 text-amber-200" />
                     Events Manager
                   </Link>
                 </div>
               </div>
             ) : (
               <div>
-                <p className="text-[10px] font-bold text-white/75 uppercase tracking-wider mb-1.5 px-2">
+                <p className="text-[11px] font-bold text-white/75 uppercase tracking-wider mb-1.5 px-2">
                   Services
                 </p>
                 <div className="space-y-1">
                   <Link
                     to="/documents"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/10 active:bg-white/15 transition-colors text-white"
                   >
                     <FileText className="h-4 w-4 text-blue-200" />
                     Request Documents
@@ -812,7 +812,7 @@ export function NavBar() {
                   <Link
                     to="/track"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/10 active:bg-white/15 transition-colors text-white"
                   >
                     <SearchCheck className="h-4 w-4 text-cyan-200" />
                     Track Document Status
@@ -820,7 +820,7 @@ export function NavBar() {
                   <Link
                     to="/complaints"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/10 active:bg-white/15 transition-colors text-white"
                   >
                     <ShieldAlert className="h-4 w-4 text-orange-200" />
                     Incident & Blotter Report
@@ -828,7 +828,7 @@ export function NavBar() {
                   <Link
                     to="/directory"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                    className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/10 active:bg-white/15 transition-colors text-white"
                   >
                     <Store className="h-4 w-4 text-emerald-200" />
                     Business Directory
@@ -839,30 +839,30 @@ export function NavBar() {
 
             {/* Group 2: Community */}
             <div>
-              <p className="text-[10px] font-bold text-white/75 uppercase tracking-wider mb-1.5 px-2">
+              <p className="text-[11px] font-bold text-white/75 uppercase tracking-wider mb-1.5 px-2">
                 Community & Information
               </p>
               <div className="space-y-1">
                 <Link
                   to="/announcements"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                  className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/10 active:bg-white/15 transition-colors text-white"
                 >
-                  <Megaphone className="h-4 w-4 text-purple-200" />
+                  <Megaphone className="h-4 w-4 text-sky-200" />
                   Announcements
                 </Link>
                 <Link
                   to="/events"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                  className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/10 active:bg-white/15 transition-colors text-white"
                 >
-                  <Calendar className="h-4 w-4 text-pink-200" />
+                  <Calendar className="h-4 w-4 text-amber-200" />
                   Events Calendar
                 </Link>
                 <Link
                   to="/officials"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                  className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/10 active:bg-white/15 transition-colors text-white"
                 >
                   <Users className="h-4 w-4 text-blue-200" />
                   Barangay Officials
@@ -870,7 +870,7 @@ export function NavBar() {
                 <Link
                   to="/map"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                  className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/10 active:bg-white/15 transition-colors text-white"
                 >
                   <MapPin className="h-4 w-4 text-emerald-200" />
                   GIS Map & Evacuation
@@ -878,7 +878,7 @@ export function NavBar() {
                 <Link
                   to="/emergency"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-bold text-white bg-red-600/80 hover:bg-red-600 active:bg-red-700 transition-colors"
+                  className="flex items-center gap-2.5 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-bold text-white bg-[#B91C1C] hover:bg-[#991B1B] active:bg-[#7F1D1D] transition-colors"
                 >
                   <PhoneCall className="h-4 w-4 text-white" />
                   Emergency Hotlines
@@ -894,7 +894,7 @@ export function NavBar() {
                     <Link
                       to="/admin"
                       onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-2 min-h-[44px] px-3.5 py-2.5 rounded-xl text-sm font-bold bg-[#FCD116] text-[#1c1917] hover:bg-[#ebd500] active:bg-[#d9c400] transition-colors btn-tactile"
+                      className="flex items-center gap-2 min-h-[44px] px-3.5 py-2.5 rounded-xl text-sm font-bold bg-[#FCD116] text-[#0C2B64] hover:bg-[#ebd500] active:bg-[#d9c400] transition-colors btn-tactile"
                     >
                       <LayoutDashboard className="h-4 w-4" />
                       Admin Console
@@ -903,7 +903,7 @@ export function NavBar() {
                     <Link
                       to="/dashboard"
                       onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-2 min-h-[44px] px-3.5 py-2.5 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                      className="flex items-center gap-2 min-h-[44px] px-3.5 py-2.5 rounded-xl text-sm font-medium hover:bg-white/10 active:bg-white/15 transition-colors text-white"
                     >
                       <UserIcon className="h-4 w-4 text-white" />
                       Resident Dashboard
@@ -912,7 +912,7 @@ export function NavBar() {
                   <Link
                     to="/notifications"
                     onClick={() => { setIsOpen(false); clearUnread() }}
-                    className="flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                    className="flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/10 active:bg-white/15 transition-colors text-white"
                   >
                     <Bell className="h-4 w-4 text-white" />
                     Notifications
@@ -925,7 +925,7 @@ export function NavBar() {
                   <Link
                     to="/settings/profile"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/15 active:bg-white/20 transition-colors text-white"
+                    className="flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-white/10 active:bg-white/15 transition-colors text-white"
                   >
                     <Settings className="h-4 w-4 text-white" />
                     My Profile
@@ -946,7 +946,7 @@ export function NavBar() {
                 <Link
                   to="/auth/sign-in"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center justify-center min-h-[44px] px-4 py-2.5 rounded-xl text-sm font-bold bg-white text-[#0038A8] hover:bg-white/95 active:bg-white/90 transition-all shadow-md btn-tactile cursor-pointer"
+                  className="flex items-center justify-center min-h-[44px] px-4 py-2.5 rounded-xl text-sm font-bold bg-white text-[#0C2B64] hover:bg-white/95 active:bg-white/90 transition-all shadow-md btn-tactile cursor-pointer"
                 >
                   Sign In to BrgyConnect
                 </Link>

@@ -235,10 +235,10 @@ function ComplaintDetailPage() {
 
       {/* Active Hearing Alert Banner (If status is scheduled_hearing) */}
       {isHearing && (
-        <div className="rounded-2xl border-2 border-purple-300 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/40 p-5 sm:p-6 shadow-sm">
+        <div className="rounded-2xl border-2 border-sky-300 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/40 p-5 sm:p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-start gap-4">
-              <div className="p-3 rounded-xl bg-purple-600 text-white shrink-0">
+              <div className="p-3 rounded-xl bg-primary text-white shrink-0">
                 <Gavel className="h-6 w-6" />
               </div>
               <div className="space-y-1">
@@ -246,18 +246,18 @@ function ComplaintDetailPage() {
                   <h3 className="text-lg font-bold text-foreground">
                     Mediation Hearing Scheduled (Katarungang Pambarangay)
                   </h3>
-                  <Badge className="bg-purple-600 text-white text-xs">Active Summon</Badge>
+                  <Badge className="bg-sky-100 text-sky-900 border border-sky-300 dark:bg-sky-950/40 dark:text-sky-300 text-xs font-bold">Active Summon</Badge>
                 </div>
-                <p className="text-sm text-purple-900 dark:text-purple-200 leading-relaxed">
+                <p className="text-sm text-sky-900 dark:text-sky-200 leading-relaxed">
                   Both complainant and respondent have been summoned (<em>Patawag</em>) to appear for conciliation at the Barangay Hall. Please arrive 15 minutes early with your identification.
                 </p>
-                <div className="pt-2 flex flex-wrap gap-4 text-xs font-semibold text-purple-950 dark:text-purple-200">
+                <div className="pt-2 flex flex-wrap gap-4 text-xs font-semibold text-sky-950 dark:text-sky-200">
                   <span className="flex items-center gap-1.5">
-                    <Building2 className="h-4 w-4 text-purple-700 dark:text-purple-400" />
+                    <Building2 className="h-4 w-4 text-primary" />
                     Venue: Barangay Multi-Purpose Hall / Session Room
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <Scale className="h-4 w-4 text-purple-700 dark:text-purple-400" />
+                    <Scale className="h-4 w-4 text-primary" />
                     Presiding: Punong Barangay / Pangkat Tagapagkasundo
                   </span>
                 </div>

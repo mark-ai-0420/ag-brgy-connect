@@ -68,7 +68,7 @@ function NotificationsPage() {
       case 'complaint':
         return <ShieldAlert className="h-5 w-5 text-amber-500" />
       case 'announcement':
-        return <Megaphone className="h-5 w-5 text-purple-500" />
+        return <Megaphone className="h-5 w-5 text-primary" />
       default:
         return <Info className="h-5 w-5 text-primary" />
     }
@@ -78,7 +78,7 @@ function NotificationsPage() {
     filter === 'unread' ? notifications.filter((n) => !n.is_read) : notifications
 
   return (
-    <div className="container max-w-4xl mx-auto py-8 px-4 sm:px-6 space-y-6">
+    <div className="container max-w-4xl mx-auto py-8 px-3 sm:px-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b">
         <div className="flex items-center gap-3">
@@ -178,7 +178,7 @@ function NotificationsPage() {
                       {!notif.is_read && (
                         <Badge
                           variant="secondary"
-                          className="text-[10px] px-1.5 py-0 bg-primary text-primary-foreground font-semibold"
+                          className="text-[11px] px-2 py-0.5 bg-primary text-primary-foreground font-bold uppercase tracking-wider"
                         >
                           New
                         </Badge>
@@ -211,7 +211,7 @@ function NotificationsPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleMarkRead(notif.id)}
-                        className="h-7 text-xs text-muted-foreground hover:text-foreground px-2 cursor-pointer"
+                        className="min-h-[36px] text-xs text-muted-foreground hover:text-foreground px-3 cursor-pointer"
                       >
                         Mark as read
                       </Button>

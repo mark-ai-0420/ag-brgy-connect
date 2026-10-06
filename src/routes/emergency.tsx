@@ -45,44 +45,44 @@ const PRIMARY_SPEED_DIAL = [
     subtitle: 'Direct Emergency Dispatch',
     number: '911',
     icon: AlertTriangle,
-    badge: '🚨 Direct Dispatch',
-    cardBorder: 'border-red-500/40 dark:border-red-500/30 hover:border-red-600 dark:hover:border-red-400',
+    badge: 'Direct Dispatch',
+    cardBorder: 'border-red-600/80 bg-red-50/20 dark:bg-red-950/20',
     iconBg: 'bg-red-600 text-white',
     numberColor: 'text-red-600 dark:text-red-400',
-    glowClass: 'shadow-red-500/10 hover:shadow-red-500/20',
+    buttonBg: 'bg-red-600 hover:bg-red-700',
   },
   {
     title: 'PNP Indang Police',
     subtitle: 'Municipal Police Desk',
     number: '(046) 415-0211',
     icon: ShieldCheck,
-    badge: '🚓 Law & Order',
-    cardBorder: 'border-blue-500/40 dark:border-blue-500/30 hover:border-blue-600 dark:hover:border-blue-400',
-    iconBg: 'bg-blue-700 text-white',
-    numberColor: 'text-blue-700 dark:text-blue-400',
-    glowClass: 'shadow-blue-500/10 hover:shadow-blue-500/20',
+    badge: 'Law & Order',
+    cardBorder: 'border-border hover:border-primary/60',
+    iconBg: 'bg-primary text-primary-foreground',
+    numberColor: 'text-foreground',
+    buttonBg: 'bg-primary hover:bg-primary/90',
   },
   {
     title: 'BFP Indang Fire',
     subtitle: 'Fire & Rescue Station',
     number: '(046) 415-0322',
     icon: Flame,
-    badge: '🚒 Fire Protection',
-    cardBorder: 'border-amber-500/40 dark:border-amber-500/30 hover:border-amber-600 dark:hover:border-amber-400',
-    iconBg: 'bg-amber-600 text-white',
-    numberColor: 'text-amber-600 dark:text-amber-400',
-    glowClass: 'shadow-amber-500/10 hover:shadow-amber-500/20',
+    badge: 'Fire Protection',
+    cardBorder: 'border-border hover:border-red-500/60',
+    iconBg: 'bg-red-600 text-white',
+    numberColor: 'text-foreground',
+    buttonBg: 'bg-red-600 hover:bg-red-700',
   },
   {
     title: 'MDRRMO Rescue',
     subtitle: 'Disaster & Medical Rescue',
     number: '0998-555-0100',
     icon: Ambulance,
-    badge: '🚑 Emergency Med',
-    cardBorder: 'border-emerald-500/40 dark:border-emerald-500/30 hover:border-emerald-600 dark:hover:border-emerald-400',
+    badge: 'Emergency Med',
+    cardBorder: 'border-border hover:border-emerald-600/60',
     iconBg: 'bg-emerald-700 text-white',
-    numberColor: 'text-emerald-700 dark:text-emerald-400',
-    glowClass: 'shadow-emerald-500/10 hover:shadow-emerald-500/20',
+    numberColor: 'text-foreground',
+    buttonBg: 'bg-emerald-700 hover:bg-emerald-800',
   },
 ]
 
@@ -115,9 +115,9 @@ const DEFAULT_EMERGENCY_SECTIONS = [
   {
     category: 'Police & Law Enforcement',
     scope: 'both',
-    color: 'text-indigo-700 dark:text-indigo-400',
-    borderColor: 'border-l-indigo-600',
-    bgAccent: 'bg-indigo-50 dark:bg-indigo-950/30',
+    color: 'text-blue-700 dark:text-blue-400',
+    borderColor: 'border-l-blue-600',
+    bgAccent: 'bg-blue-50 dark:bg-blue-950/30',
     contacts: [
       { name: 'Indang Municipal Police Station (PNP)', label: 'Municipal Police Desk', phone: '(046) 415-0211, 0998-598-5612' },
       { name: 'Cavite Provincial Police Office', label: 'Provincial Command', phone: '(046) 431-0370' },
@@ -249,9 +249,9 @@ function EmergencyRoute() {
         sections.push({
           category: 'Additional Verified Hotlines',
           scope: 'both',
-          color: 'text-purple-700 dark:text-purple-400',
-          borderColor: 'border-l-purple-600',
-          bgAccent: 'bg-purple-50 dark:bg-purple-950/30',
+          color: 'text-sky-700 dark:text-sky-400',
+          borderColor: 'border-l-sky-600',
+          bgAccent: 'bg-sky-50 dark:bg-sky-950/30',
           contacts: filteredCustomContacts,
         })
       }
@@ -299,7 +299,7 @@ function EmergencyRoute() {
         <aside
           role="status"
           aria-label="Offline Mode Notification: Resilient Emergency Directory"
-          className="bg-gradient-to-r from-amber-600 via-amber-700 to-emerald-800 text-white px-4 py-3.5 shadow-xl border-b-2 border-amber-500 animate-in slide-in-from-top duration-300"
+          className="bg-amber-900 text-white px-4 py-3.5 shadow-xl border-b-2 border-amber-600 animate-in slide-in-from-top duration-300"
         >
           <div className="container mx-auto max-w-6xl flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
             <div className="flex items-start sm:items-center gap-3">
@@ -308,11 +308,11 @@ function EmergencyRoute() {
               </div>
               <div className="space-y-1">
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-400 text-amber-950 shadow-xs">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-400 text-amber-950 shadow-xs">
                     <Zap className="h-3 w-3 fill-amber-950" />
                     Offline Mode Active
                   </span>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-400 text-emerald-950 shadow-xs">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-400 text-emerald-950 shadow-xs">
                     <ShieldCheck className="h-3 w-3" />
                     Locally Cached Directory
                   </span>
@@ -334,32 +334,32 @@ function EmergencyRoute() {
       {/* Urgent Emergency Response Banner */}
       <section
         aria-labelledby="emergency-hero-heading"
-        className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 text-white py-8 sm:py-12 px-4 shadow-lg"
+        className="bg-[#0C2B64] dark:bg-card text-white dark:text-card-foreground border-b border-border py-8 sm:py-12 px-4 shadow-sm"
       >
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex items-start gap-4">
-              <div className="p-3.5 sm:p-4 bg-white/15 rounded-2xl backdrop-blur-sm ring-1 ring-white/25 shadow-inner shrink-0">
-                <AlertTriangle className="h-8 w-8 sm:h-10 sm:w-10 text-white animate-pulse" />
+              <div className="p-3.5 sm:p-4 bg-red-600/20 border border-red-500/30 rounded-2xl text-red-500 dark:text-red-400 shrink-0">
+                <AlertTriangle className="h-8 w-8 sm:h-10 sm:w-10" />
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                  <span className="text-[10px] uppercase tracking-widest bg-yellow-400 text-yellow-950 font-black px-2.5 py-0.5 rounded-full shadow-xs">
+                  <span className="text-xs uppercase tracking-wider bg-red-600 text-white font-bold px-2.5 py-0.5 rounded-full shadow-xs">
                     Emergency Response Desk
                   </span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 text-white px-2 py-0.5 rounded-full">
+                  <span className="text-xs font-semibold uppercase tracking-wider bg-white/10 dark:bg-muted text-white dark:text-foreground px-2 py-0.5 rounded-full border border-white/20 dark:border-border">
                     Indang, Cavite
                   </span>
                 </div>
                 <h1
                   id="emergency-hero-heading"
-                  className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight mb-2"
+                  className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white dark:text-foreground mb-2"
                 >
-                  Emergency Hotlines & Disaster Response
+                  Emergency Hotlines &amp; Disaster Response
                 </h1>
-                <p className="text-red-50 text-xs sm:text-sm md:text-base max-w-2xl leading-relaxed">
+                <p className="text-slate-200 dark:text-muted-foreground text-xs sm:text-sm md:text-base max-w-2xl leading-relaxed">
                   In case of life-threatening emergencies, contact the responders{' '}
-                  <strong className="text-white font-bold underline decoration-yellow-400 underline-offset-2">immediately</strong>. Tap any card below to place a direct phone call.
+                  <strong className="text-white dark:text-foreground font-bold underline decoration-red-400 underline-offset-2">immediately</strong>. Tap any card below to place a direct phone call.
                 </p>
               </div>
             </div>
@@ -370,7 +370,7 @@ function EmergencyRoute() {
                 <ShieldCheck className="h-4 w-4 text-emerald-300" />
                 <span>24/7 Resilient Directory</span>
               </div>
-              <p className="text-[11px] text-white/80 max-w-[220px]">
+              <p className="text-xs text-white/80 max-w-[220px]">
                 Pre-cached for instant dialing during typhoons, floods, and electrical outages.
               </p>
             </div>
@@ -385,7 +385,7 @@ function EmergencyRoute() {
                   Priority Speed-Dial Responders
                 </span>
               </div>
-              <span className="text-[11px] text-red-200 font-medium">
+              <span className="text-xs text-red-200 font-semibold">
                 Tap to Call Directly
               </span>
             </div>
@@ -399,13 +399,13 @@ function EmergencyRoute() {
                     key={card.number}
                     href={telUri}
                     aria-label={`${card.title} - Call ${card.number}`}
-                    className={`group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border-2 ${card.cardBorder} shadow-md ${card.glowClass} hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0.5 transition-all duration-200 min-h-[52px] md:min-h-[140px] btn-tactile text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-red-700`}
+                    className={`group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border ${card.cardBorder} shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0.5 transition-all duration-200 min-h-[52px] md:min-h-[140px] btn-tactile text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-red-700`}
                   >
                     <div className="flex items-start justify-between gap-1.5 mb-2.5">
                       <div className={`p-2 sm:p-2.5 rounded-xl ${card.iconBg} shrink-0 shadow-sm flex items-center justify-center`}>
                         <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                       </div>
-                      <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground bg-muted/80 dark:bg-slate-800 px-2 py-0.5 rounded-full line-clamp-1 border border-border/50">
+                      <span className="text-xs font-semibold text-muted-foreground bg-muted/80 dark:bg-slate-800 px-2 py-0.5 rounded-full line-clamp-1 border border-border/50">
                         {card.badge}
                       </span>
                     </div>
@@ -414,7 +414,7 @@ function EmergencyRoute() {
                       <h2 className="text-xs sm:text-sm font-extrabold text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-1">
                         {card.title}
                       </h2>
-                      <p className="text-[11px] text-muted-foreground truncate hidden sm:block">
+                      <p className="text-xs text-muted-foreground truncate hidden sm:block">
                         {card.subtitle}
                       </p>
                     </div>
@@ -425,7 +425,7 @@ function EmergencyRoute() {
                       </span>
                       <span
                         aria-hidden="true"
-                        className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0 rounded-xl sm:rounded-lg bg-emerald-700 group-hover:bg-emerald-800 text-white shadow-xs shrink-0 transition-colors btn-tactile"
+                        className={`inline-flex items-center justify-center min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0 rounded-xl sm:rounded-lg ${card.buttonBg} text-white shadow-xs shrink-0 transition-colors btn-tactile`}
                       >
                         <Phone className="h-4 w-4 sm:h-3.5 sm:w-3.5 fill-current" />
                       </span>
@@ -555,7 +555,7 @@ function EmergencyRoute() {
                           {section.category}
                         </CardTitle>
                       </div>
-                      <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider bg-white/15 text-white shrink-0 border border-white/10">
+                      <span className="text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider bg-white/15 text-white shrink-0 border border-white/10">
                         {section.contacts.length} {section.contacts.length === 1 ? 'Hotline' : 'Hotlines'}
                       </span>
                     </div>
@@ -573,7 +573,7 @@ function EmergencyRoute() {
                               {contact.name}
                             </h3>
                             {contact.label && (
-                              <span className="text-[10px] font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-md border border-border/50 shrink-0">
+                              <span className="text-xs font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-md border border-border/50 shrink-0">
                                 {contact.label}
                               </span>
                             )}
@@ -589,14 +589,14 @@ function EmergencyRoute() {
                                   className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-muted/40 hover:bg-muted/70 dark:bg-muted/20 dark:hover:bg-muted/40 border border-border/60 transition-colors"
                                 >
                                   <div className="flex items-center gap-2.5 min-w-0">
-                                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
+                                    <div className="p-2 rounded-lg bg-red-600/10 text-red-600 dark:text-red-400 shrink-0">
                                       <Phone className="h-4 w-4" />
                                     </div>
                                     <div className="flex flex-col min-w-0">
                                       <a
                                         href={telUri}
                                         aria-label={`Call ${contact.name} at ${number}`}
-                                        className="text-base sm:text-lg font-mono font-bold tracking-tight text-foreground hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors truncate focus:outline-none focus:underline min-h-[44px] flex items-center"
+                                        className="text-base sm:text-lg font-mono font-bold tracking-tight text-foreground hover:text-red-600 dark:hover:text-red-400 transition-colors truncate focus:outline-none focus:underline min-h-[44px] flex items-center"
                                       >
                                         {number}
                                       </a>
@@ -614,12 +614,12 @@ function EmergencyRoute() {
                                       {isCopied ? (
                                         <>
                                           <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                                          <span className="text-[11px] text-emerald-600 dark:text-emerald-400">Copied</span>
+                                          <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Copied</span>
                                         </>
                                       ) : (
                                         <>
                                           <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                                          <span className="text-[11px]">Copy</span>
+                                          <span className="text-xs font-medium">Copy</span>
                                         </>
                                       )}
                                     </button>
@@ -627,7 +627,7 @@ function EmergencyRoute() {
                                     <a
                                       href={telUri}
                                       aria-label={`Call ${contact.name} at ${number}`}
-                                      className="bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white min-h-[44px] min-w-[44px] px-4 font-bold text-xs sm:text-sm rounded-xl flex items-center justify-center gap-1.5 shadow-sm transition-all btn-tactile"
+                                      className="bg-red-600 hover:bg-red-700 active:bg-red-800 text-white min-h-[44px] min-w-[44px] px-4 font-bold text-xs sm:text-sm rounded-xl flex items-center justify-center gap-1.5 shadow-sm transition-all btn-tactile"
                                     >
                                       <Phone className="h-4 w-4 fill-current" />
                                       <span>Call</span>
@@ -658,7 +658,7 @@ function EmergencyRoute() {
             </div>
             <div className="space-y-1">
               <h4 className="text-xs font-bold text-foreground">When Calling 911 or Hotlines</h4>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 State your exact Sitio/Street in Barangay Daine 1 or 2, describe the situation clearly, and stay on the line until instructed.
               </p>
             </div>
@@ -670,7 +670,7 @@ function EmergencyRoute() {
             </div>
             <div className="space-y-1">
               <h4 className="text-xs font-bold text-foreground">Typhoon & Brownout Ready</h4>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 All numbers are cached in your browser. Phone calls will connect via standard telecommunications even during power failures.
               </p>
             </div>
@@ -688,7 +688,7 @@ function EmergencyRoute() {
                 <h4 className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
                   Interactive Evacuation Map
                 </h4>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   View designated disaster evacuation centers and relief stations across Indang.
                 </p>
               </div>

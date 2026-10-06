@@ -308,7 +308,7 @@ function AdminEventsRoute() {
                         </span>
                       )}
                       {ev.scope && (
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider self-center ${
+                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider self-center ${
                           ev.scope === 'both' ? 'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200' :
                           ev.scope === 'daine_1' ? 'bg-[#0038A8]/10 text-[#0038A8]' :
                           'bg-[#CE1126]/10 text-[#CE1126]'

@@ -455,7 +455,7 @@ export function BusinessForm({
                             </SelectItem>
                             <SelectItem value="daine_2" className="min-h-[44px] cursor-pointer py-2 text-sm font-medium">
                               <span className="flex items-center gap-2">
-                                <span className="h-2.5 w-2.5 rounded-full bg-purple-500" />
+                                <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
                                 Barangay Daine II
                               </span>
                             </SelectItem>
@@ -602,7 +602,7 @@ export function BusinessForm({
                               type="button"
                               onClick={() => field.onChange(preset)}
                               disabled={isSubmitting}
-                              className={`text-xs px-2.5 py-1 rounded-lg border font-medium transition-all min-h-[36px] flex items-center cursor-pointer ${
+                              className={`text-xs px-2.5 py-1.5 rounded-lg border font-medium transition-all min-h-[44px] flex items-center cursor-pointer ${
                                 isActive
                                   ? 'bg-primary text-primary-foreground border-primary shadow-xs font-semibold'
                                   : 'bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border-border/80'
@@ -1005,7 +1005,7 @@ export function BusinessForm({
                           }`}
                         >
                           <span className="leading-tight">{purokKey}</span>
-                          <span className={`text-[10px] ${isSelectedPurok ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+                          <span className={`text-xs ${isSelectedPurok ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
                             {currentBarangay === 'daine_2' ? 'Daine 2' : 'Daine 1'}
                           </span>
                         </button>

@@ -108,7 +108,7 @@ export const CATEGORY_COLORS: Record<string, string> = {
   Pharmacy:
     'bg-teal-100 text-teal-950 dark:bg-teal-950/80 dark:text-teal-200 border border-teal-300 dark:border-teal-700 font-semibold',
   Tailoring:
-    'bg-purple-100 text-purple-950 dark:bg-purple-950/80 dark:text-purple-200 border border-purple-300 dark:border-purple-700 font-semibold',
+    'bg-amber-100 text-amber-950 dark:bg-amber-950/80 dark:text-amber-200 border border-amber-300 dark:border-amber-700 font-semibold',
   Others:
     'bg-gray-100 text-gray-950 dark:bg-slate-800 dark:text-slate-200 border border-gray-300 dark:border-slate-700 font-semibold',
 }
@@ -287,14 +287,24 @@ function DirectoryRoute() {
   return (
     <div className="min-h-[100dvh] container mx-auto py-8 md:py-10 px-4 md:px-6 max-w-6xl">
       {/* High-visibility MSME Growth Hero Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0038A8] via-[#002d87] to-slate-900 text-white p-6 sm:p-8 md:p-10 shadow-lg border border-white/15 mb-8">
+      <div className="relative overflow-hidden rounded-3xl civic-header text-white p-6 sm:p-8 md:p-10 shadow-lg border border-border/40 mb-8">
+        {/* Philippine National Flag Tricolor Accent Bar */}
+        <div
+          className="absolute top-0 right-0 left-0 h-1.5 flex"
+          aria-hidden="true"
+        >
+          <div className="w-[45%] bg-[#0038A8]" />
+          <div className="w-[10%] bg-[#FCD116]" />
+          <div className="w-[45%] bg-[#CE1126]" />
+        </div>
+
         <div className="relative z-10 max-w-3xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-xs sm:text-sm font-bold tracking-wide border border-white/30 text-amber-200 shadow-xs">
-            <Store className="h-4 w-4 text-amber-300" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-xs sm:text-sm font-bold tracking-wide border border-white/20 text-slate-100 shadow-xs">
+            <Store className="h-4 w-4 text-[#FCD116]" />
             <span>Local Business &amp; Merchant Directory</span>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight drop-shadow-xs">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
             Barangay Daine MSME &amp; Business Directory
           </h1>
 
@@ -306,10 +316,10 @@ function DirectoryRoute() {
             <Button
               asChild
               size="lg"
-              className="min-h-[48px] px-6 font-bold bg-amber-400 hover:bg-amber-300 active:bg-amber-500 text-amber-950 font-bold shadow-lg gap-2 text-sm sm:text-base btn-tactile rounded-xl border border-amber-300"
+              className="min-h-[48px] px-6 font-bold bg-white text-[#0C2B64] hover:bg-slate-100 active:bg-slate-200 shadow-lg gap-2 text-sm sm:text-base btn-tactile rounded-xl border border-white/40"
             >
               <Link to="/businesses/new">
-                <Store className="h-5 w-5 text-amber-950" />
+                <Store className="h-5 w-5 text-[#0C2B64]" />
                 Register / List Business
               </Link>
             </Button>
@@ -364,7 +374,7 @@ function DirectoryRoute() {
                 >
                   <span>{cat}</span>
                   <span
-                    className={`inline-flex items-center justify-center text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full min-w-[22px] font-bold ${
+                    className={`inline-flex items-center justify-center text-xs px-2 py-0.5 rounded-full min-w-[22px] font-bold ${
                       isActive
                         ? 'bg-primary-foreground/20 text-primary-foreground'
                         : 'bg-muted text-muted-foreground'
@@ -434,8 +444,8 @@ function DirectoryRoute() {
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 text-primary/40 transition-transform duration-300 group-hover:scale-105">
-                    <div className="p-3.5 rounded-full bg-background/80 shadow-xs backdrop-blur-xs">
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-muted/50 text-muted-foreground transition-transform duration-300 group-hover:scale-105">
+                    <div className="p-3.5 rounded-full bg-card shadow-xs ring-1 ring-border">
                       <Store className="h-7 w-7 text-primary/70" />
                     </div>
                     <span className="text-xs font-semibold text-muted-foreground mt-2">
@@ -447,12 +457,12 @@ function DirectoryRoute() {
                 {/* Floating Category Badge & Claimable Pill (Top-left) */}
                 <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 pointer-events-none z-10">
                   <span
-                    className={`inline-flex text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-xs backdrop-blur-md ${badgeClass}`}
+                    className={`inline-flex text-xs font-semibold px-2.5 py-0.5 rounded-full shadow-xs backdrop-blur-md ${badgeClass}`}
                   >
                     {business.category}
                   </span>
                   {!business.is_claimed && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/95 text-amber-950 border border-amber-300 shadow-xs backdrop-blur-md">
+                    <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/95 text-amber-950 border border-amber-300 shadow-xs backdrop-blur-md">
                       Claimable
                     </span>
                   )}
@@ -461,9 +471,9 @@ function DirectoryRoute() {
                 {/* Floating Barangay Scope & Real-time Live Open/Closed Status Badges (Top-right) */}
                 <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5 pointer-events-none z-10">
                   <span
-                    className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs backdrop-blur-md ${
+                    className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full shadow-xs backdrop-blur-md ${
                       isDaine2
-                        ? 'bg-purple-900/90 text-purple-100 border border-purple-400/50'
+                        ? 'bg-[#CE1126]/90 text-white border border-rose-400/50'
                         : 'bg-[#0038A8]/90 text-blue-100 border border-blue-400/50'
                     }`}
                   >
@@ -473,7 +483,7 @@ function DirectoryRoute() {
 
                   {/* Pulsing Live Open Status Badge */}
                   <span
-                    className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-xs backdrop-blur-md border ${openStatus.badgeClass}`}
+                    className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full shadow-xs backdrop-blur-md border ${openStatus.badgeClass}`}
                   >
                     {openStatus.label === 'Open Now' || openStatus.label === 'Open 24/7' ? (
                       <>
@@ -542,7 +552,7 @@ function DirectoryRoute() {
                       {business.payment_methods.map((method: string) => (
                         <span
                           key={method}
-                          className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border"
+                          className="text-xs font-semibold px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border"
                         >
                           {method}
                         </span>
@@ -553,7 +563,7 @@ function DirectoryRoute() {
 
               {/* Fixed 3-Action Footer on every card */}
               <CardFooter className="pt-2.5 pb-4 px-4 sm:px-5 flex items-center gap-2 border-t bg-muted/15 mt-auto">
-                {/* 📞 Call Button */}
+                {/* Call Button */}
                 {business.phone ? (
                   <a
                     href={`tel:${business.phone.replace(/[^0-9+]/g, '')}`}
@@ -577,7 +587,7 @@ function DirectoryRoute() {
                   </button>
                 )}
 
-                {/* 💬 Messenger Button */}
+                {/* Messenger Button */}
                 {messengerUrl ? (
                   <a
                     href={messengerUrl}

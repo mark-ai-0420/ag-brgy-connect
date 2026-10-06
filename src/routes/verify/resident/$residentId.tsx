@@ -88,8 +88,13 @@ function VerifyResidentRoute() {
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center p-4 bg-slate-50 dark:bg-background">
       <Card className="w-full max-w-md shadow-xl border overflow-hidden rounded-2xl">
-        <div className="bg-gradient-to-r from-[#0038A8] via-[#002675] to-[#1E3A8A] p-6 text-white text-center relative">
-          <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-[#0038A8] via-[#FCD116] to-[#CE1126]" />
+        <div className="civic-header p-6 text-white text-center relative">
+          {/* Philippine Tricolor Accent Stripe (Segmented Solid Bars) */}
+          <div className="absolute top-0 right-0 left-0 h-1.5 flex" aria-hidden="true">
+            <div className="w-[45%] bg-[#0038A8]" />
+            <div className="w-[10%] bg-[#FCD116]" />
+            <div className="w-[45%] bg-[#CE1126]" />
+          </div>
           <img
             src="/logo.jpg"
             alt="BrgyConnect"
@@ -125,7 +130,7 @@ function VerifyResidentRoute() {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
+                    <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
                       Verified Resident Name
                     </p>
                     <p className="text-base font-black text-foreground uppercase truncate">
@@ -141,7 +146,7 @@ function VerifyResidentRoute() {
                     <Building2 className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
+                    <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
                       Official Barangay Unit
                     </p>
                     <p className="text-sm font-bold text-foreground">{barangayLabel}</p>
@@ -154,7 +159,7 @@ function VerifyResidentRoute() {
                     <MapPin className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
+                    <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
                       Purok / Sitio
                     </p>
                     <p className="text-sm font-bold text-foreground">{resident.purok || 'Sitio Centro / Registered Purok'}</p>
@@ -167,7 +172,7 @@ function VerifyResidentRoute() {
                     <Calendar className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
+                    <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
                       Resident Since / Issue Year
                     </p>
                     <p className="text-sm font-semibold text-foreground">{issueDateFull} ({issueYear})</p>
@@ -183,7 +188,7 @@ function VerifyResidentRoute() {
                     <CheckCircle2 className="h-3.5 w-3.5 mr-1.5 inline text-emerald-600 dark:text-emerald-400" />
                     {resident.status}
                   </Badge>
-                  <div className="flex items-center justify-center gap-1.5 py-1 px-2.5 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px] text-muted-foreground font-medium">
+                  <div className="flex items-center justify-center gap-1.5 py-1 px-2.5 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-muted-foreground font-medium">
                     <Shield className="h-3.5 w-3.5 text-primary shrink-0" />
                     <span>Verified Resident Member &bull; Contact & Address Protected for Privacy</span>
                   </div>

@@ -239,19 +239,19 @@ export function DigitalResidentID({
       canvas.width = width
       canvas.height = height
 
-      // Background Gradient
+      // Dignified Deep Municipal Navy Canvas Background (#0C2B64)
       const bgGrad = ctx.createLinearGradient(0, 0, width, height)
-      bgGrad.addColorStop(0, '#0F172A')
-      bgGrad.addColorStop(0.5, '#1E293B')
-      bgGrad.addColorStop(1, '#0A192F')
+      bgGrad.addColorStop(0, '#0C2B64')
+      bgGrad.addColorStop(0.5, '#0A2454')
+      bgGrad.addColorStop(1, '#061737')
       ctx.fillStyle = bgGrad
       ctx.beginPath()
       drawRoundedRectPath(ctx, 0, 0, width, height, 32)
       ctx.fill()
 
-      // Border
-      ctx.lineWidth = 4
-      ctx.strokeStyle = '#38BDF8'
+      // Gold Hairline Border
+      ctx.lineWidth = 3
+      ctx.strokeStyle = '#D4AF37'
       ctx.stroke()
 
       // Flag Stripe
@@ -265,12 +265,15 @@ export function DigitalResidentID({
 
       // Header Box Background
       const headerGrad = ctx.createLinearGradient(0, 44, width, 140)
-      headerGrad.addColorStop(0, '#002B80')
-      headerGrad.addColorStop(1, '#001D59')
+      headerGrad.addColorStop(0, '#071C44')
+      headerGrad.addColorStop(1, '#051433')
       ctx.fillStyle = headerGrad
       ctx.beginPath()
       drawRoundedRectPath(ctx, 32, 44, width - 64, 110, 16)
       ctx.fill()
+      ctx.lineWidth = 1.5
+      ctx.strokeStyle = '#D4AF37'
+      ctx.stroke()
 
       // Header Logo
       const logoX = 54
@@ -475,7 +478,7 @@ export function DigitalResidentID({
       drawRoundedRectPath(ctx, qrX, qrY, qrSize, qrSize, 16)
       ctx.fill()
       ctx.lineWidth = 2
-      ctx.strokeStyle = '#38BDF8'
+      ctx.strokeStyle = '#D4AF37'
       ctx.stroke()
 
       try {
@@ -567,7 +570,7 @@ export function DigitalResidentID({
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-bold tracking-tight">Official Digital Resident ID</h3>
               {isOfflineCopy && (
-                <Badge variant="outline" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/40 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                <Badge variant="outline" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/40 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
                   <WifiOff className="h-3 w-3" /> Offline Copy
                 </Badge>
               )}
@@ -603,41 +606,41 @@ export function DigitalResidentID({
       {/* ID Card Display Frame */}
       <div className="relative mx-auto max-w-xl perspective-1000">
         {side === 'front' ? (
-          /* FRONT OF CARD */
-          <div className="relative overflow-hidden rounded-3xl border-2 border-amber-500/40 bg-gradient-to-br from-slate-950 via-slate-900 to-[#0A192F] text-white shadow-2xl transition-all duration-300">
+          /* FRONT OF CARD: Authentic Dignified Municipal Navy (#0C2B64) with Gold Hairline Border */
+          <div className="relative overflow-hidden rounded-3xl border-2 border-amber-400/60 bg-[#0C2B64] text-white shadow-2xl transition-all duration-300">
             {/* Top Philippine Flag Tricolor Ribbon */}
             <div className="h-2 w-full flex">
-              <div className="w-[45%] bg-primary" />
-              <div className="w-[10%] bg-accent" />
-              <div className="w-[45%] bg-destructive" />
+              <div className="w-[45%] bg-[#0038A8]" />
+              <div className="w-[10%] bg-[#FCD116]" />
+              <div className="w-[45%] bg-[#CE1126]" />
             </div>
 
-            {/* Holographic Subtle Background Rings */}
-            <div className="pointer-events-none absolute -right-20 -bottom-20 h-72 w-72 rounded-full border-[16px] border-sky-500/10 blur-[1px]" />
-            <div className="pointer-events-none absolute -left-12 -top-12 h-48 w-48 rounded-full border-[10px] border-amber-500/10 blur-[1px]" />
+            {/* Subtle Watermark Civic Emblem (No neon rings) */}
+            <div className="pointer-events-none absolute right-4 bottom-4 h-56 w-56 rounded-full border border-amber-400/10 opacity-20 flex items-center justify-center">
+              <ShieldCheck className="h-44 w-44 text-amber-400/15" />
+            </div>
 
-            <div className="p-5 sm:p-6 space-y-5">
-              {/* Header Box */}
-              <div className="rounded-2xl bg-gradient-to-r from-primary via-primary/90 to-blue-900 p-3.5 border border-sky-400/30 text-center shadow-md relative overflow-hidden">
-                <div className="absolute top-0 right-0 left-0 h-0.5 bg-gradient-to-r from-transparent via-amber-300/60 to-transparent" />
+            <div className="p-5 sm:p-6 space-y-5 relative z-10">
+              {/* Official Header Box */}
+              <div className="rounded-2xl bg-[#071C44] p-3.5 border border-amber-400/40 text-center shadow-md relative overflow-hidden">
                 <div className="flex items-center justify-between gap-2">
                   <img
                     src="/logo.jpg"
-                    alt="Barangay Logo"
-                    className="h-11 w-11 rounded-full object-cover ring-2 ring-amber-400/80 shadow-md shrink-0 bg-white"
+                    alt="Barangay Official Seal"
+                    className="h-12 w-12 rounded-full object-cover ring-2 ring-amber-400/90 shadow-md shrink-0 bg-white"
                   />
                   <div className="min-w-0 flex-1 px-1">
-                    <p className="text-[10px] uppercase font-bold tracking-widest text-slate-200">
-                      Republic of the Philippines • Cavite
+                    <p className="text-[11px] uppercase font-bold tracking-wider text-slate-200">
+                      Republic of the Philippines • Province of Cavite
                     </p>
-                    <h2 className="text-base sm:text-lg font-black tracking-wider text-white uppercase truncate">
+                    <h2 className="text-base sm:text-lg font-black tracking-wide text-white uppercase truncate">
                       {barangayTitle}
                     </h2>
-                    <p className="text-[10px] font-semibold tracking-wider text-sky-200 uppercase">
-                      Municipality of Indang
+                    <p className="text-[11px] font-bold tracking-wider text-amber-300 uppercase">
+                      Municipality of Indang • Official Resident Card
                     </p>
                   </div>
-                  <div className="h-11 w-11 rounded-full bg-amber-400/20 ring-2 ring-amber-400/60 flex items-center justify-center text-amber-300 shrink-0">
+                  <div className="h-11 w-11 rounded-full bg-amber-400/15 ring-2 ring-amber-400/70 flex items-center justify-center text-amber-300 shrink-0">
                     <ShieldCheck className="h-6 w-6" />
                   </div>
                 </div>
@@ -645,7 +648,7 @@ export function DigitalResidentID({
 
               {/* Card Body */}
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-                {/* Photo Section with Camera Overlay & Upload Trigger */}
+                {/* 2x2 Photo Frame with Gold Hairline Border */}
                 <div className="relative shrink-0 flex flex-col items-center group/photo">
                   <div
                     role="button"
@@ -658,7 +661,7 @@ export function DigitalResidentID({
                       }
                     }}
                     className={cn(
-                      'h-32 w-28 sm:h-36 sm:w-30 rounded-2xl bg-slate-800 border-2 border-amber-400/80 overflow-hidden shadow-lg flex items-center justify-center relative cursor-pointer transition-all duration-200 hover:border-amber-300 hover:shadow-amber-500/20 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-amber-400',
+                      'h-32 w-28 sm:h-36 sm:w-30 rounded-2xl bg-slate-900 border-2 border-amber-400/90 overflow-hidden shadow-lg flex items-center justify-center relative cursor-pointer transition-all duration-200 hover:border-amber-300 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-amber-400',
                       (isUploadingPhoto || isOfflineCopy) && 'opacity-80'
                     )}
                     title={isOfflineCopy ? 'Offline Copy Mode' : 'Click to change or upload 2x2 Photo'}
@@ -671,16 +674,16 @@ export function DigitalResidentID({
                       />
                     ) : (
                       <div className="flex flex-col items-center justify-center text-slate-400 p-2 text-center">
-                        <User className="h-12 w-12 text-slate-500 mb-1" />
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Photo</span>
+                        <User className="h-12 w-12 text-slate-400 mb-1" />
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-300">2x2 Photo</span>
                       </div>
                     )}
 
-                    {/* Camera Hover / Focus Overlay (active when online) */}
+                    {/* Camera Hover / Focus Overlay */}
                     {!isOfflineCopy && (
                       <div
                         className={cn(
-                          'absolute inset-0 bg-slate-950/75 backdrop-blur-[1px] flex flex-col items-center justify-center p-2 text-center transition-all duration-200',
+                          'absolute inset-0 bg-[#071C44]/85 backdrop-blur-[1px] flex flex-col items-center justify-center p-2 text-center transition-all duration-200',
                           isUploadingPhoto
                             ? 'opacity-100'
                             : 'opacity-0 group-hover/photo:opacity-100 group-focus/photo:opacity-100'
@@ -689,7 +692,7 @@ export function DigitalResidentID({
                         {isUploadingPhoto ? (
                           <div className="flex flex-col items-center gap-1 text-white">
                             <Loader2 className="h-6 w-6 animate-spin text-amber-400" />
-                            <span className="text-[9px] font-bold tracking-wider uppercase text-amber-300">
+                            <span className="text-[11px] font-bold tracking-wider uppercase text-amber-300">
                               Uploading...
                             </span>
                           </div>
@@ -698,10 +701,10 @@ export function DigitalResidentID({
                             <div className="p-1.5 rounded-full bg-amber-400 text-amber-950 shadow-md">
                               <Camera className="h-4 w-4 text-amber-950" />
                             </div>
-                            <span className="text-[9px] font-black tracking-wider uppercase text-amber-300 leading-tight">
+                            <span className="text-[11px] font-black tracking-wider uppercase text-amber-300 leading-tight">
                               {avatarUrl ? 'Change Photo' : 'Upload 2x2'}
                             </span>
-                            <span className="text-[7px] text-slate-300 font-medium">JPEG, PNG, WebP</span>
+                            <span className="text-xs text-slate-300 font-medium">JPEG, PNG, WebP</span>
                           </div>
                         )}
                       </div>
@@ -709,22 +712,21 @@ export function DigitalResidentID({
                   </div>
 
                   {isOfflineCopy ? (
-                    <Badge className="mt-1.5 bg-amber-600 hover:bg-amber-600 text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 border border-amber-400/40 shadow-xs">
+                    <Badge className="mt-1.5 bg-amber-600 hover:bg-amber-600 text-white text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 border border-amber-400/40 shadow-xs">
                       <WifiOff className="h-2.5 w-2.5 mr-1 inline" /> Offline Copy
                     </Badge>
                   ) : (
-                    <Badge className="mt-1.5 bg-emerald-600/90 hover:bg-emerald-600 text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 border border-emerald-400/40 shadow-xs">
+                    <Badge className="mt-1.5 bg-emerald-600 hover:bg-emerald-600 text-white text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 border border-emerald-400/40 shadow-xs">
                       <CheckCircle2 className="h-2.5 w-2.5 mr-1 inline" /> Verified
                     </Badge>
                   )}
 
-                  {/* Direct Change/Upload Photo button under avatar when online */}
                   {!isOfflineCopy && (
                     <button
                       type="button"
                       onClick={handleTriggerUpload}
                       disabled={isUploadingPhoto}
-                      className="mt-1 inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 hover:text-amber-300 transition-colors cursor-pointer hover:underline"
+                      className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-amber-300 hover:text-amber-200 transition-colors cursor-pointer hover:underline"
                     >
                       <Camera className="h-3 w-3" />
                       {avatarUrl ? 'Change Photo' : 'Upload 2x2 Photo'}
@@ -735,15 +737,15 @@ export function DigitalResidentID({
                 {/* Resident Details */}
                 <div className="flex-1 min-w-0 space-y-3 text-center sm:text-left">
                   <div>
-                    <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Resident Full Name</p>
+                    <p className="text-[11px] uppercase font-bold tracking-wider text-slate-300">Resident Full Name</p>
                     <p className="text-lg sm:text-xl font-black text-white uppercase tracking-tight truncate">
                       {residentName}
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-left bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/60">
+                  <div className="grid grid-cols-2 gap-2 text-left bg-[#071C44]/80 p-3 rounded-xl border border-amber-400/30">
                     <div>
-                      <p className="text-[9px] uppercase font-bold tracking-wider text-slate-400">Control Number</p>
+                      <p className="text-[11px] uppercase font-bold tracking-wider text-slate-300">Control Number</p>
                       <button
                         type="button"
                         onClick={handleCopyCode}
@@ -751,23 +753,23 @@ export function DigitalResidentID({
                         title="Click to copy"
                       >
                         {controlNumber}
-                        {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3 opacity-60" />}
+                        {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3 opacity-70" />}
                       </button>
                     </div>
 
                     <div>
-                      <p className="text-[9px] uppercase font-bold tracking-wider text-slate-400">Jurisdiction</p>
-                      <p className="text-xs font-bold text-sky-200 truncate">{purokName}</p>
+                      <p className="text-[11px] uppercase font-bold tracking-wider text-slate-300">Jurisdiction</p>
+                      <p className="text-xs font-bold text-white truncate">{purokName}</p>
                     </div>
 
                     <div>
-                      <p className="text-[9px] uppercase font-bold tracking-wider text-slate-400">Issued</p>
+                      <p className="text-[11px] uppercase font-bold tracking-wider text-slate-300">Issued</p>
                       <p className="text-xs font-medium text-slate-200">{issuedDateFormatted}</p>
                     </div>
 
                     <div>
-                      <p className="text-[9px] uppercase font-bold tracking-wider text-slate-400">Status</p>
-                      <p className={`text-xs font-bold ${isOfflineCopy ? 'text-amber-400' : 'text-emerald-400'}`}>
+                      <p className="text-[11px] uppercase font-bold tracking-wider text-slate-300">Status</p>
+                      <p className={`text-xs font-bold ${isOfflineCopy ? 'text-amber-300' : 'text-emerald-400'}`}>
                         {isOfflineCopy ? 'Offline Cached' : 'Active Resident'}
                       </p>
                     </div>
@@ -776,39 +778,39 @@ export function DigitalResidentID({
               </div>
 
               {/* Bottom Security Footer */}
-              <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-400">
+              <div className="pt-2 border-t border-amber-400/30 flex items-center justify-between text-[11px] text-slate-300">
                 <div className="flex items-center gap-1.5">
-                  <ShieldCheck className="h-4 w-4 text-sky-400" />
-                  <span>Official Virtual Resident ID Card</span>
+                  <ShieldCheck className="h-4 w-4 text-amber-300" />
+                  <span>Official Virtual Resident ID Card • Republic of the Philippines</span>
                 </div>
-                <div className="font-mono text-slate-300">VALID 2026 - 2027</div>
+                <div className="font-mono text-amber-300 font-bold">VALID 2026 - 2027</div>
               </div>
             </div>
           </div>
         ) : (
-          /* BACK OF CARD */
-          <div className="relative overflow-hidden rounded-3xl border-2 border-sky-500/40 bg-gradient-to-br from-slate-950 via-[#0A192F] to-slate-900 text-white shadow-2xl transition-all duration-300">
+          /* BACK OF CARD: Authentic High-Contrast QR Code on Crisp White Stock */
+          <div className="relative overflow-hidden rounded-3xl border-2 border-amber-400/60 bg-[#0C2B64] text-white shadow-2xl transition-all duration-300">
             {/* Top Stripe */}
             <div className="h-2 w-full flex">
-              <div className="w-[45%] bg-primary" />
-              <div className="w-[10%] bg-accent" />
-              <div className="w-[45%] bg-destructive" />
+              <div className="w-[45%] bg-[#0038A8]" />
+              <div className="w-[10%] bg-[#FCD116]" />
+              <div className="w-[45%] bg-[#CE1126]" />
             </div>
 
             <div className="p-5 sm:p-6 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center justify-between border-b border-amber-400/30 pb-3">
                 <div>
-                  <h3 className="text-sm font-black uppercase tracking-wider text-white">Digital Security QR</h3>
-                  <p className="text-[10px] text-slate-400">Scan for instant authentic barangay verification</p>
+                  <h3 className="text-sm font-black uppercase tracking-wider text-white">Digital Security QR Verification</h3>
+                  <p className="text-xs text-slate-300">Scan for instant authentic barangay registry authentication</p>
                 </div>
-                <Badge variant="outline" className="border-sky-400/40 text-sky-300 text-[10px] font-mono">
+                <Badge variant="outline" className="border-amber-400/50 text-amber-300 text-[11px] font-mono font-bold bg-[#071C44]">
                   {controlNumber}
                 </Badge>
               </div>
 
               <div className="flex flex-col sm:flex-row items-center gap-5 py-2">
-                {/* QR Code Container */}
-                <div className="bg-white p-2.5 rounded-2xl shadow-xl ring-2 ring-sky-400/40 shrink-0">
+                {/* High-Contrast Scannable QR Code Container */}
+                <div className="bg-white p-3 rounded-2xl shadow-xl border-2 border-amber-400/90 shrink-0 flex items-center justify-center">
                   <img
                     src={qrUrl}
                     alt={`QR Code ${controlNumber}`}
@@ -817,13 +819,13 @@ export function DigitalResidentID({
                 </div>
 
                 {/* Instructions & Meta */}
-                <div className="space-y-2.5 text-xs text-slate-300 text-center sm:text-left min-w-0">
+                <div className="space-y-2.5 text-xs text-slate-200 text-center sm:text-left min-w-0">
                   <div className="space-y-1">
                     <p className="text-[11px] font-bold text-amber-300 uppercase tracking-wide">
-                      Official Resident Registry
+                      Official Resident Authentication
                     </p>
-                    <p className="text-[11px] text-slate-300 leading-relaxed">
-                      Scanning this QR code directs any verifying official or bank officer to the secure BrgyConnect live authentication portal.
+                    <p className="text-[11px] text-slate-200 leading-relaxed">
+                      Scanning this high-contrast QR code connects directly to the authenticated municipal database to verify residency validity and identity records.
                     </p>
                   </div>
 
@@ -832,7 +834,7 @@ export function DigitalResidentID({
                       to="/verify/resident/$residentId"
                       params={{ residentId: effectiveProfile.id }}
                       target="_blank"
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-400 hover:text-sky-300 transition-colors underline underline-offset-2"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-300 hover:text-amber-200 transition-colors underline underline-offset-2 cursor-pointer"
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
                       Open Public Verification Registry
@@ -841,13 +843,13 @@ export function DigitalResidentID({
                 </div>
               </div>
 
-              {/* Disclaimer */}
-              <div className="bg-slate-900/90 rounded-xl p-3 border border-slate-800 text-[10px] text-slate-400 leading-relaxed space-y-1">
-                <p className="font-semibold text-slate-300">
+              {/* Official Disclaimers */}
+              <div className="bg-[#071C44] rounded-xl p-3 border border-amber-400/30 text-xs text-slate-300 leading-relaxed space-y-1">
+                <p className="font-semibold text-white">
                   NOTICE: This digital identification certifies bona fide residency in {barangaySub}.
                 </p>
                 <p>
-                  If found, please surrender to the Barangay Hall or scan QR code to notify the owner.
+                  Property of the Barangay Government. If found, surrender to the Barangay Hall or scan QR code.
                 </p>
               </div>
             </div>

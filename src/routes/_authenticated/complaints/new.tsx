@@ -361,8 +361,7 @@ function NewComplaintRoute() {
       )}
 
       {/* Confidential Filing Banner */}
-      <div className="mb-8 rounded-2xl border-2 border-primary/20 bg-linear-to-r from-blue-950/90 via-slate-900 to-indigo-950 text-white p-5 sm:p-6 shadow-md relative overflow-hidden">
-        <div className="absolute right-0 top-0 translate-x-8 -translate-y-8 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="mb-8 rounded-2xl border border-primary/20 bg-slate-900 text-white p-5 sm:p-6 shadow-md relative overflow-hidden">
         <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start gap-4">
             <div className="p-3 rounded-xl bg-white/10 border border-white/20 text-yellow-400 shrink-0 mt-0.5">
@@ -774,7 +773,7 @@ function NewComplaintRoute() {
 
               {/* Step 3 */}
               <div className="flex items-start gap-3">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-bold text-xs border border-purple-300 dark:border-purple-800">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-bold text-xs border border-sky-300 dark:border-sky-800">
                   3
                 </div>
                 <div className="space-y-1 text-xs">
@@ -810,7 +809,7 @@ function NewComplaintRoute() {
             </CardHeader>
             <CardContent className="pt-4 space-y-3 text-xs text-muted-foreground leading-relaxed">
               <div className="p-2.5 rounded-lg bg-muted/60 border border-border">
-                <p className="font-semibold text-foreground mb-1">⚖️ Section 415 Notice (No Lawyers Allowed)</p>
+                <p className="font-semibold text-foreground mb-1">Section 415 Notice (No Lawyers Allowed)</p>
                 <p>
                   Under Section 415 of the Local Government Code, parties must appear in person without legal counsel during Lupon mediation hearings.
                 </p>

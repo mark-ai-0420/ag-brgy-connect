@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Sparkles, Loader2 } from 'lucide-react';
+import { MessageCircle, X, Send, Bot, Loader2 } from 'lucide-react';
 import { sendChatMessage } from '#/server/aiChat';
 
 type Role = 'user' | 'model';
@@ -96,8 +96,8 @@ export function KaDaineChatbot() {
           aria-expanded={false}
         >
           <MessageCircle className="w-6 h-6" />
-          <div className="absolute -top-1 -right-1 bg-yellow-400 text-yellow-900 rounded-full p-1 shadow-sm">
-            <Sparkles className="w-3 h-3" />
+          <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full p-1 shadow-sm">
+            <Bot className="w-3 h-3" />
           </div>
           <div className="absolute right-16 top-1/2 -translate-y-1/2 px-3 py-1 bg-white text-gray-800 text-sm font-medium rounded-md shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap dark:bg-gray-800 dark:text-gray-200">
             Chat with Ka-Daine
@@ -117,7 +117,7 @@ export function KaDaineChatbot() {
             <div className="flex items-center space-x-3">
               <div className="relative">
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
-                  <span className="text-xl">🤖</span>
+                  <Bot className="h-5 w-5 text-white" />
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full overflow-hidden border border-white">
                   {/* PH Flag simulation */}
@@ -150,7 +150,7 @@ export function KaDaineChatbot() {
             {messages.length === 0 ? (
               <div className="flex flex-col h-full items-center justify-center space-y-4 animate-in fade-in zoom-in duration-500">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Sparkles className="w-8 h-8 text-primary" />
+                  <Bot className="w-8 h-8 text-primary" />
                 </div>
                 <div className="text-center space-y-1">
                   <h4 className="font-medium text-foreground">Magandang araw po!</h4>

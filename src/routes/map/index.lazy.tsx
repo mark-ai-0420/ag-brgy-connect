@@ -27,6 +27,7 @@ import {
   ExternalLink,
   Filter,
   CheckCircle2,
+  Check,
   AlertTriangle,
   ShieldCheck,
   Siren,
@@ -136,7 +137,7 @@ export function computeOpenStatus(hours?: string): OpenStatusResult {
   if (!hours || typeof hours !== 'string' || !hours.trim()) {
     return {
       isOpen: true,
-      label: '🟢 Open Today',
+      label: 'Open Today',
       badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300',
       color: 'text-emerald-600',
     }
@@ -155,7 +156,7 @@ export function computeOpenStatus(hours?: string): OpenStatusResult {
   ) {
     return {
       isOpen: true,
-      label: '🟢 Open 24/7',
+      label: 'Open 24/7',
       badgeClass: 'bg-emerald-500/15 text-emerald-700 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300',
       color: 'text-emerald-600',
     }
@@ -190,7 +191,7 @@ export function computeOpenStatus(hours?: string): OpenStatusResult {
   if (!isTodayApplicable) {
     return {
       isOpen: false,
-      label: '⚪ Closed Today',
+      label: 'Closed Today',
       badgeClass: 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400',
       color: 'text-slate-500',
     }
@@ -220,14 +221,14 @@ export function computeOpenStatus(hours?: string): OpenStatusResult {
     if (currentMinutes >= startTotal && currentMinutes <= endTotal) {
       return {
         isOpen: true,
-        label: '🟢 Open Now',
+        label: 'Open Now',
         badgeClass: 'bg-emerald-500/15 text-emerald-700 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300',
         color: 'text-emerald-600',
       }
     } else {
       return {
         isOpen: false,
-        label: '🔴 Closed Now',
+        label: 'Closed Now',
         badgeClass: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300',
         color: 'text-rose-600',
       }
@@ -236,7 +237,7 @@ export function computeOpenStatus(hours?: string): OpenStatusResult {
 
   return {
     isOpen: true,
-    label: '🟢 Open Today',
+    label: 'Open Today',
     badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300',
     color: 'text-emerald-600',
   }
@@ -355,7 +356,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'd1-evac-1',
     name: 'Barangay Daine 1 Covered Court & Multipurpose Hall',
     category: 'evacuation',
-    categoryTag: '🚨 Evacuation Center',
+    categoryTag: 'Evacuation Center',
     scope: 'daine_1',
     purok: 'Purok 2',
     lat: 14.1955,
@@ -373,7 +374,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'd1-evac-2',
     name: 'Barangay Daine 1 Elementary School Evacuation Grounds',
     category: 'evacuation',
-    categoryTag: '🚨 Evacuation Center',
+    categoryTag: 'Evacuation Center',
     scope: 'daine_1',
     purok: 'Purok 3',
     lat: 14.1942,
@@ -390,7 +391,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'd1-gov-1',
     name: 'Barangay Daine 1 Hall & Executive Operations Center',
     category: 'government',
-    categoryTag: '🏛️ Barangay Hall & Ops',
+    categoryTag: 'Barangay Hall & Ops',
     scope: 'daine_1',
     purok: 'Purok 2',
     lat: 14.1955,
@@ -407,7 +408,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'd1-health-1',
     name: 'Barangay Daine 1 Health Center & Birthing Station',
     category: 'health',
-    categoryTag: '🏥 Health & Birthing Clinic',
+    categoryTag: 'Health & Birthing Clinic',
     scope: 'daine_1',
     purok: 'Purok 2',
     lat: 14.1952,
@@ -423,7 +424,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'd1-emerg-1',
     name: 'Barangay Daine 1 Tanod Outpost & Security Desk',
     category: 'emergency',
-    categoryTag: '🛡️ Security & Tanod Outpost',
+    categoryTag: 'Security & Tanod Outpost',
     scope: 'daine_1',
     purok: 'Purok 4',
     lat: 14.1925,
@@ -439,7 +440,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'd1-water-1',
     name: 'Daine 1 Community Potable Water Refilling Hub (Disaster Reserve)',
     category: 'water',
-    categoryTag: '🚰 Community Water Refilling',
+    categoryTag: 'Community Water Refilling',
     scope: 'daine_1',
     purok: 'Purok 1',
     lat: 14.1962,
@@ -456,7 +457,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'd1-edu-1',
     name: 'Barangay Daine 1 Day Care & Early Learning Center',
     category: 'education',
-    categoryTag: '🏫 Day Care & Early Learning',
+    categoryTag: 'Day Care & Early Learning',
     scope: 'daine_1',
     purok: 'Purok 2',
     lat: 14.1957,
@@ -472,7 +473,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'd1-mrf-1',
     name: 'Daine 1 Material Recovery Facility (MRF) & Composting Hub',
     category: 'mrf',
-    categoryTag: '♻️ Material Recovery Facility (MRF)',
+    categoryTag: 'Material Recovery Facility (MRF)',
     scope: 'daine_1',
     purok: 'Purok 4',
     lat: 14.192,
@@ -487,7 +488,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'd1-sports-1',
     name: 'Daine 1 Purok 1 Covered Court & Youth Development Center',
     category: 'sports',
-    categoryTag: '🏀 Covered Court & Youth Center',
+    categoryTag: 'Covered Court & Youth Center',
     scope: 'daine_1',
     purok: 'Purok 1',
     lat: 14.1965,
@@ -504,7 +505,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'd2-evac-1',
     name: 'Barangay Daine 2 Multi-Purpose Covered Court & Relief Center',
     category: 'evacuation',
-    categoryTag: '🚨 Evacuation Center',
+    categoryTag: 'Evacuation Center',
     scope: 'daine_2',
     purok: 'Purok 2',
     lat: 14.197,
@@ -522,7 +523,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'd2-gov-1',
     name: 'Barangay Daine 2 Hall & Command Operations Center',
     category: 'government',
-    categoryTag: '🏛️ Barangay Hall & Ops',
+    categoryTag: 'Barangay Hall & Ops',
     scope: 'daine_2',
     purok: 'Purok 2',
     lat: 14.197,
@@ -539,7 +540,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'd2-health-1',
     name: 'Barangay Daine 2 Health Station & Nutrition Depot',
     category: 'health',
-    categoryTag: '🏥 Health & Birthing Clinic',
+    categoryTag: 'Health & Birthing Clinic',
     scope: 'daine_2',
     purok: 'Purok 2',
     lat: 14.1968,
@@ -555,7 +556,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'd2-emerg-1',
     name: 'Daine 2 Tanod Outpost & Sitio Ilaya Peacekeeping Post',
     category: 'emergency',
-    categoryTag: '🛡️ Security & Tanod Outpost',
+    categoryTag: 'Security & Tanod Outpost',
     scope: 'daine_2',
     purok: 'Purok 1',
     lat: 14.1982,
@@ -571,7 +572,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'd2-water-1',
     name: 'Daine 2 Community Mineral & Alkaline Refilling Center (Sitio Ibaba)',
     category: 'water',
-    categoryTag: '🚰 Community Water Refilling',
+    categoryTag: 'Community Water Refilling',
     scope: 'daine_2',
     purok: 'Purok 3',
     lat: 14.1958,
@@ -588,7 +589,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'd2-edu-1',
     name: 'Barangay Daine 2 Child Development & Day Care Center',
     category: 'education',
-    categoryTag: '🏫 Day Care & Early Learning',
+    categoryTag: 'Day Care & Early Learning',
     scope: 'daine_2',
     purok: 'Purok 2',
     lat: 14.1973,
@@ -604,7 +605,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'd2-mrf-1',
     name: 'Daine 2 Material Recovery Facility (MRF) & Eco-Park',
     category: 'mrf',
-    categoryTag: '♻️ Material Recovery Facility (MRF)',
+    categoryTag: 'Material Recovery Facility (MRF)',
     scope: 'daine_2',
     purok: 'Purok 4',
     lat: 14.1945,
@@ -619,7 +620,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'd2-sports-1',
     name: 'Daine 2 Sitio Ibaba Multi-Purpose Court & Youth Center',
     category: 'sports',
-    categoryTag: '🏀 Covered Court & Youth Center',
+    categoryTag: 'Covered Court & Youth Center',
     scope: 'daine_2',
     purok: 'Purok 3',
     lat: 14.1955,
@@ -636,7 +637,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'emerg-bfp',
     name: 'BFP Indang Fire Station Outpost',
     category: 'emergency',
-    categoryTag: '🚒 Fire & Rescue Station',
+    categoryTag: 'Fire & Rescue Station',
     scope: 'both',
     purok: 'Provincial Corridor',
     lat: 14.1965,
@@ -652,7 +653,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'emerg-pnp',
     name: 'Indang Municipal Police Station (PNP) Mobile Patrol Desk',
     category: 'emergency',
-    categoryTag: '🚓 Police Mobile Patrol Desk',
+    categoryTag: 'Police Mobile Patrol Desk',
     scope: 'both',
     purok: 'Provincial Junction',
     lat: 14.1938,
@@ -668,7 +669,7 @@ export const STATIC_SPOTS: MapSpot[] = [
     id: 'emerg-mdrrmo',
     name: 'MDRRMO Indang Emergency Rescue Sub-Station',
     category: 'emergency',
-    categoryTag: '🚑 Disaster & Medical Rescue (MDRRMO)',
+    categoryTag: 'Disaster & Medical Rescue (MDRRMO)',
     scope: 'both',
     purok: 'Provincial Highway',
     lat: 14.195,
@@ -687,48 +688,48 @@ export function getMarkerConfig(cat: SpotCategory) {
     case 'evacuation':
       return {
         bg: 'bg-red-600 border-red-950 text-white shadow-red-500/50 ring-2 ring-red-400/40',
-        emoji: '🚨',
+        emoji: '',
       }
     case 'government':
       return {
         bg: 'bg-blue-600 border-blue-950 text-white shadow-blue-500/50 ring-2 ring-blue-400/40',
-        emoji: '🏛️',
+        emoji: '',
       }
     case 'health':
       return {
         bg: 'bg-teal-600 border-teal-950 text-white shadow-teal-500/50 ring-2 ring-teal-400/40',
-        emoji: '🏥',
+        emoji: '',
       }
     case 'emergency':
       return {
-        bg: 'bg-indigo-600 border-indigo-950 text-white shadow-indigo-500/50 ring-2 ring-indigo-400/40',
-        emoji: '🛡️',
+        bg: 'bg-rose-600 border-rose-950 text-white shadow-rose-500/50 ring-2 ring-rose-400/40',
+        emoji: '',
       }
     case 'water':
       return {
         bg: 'bg-cyan-600 border-cyan-950 text-white shadow-cyan-500/50 ring-2 ring-cyan-400/40',
-        emoji: '🚰',
+        emoji: '',
       }
     case 'education':
       return {
         bg: 'bg-emerald-600 border-emerald-950 text-white shadow-emerald-500/50 ring-2 ring-emerald-400/40',
-        emoji: '🏫',
+        emoji: '',
       }
     case 'mrf':
       return {
         bg: 'bg-lime-600 border-lime-950 text-white shadow-lime-500/50 ring-2 ring-lime-400/40',
-        emoji: '♻️',
+        emoji: '',
       }
     case 'sports':
       return {
-        bg: 'bg-purple-600 border-purple-950 text-white shadow-purple-500/50 ring-2 ring-purple-400/40',
-        emoji: '🏀',
+        bg: 'bg-sky-600 border-sky-950 text-white shadow-sky-500/50 ring-2 ring-sky-400/40',
+        emoji: '',
       }
     case 'business':
     default:
       return {
         bg: 'bg-amber-500 border-amber-950 text-amber-950 shadow-amber-500/50 ring-2 ring-amber-400/40',
-        emoji: '🏪',
+        emoji: '',
       }
   }
 }
@@ -770,10 +771,10 @@ export function createSpotPopupHtml(spot: MapSpot) {
       : 'Municipal / Indang'
 
   const phoneBtn = spot.phone
-    ? `<a href="tel:${escapeHtml(
+    ? `<a href="${escapeHtml(
         spot.phone
       )}" class="inline-flex items-center justify-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 font-semibold no-underline" title="Call Hotline">
-        📞 Call
+        Call
       </a>`
     : ''
 
@@ -781,19 +782,19 @@ export function createSpotPopupHtml(spot: MapSpot) {
     ? `<a href="${escapeHtml(
         messengerUrl
       )}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-sky-50 text-sky-800 hover:bg-sky-100 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-300 font-semibold no-underline" title="Chat on Messenger">
-        💬 Messenger
+        Messenger
       </a>`
     : ''
 
   const capacityBadge = spot.capacity
     ? `<div class="text-[11px] font-bold text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40 px-2 py-1 rounded border border-red-200 mt-1.5 flex items-center gap-1">
-        👥 Evacuation Capacity: <strong>${spot.capacity.toLocaleString()} persons</strong>
+        Evacuation Capacity: <strong>${spot.capacity.toLocaleString()} persons</strong>
       </div>`
     : ''
 
   const hoursInfo = spot.hours
     ? `<div class="text-[11px] text-slate-700 dark:text-slate-300 mt-1 flex items-center gap-1 font-medium">
-        🕒 ${escapeHtml(spot.hours)}
+        Hours: ${escapeHtml(spot.hours)}
       </div>`
     : ''
 
@@ -804,14 +805,14 @@ export function createSpotPopupHtml(spot: MapSpot) {
             .slice(0, 3)
             .map(
               (a) =>
-                `<span class="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded font-medium">✓ ${escapeHtml(
+                `<span class="text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded font-medium">${escapeHtml(
                   a
                 )}</span>`
             )
             .join('')}
           ${
             spot.amenities.length > 3
-              ? `<span class="text-[9px] text-slate-500 font-medium">+${spot.amenities.length - 3} more</span>`
+              ? `<span class="text-[11px] text-slate-500 font-medium">+${spot.amenities.length - 3} more</span>`
               : ''
           }
         </div>`
@@ -823,7 +824,7 @@ export function createSpotPopupHtml(spot: MapSpot) {
         <span class="text-xs font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
           ${escapeHtml(spot.categoryTag)}
         </span>
-        <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${openStatus.badgeClass}">
+        <span class="text-[11px] font-semibold px-2 py-0.5 rounded border ${openStatus.badgeClass}">
           ${escapeHtml(openStatus.label)}
         </span>
       </div>
@@ -832,11 +833,11 @@ export function createSpotPopupHtml(spot: MapSpot) {
         ${escapeHtml(spot.name)}
       </h3>
 
-      <div class="text-[11px] text-blue-700 dark:text-blue-300 font-semibold flex items-center gap-1">
-        📍 ${escapeHtml(scopeLabel)}${spot.purok ? ` • ${escapeHtml(spot.purok)}` : ''}
+      <div class="text-xs text-blue-700 dark:text-blue-300 font-semibold flex items-center gap-1">
+        ${escapeHtml(scopeLabel)}${spot.purok ? ` • ${escapeHtml(spot.purok)}` : ''}
       </div>
 
-      <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 line-clamp-2 leading-relaxed">
+      <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5 line-clamp-2 leading-relaxed">
         ${escapeHtml(spot.address)}
       </p>
 
@@ -848,7 +849,7 @@ export function createSpotPopupHtml(spot: MapSpot) {
         <a href="${directionUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 no-underline col-span-${
           phoneBtn && messengerBtn ? '1' : !phoneBtn && !messengerBtn ? '3' : '2'
         }">
-          🗺️ Directions
+          Directions
         </a>
         ${phoneBtn}
         ${messengerBtn}
@@ -912,7 +913,7 @@ function MapRouteComponent() {
         id: `biz-${b.id || index}`,
         name: b.name,
         category: 'business' as SpotCategory,
-        categoryTag: `🏪 ${b.category || 'Local MSME'}`,
+        categoryTag: b.category || 'Local MSME',
         scope: spotScope,
         purok: b.purok || undefined,
         lat: coords.lat,
@@ -1110,7 +1111,7 @@ function MapRouteComponent() {
         html: `
           <div class="relative flex items-center justify-center">
             <div class="absolute w-8 h-8 rounded-full bg-blue-500/30 animate-ping"></div>
-            <div class="w-5 h-5 rounded-full bg-blue-600 border-2 border-white shadow-lg flex items-center justify-center text-white text-[9px] font-black">
+            <div class="w-5 h-5 rounded-full bg-blue-600 border-2 border-white shadow-lg flex items-center justify-center text-white text-xs font-black">
               ●
             </div>
           </div>
@@ -1123,8 +1124,8 @@ function MapRouteComponent() {
         .addTo(map)
         .bindPopup(`
           <div class="p-1 font-sans text-xs">
-            <strong class="text-blue-600 dark:text-blue-400">📍 Your Current GPS Location</strong>
-            <p class="text-slate-600 dark:text-slate-400 text-[11px] mt-0.5">Calculated nearest emergency shelters from here.</p>
+            <strong class="text-blue-600 dark:text-blue-400">Your Current GPS Location</strong>
+            <p class="text-slate-600 dark:text-slate-400 text-xs mt-0.5">Calculated nearest emergency shelters from here.</p>
           </div>
         `)
       userMarkerRef.current = uMarker
@@ -1276,11 +1277,11 @@ function MapRouteComponent() {
 
   // Categories list with count and tactile touch targets
   const CATEGORIES = [
-    { key: 'all', label: 'All Spots', icon: '📍', count: scopeFilteredSpots.length, color: 'hover:bg-primary/10' },
+    { key: 'all', label: 'All Spots', icon: MapPin, count: scopeFilteredSpots.length, color: 'hover:bg-primary/10' },
     {
       key: 'evacuation',
       label: 'Evacuation Shelters',
-      icon: '🚨',
+      icon: ShieldAlert,
       count: scopeFilteredSpots.filter((s) => s.category === 'evacuation').length,
       color: 'hover:bg-red-50 text-red-700 border-red-200 dark:hover:bg-red-950/40 dark:text-red-300',
       activeColor: 'bg-red-600 hover:bg-red-700 text-white',
@@ -1288,7 +1289,7 @@ function MapRouteComponent() {
     {
       key: 'water',
       label: 'Potable Water Stations',
-      icon: '🚰',
+      icon: Droplets,
       count: scopeFilteredSpots.filter((s) => s.category === 'water').length,
       color: 'hover:bg-cyan-50 text-cyan-700 border-cyan-200 dark:hover:bg-cyan-950/40 dark:text-cyan-300',
       activeColor: 'bg-cyan-600 hover:bg-cyan-700 text-white',
@@ -1296,7 +1297,7 @@ function MapRouteComponent() {
     {
       key: 'government',
       label: 'Barangay Halls & Ops',
-      icon: '🏛️',
+      icon: Building2,
       count: scopeFilteredSpots.filter((s) => s.category === 'government').length,
       color: 'hover:bg-blue-50 text-blue-700 border-blue-200 dark:hover:bg-blue-950/40 dark:text-blue-300',
       activeColor: 'bg-blue-600 hover:bg-blue-700 text-white',
@@ -1304,7 +1305,7 @@ function MapRouteComponent() {
     {
       key: 'health',
       label: 'Health & Birthing',
-      icon: '🏥',
+      icon: Stethoscope,
       count: scopeFilteredSpots.filter((s) => s.category === 'health').length,
       color: 'hover:bg-teal-50 text-teal-700 border-teal-200 dark:hover:bg-teal-950/40 dark:text-teal-300',
       activeColor: 'bg-teal-600 hover:bg-teal-700 text-white',
@@ -1312,7 +1313,7 @@ function MapRouteComponent() {
     {
       key: 'education',
       label: 'Day Care Centers',
-      icon: '🏫',
+      icon: GraduationCap,
       count: scopeFilteredSpots.filter((s) => s.category === 'education').length,
       color: 'hover:bg-emerald-50 text-emerald-700 border-emerald-200 dark:hover:bg-emerald-950/40 dark:text-emerald-300',
       activeColor: 'bg-emerald-600 hover:bg-emerald-700 text-white',
@@ -1320,15 +1321,15 @@ function MapRouteComponent() {
     {
       key: 'emergency',
       label: 'Security & Fire',
-      icon: '🛡️',
+      icon: Siren,
       count: scopeFilteredSpots.filter((s) => s.category === 'emergency').length,
-      color: 'hover:bg-indigo-50 text-indigo-700 border-indigo-200 dark:hover:bg-indigo-950/40 dark:text-indigo-300',
-      activeColor: 'bg-indigo-600 hover:bg-indigo-700 text-white',
+      color: 'hover:bg-rose-50 text-rose-700 border-rose-200 dark:hover:bg-rose-950/40 dark:text-rose-300',
+      activeColor: 'bg-rose-600 hover:bg-rose-700 text-white',
     },
     {
       key: 'mrf',
       label: 'MRF / Eco-Park',
-      icon: '♻️',
+      icon: Recycle,
       count: scopeFilteredSpots.filter((s) => s.category === 'mrf').length,
       color: 'hover:bg-lime-50 text-lime-800 border-lime-200 dark:hover:bg-lime-950/40 dark:text-lime-300',
       activeColor: 'bg-lime-600 hover:bg-lime-700 text-white',
@@ -1336,15 +1337,15 @@ function MapRouteComponent() {
     {
       key: 'sports',
       label: 'Covered Courts',
-      icon: '🏀',
+      icon: Trophy,
       count: scopeFilteredSpots.filter((s) => s.category === 'sports').length,
-      color: 'hover:bg-purple-50 text-purple-700 border-purple-200 dark:hover:bg-purple-950/40 dark:text-purple-300',
-      activeColor: 'bg-purple-600 hover:bg-purple-700 text-white',
+      color: 'hover:bg-sky-50 text-sky-700 border-sky-200 dark:hover:bg-sky-950/40 dark:text-sky-300',
+      activeColor: 'bg-sky-600 hover:bg-sky-700 text-white',
     },
     {
       key: 'business',
       label: 'Local MSMEs',
-      icon: '🏪',
+      icon: Store,
       count: scopeFilteredSpots.filter((s) => s.category === 'business').length,
       color: 'hover:bg-amber-50 text-amber-800 border-amber-200 dark:hover:bg-amber-950/40 dark:text-amber-300',
       activeColor: 'bg-amber-600 hover:bg-amber-700 text-white',
@@ -1352,7 +1353,7 @@ function MapRouteComponent() {
   ]
 
   return (
-    <div className="min-h-[100dvh] container mx-auto py-6 px-4 md:px-6 max-w-7xl">
+    <div className="min-h-[100dvh] container mx-auto py-6 px-3 sm:px-4 md:px-6 max-w-7xl">
       {/* Offline Alert Banner */}
       {isOffline && (
         <div className="mb-6 p-4 rounded-2xl bg-amber-500/15 border-2 border-amber-500/40 text-amber-950 dark:text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md animate-in fade-in duration-300">
@@ -1362,7 +1363,7 @@ function MapRouteComponent() {
             </div>
             <div>
               <h4 className="text-sm font-extrabold text-amber-900 dark:text-amber-100 flex items-center gap-2">
-                ⚡ Offline Mode Active: Cached Emergency Shelters &amp; Purok Hotlines Ready
+                Offline Mode Active: Cached Emergency Shelters &amp; Purok Hotlines Ready
               </h4>
               <p className="text-xs text-amber-800/90 dark:text-amber-300/90 mt-0.5 leading-relaxed">
                 Map tiles cannot download without active internet. All evacuation capacities, Purok anchor coordinates, and emergency hotlines below remain 100% accessible offline.
@@ -1382,30 +1383,34 @@ function MapRouteComponent() {
       )}
 
       {/* Header Banner with Philippine Color Accents & Dual-Barangay Scope Switcher */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0038A8] via-[#002675] to-[#1E3A8A] text-white p-6 sm:p-8 mb-6 shadow-xl">
+      <div className="relative overflow-hidden rounded-3xl bg-[#0C2B64] dark:bg-card text-white dark:text-card-foreground p-6 sm:p-8 mb-6 shadow-sm border border-border">
         {/* Subtle Philippine Flag Accent bar */}
-        <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-[#0038A8] via-[#FCD116] to-[#CE1126]" />
+        <div className="absolute top-0 right-0 left-0 h-1 flex">
+          <div className="flex-1 bg-[#0C2B64]" />
+          <div className="flex-1 bg-[#C98A0C]" />
+          <div className="flex-1 bg-[#B91C1C]" />
+        </div>
 
         <div className="relative z-10 space-y-6">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-2.5 max-w-2xl">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge className="bg-[#FCD116] text-[#0038A8] hover:bg-[#FCD116]/90 font-black px-3 py-1 text-xs border border-amber-300 shadow-xs">
-                  <Compass className="h-3.5 w-3.5 mr-1" /> Interactive GIS Map & Evacuation Hubs
+                <Badge className="bg-white/10 dark:bg-muted text-white dark:text-foreground font-semibold px-3 py-1 text-xs border border-white/20 dark:border-border">
+                  <Compass className="h-3.5 w-3.5 mr-1 text-[#F3BA42]" /> Interactive GIS Map &amp; Evacuation Hubs
                 </Badge>
-                <Badge variant="outline" className="text-white border-white/30 text-xs backdrop-blur-xs">
+                <Badge variant="outline" className="text-white dark:text-muted-foreground border-white/20 dark:border-border text-xs">
                   Indang, Cavite
                 </Badge>
                 {userLocation && (
-                  <Badge className="bg-emerald-500 text-white font-bold text-xs border border-emerald-400">
-                    📍 GPS Live Active
+                  <Badge className="bg-emerald-600/30 text-emerald-300 font-semibold text-xs border border-emerald-500/30">
+                    <MapPin className="h-3 w-3 mr-1" /> GPS Live Active
                   </Badge>
                 )}
               </div>
-              <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white flex items-center gap-2">
-                Emergency Evacuation & GIS Directory
+              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white dark:text-foreground flex items-center gap-2">
+                Emergency Evacuation &amp; GIS Directory
               </h1>
-              <p className="text-white/80 text-xs sm:text-sm leading-relaxed">
+              <p className="text-slate-200 dark:text-muted-foreground text-xs sm:text-sm leading-relaxed">
                 Locate emergency evacuation shelters, potable water refill hubs, health clinics, ECCD daycare centers, MRF eco-facilities, and verified local MSMEs across Barangay Daine 1 and Daine 2.
               </p>
             </div>
@@ -1427,7 +1432,7 @@ function MapRouteComponent() {
                   )}
                 >
                   <span className="leading-tight">All Daine</span>
-                  <span className="text-[10px] opacity-80 font-semibold">(1 & 2)</span>
+                  <span className="text-[11px] opacity-80 font-semibold">(1 & 2)</span>
                 </button>
 
                 <button
@@ -1441,7 +1446,7 @@ function MapRouteComponent() {
                   )}
                 >
                   <span className="leading-tight">Barangay</span>
-                  <span className="text-[10px] opacity-90 font-semibold">Daine 1</span>
+                  <span className="text-[11px] opacity-90 font-semibold">Daine 1</span>
                 </button>
 
                 <button
@@ -1455,7 +1460,7 @@ function MapRouteComponent() {
                   )}
                 >
                   <span className="leading-tight">Barangay</span>
-                  <span className="text-[10px] opacity-90 font-semibold">Daine 2</span>
+                  <span className="text-[11px] opacity-90 font-semibold">Daine 2</span>
                 </button>
               </div>
             </div>
@@ -1468,7 +1473,7 @@ function MapRouteComponent() {
                 <Users className="h-3.5 w-3.5 text-amber-300" /> Evac Capacity
               </div>
               <div className="text-2xl font-black text-amber-300 mt-1">{totalEvacCapacity.toLocaleString()}</div>
-              <div className="text-[11px] text-white/70 font-medium">Residents Shelter</div>
+              <div className="text-xs text-white/70 font-medium">Residents Shelter</div>
             </div>
 
             <div className="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 text-center">
@@ -1476,7 +1481,7 @@ function MapRouteComponent() {
                 <ShieldAlert className="h-3.5 w-3.5 text-red-400" /> Relief Hubs
               </div>
               <div className="text-2xl font-black text-red-400 mt-1">{reliefStationsCount}</div>
-              <div className="text-[11px] text-white/70 font-medium">Evac Centers</div>
+              <div className="text-xs text-white/70 font-medium">Evac Centers</div>
             </div>
 
             <div className="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 text-center">
@@ -1484,7 +1489,7 @@ function MapRouteComponent() {
                 <Droplets className="h-3.5 w-3.5 text-cyan-300" /> Water Hubs
               </div>
               <div className="text-2xl font-black text-cyan-300 mt-1">{waterStationsCount}</div>
-              <div className="text-[11px] text-white/70 font-medium">Potable Supply</div>
+              <div className="text-xs text-white/70 font-medium">Potable Supply</div>
             </div>
 
             <div className="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 text-center">
@@ -1492,7 +1497,7 @@ function MapRouteComponent() {
                 <Radio className="h-3.5 w-3.5 text-emerald-400" /> 24/7 Response
               </div>
               <div className="text-2xl font-black text-emerald-400 mt-1">{emergencyOutpostsCount}</div>
-              <div className="text-[11px] text-white/70 font-medium">Security & Fire</div>
+              <div className="text-xs text-white/70 font-medium">Security & Fire</div>
             </div>
 
             <div className="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 text-center col-span-2 sm:col-span-1">
@@ -1500,7 +1505,7 @@ function MapRouteComponent() {
                 <Store className="h-3.5 w-3.5 text-blue-300" /> MSMEs
               </div>
               <div className="text-2xl font-black text-blue-300 mt-1">{businessesCount}</div>
-              <div className="text-[11px] text-white/70 font-medium">Verified Pinned</div>
+              <div className="text-xs text-white/70 font-medium">Verified Pinned</div>
             </div>
           </div>
         </div>
@@ -1558,23 +1563,24 @@ function MapRouteComponent() {
         <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 scrollbar-thin">
           {CATEGORIES.map((cat) => {
             const isActive = selectedCategory === cat.key
+            const Icon = cat.icon
             return (
               <button
                 key={cat.key}
                 type="button"
                 onClick={() => setSelectedCategory(cat.key)}
                 className={cn(
-                  'min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 shrink-0 border cursor-pointer select-none active:scale-95',
+                  'min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 border cursor-pointer select-none active:scale-95',
                   isActive
-                    ? cat.activeColor || 'bg-primary text-primary-foreground border-primary shadow-md ring-2 ring-primary/30'
+                    ? cat.activeColor || 'bg-primary text-primary-foreground border-primary shadow-sm'
                     : `bg-card ${cat.color || 'border-border text-foreground'}`
                 )}
               >
-                <span className="text-sm">{cat.icon}</span>
+                <Icon className="h-4 w-4 shrink-0" />
                 <span>{cat.label}</span>
                 <span
                   className={cn(
-                    'text-[11px] px-1.5 py-0.5 rounded-md font-bold',
+                    'text-[11px] px-1.5 py-0.5 rounded-md font-semibold',
                     isActive ? 'bg-white/20 text-current' : 'bg-muted text-muted-foreground'
                   )}
                 >
@@ -1590,11 +1596,13 @@ function MapRouteComponent() {
       <div className="block lg:hidden mb-4">
         <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as 'map' | 'list')}>
           <TabsList className="grid grid-cols-2 w-full h-12 p-1 bg-muted rounded-xl">
-            <TabsTrigger value="map" className="text-xs font-bold rounded-lg min-h-[40px]">
-              🗺️ GIS Map View
+            <TabsTrigger value="map" className="text-xs font-bold rounded-lg min-h-[40px] flex items-center gap-1.5">
+              <Compass className="h-3.5 w-3.5" />
+              <span>GIS Map View</span>
             </TabsTrigger>
-            <TabsTrigger value="list" className="text-xs font-bold rounded-lg min-h-[40px]">
-              📋 Spot List ({filteredSpots.length})
+            <TabsTrigger value="list" className="text-xs font-bold rounded-lg min-h-[40px] flex items-center gap-1.5">
+              <Layers className="h-3.5 w-3.5" />
+              <span>Spot List ({filteredSpots.length})</span>
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -1645,7 +1653,7 @@ function MapRouteComponent() {
                 </div>
               )}
 
-              {/* Floating "🚨 Nearest Evacuation Shelter" FAB Button with Min 44px Target */}
+              {/* Floating "Nearest Evacuation Shelter" FAB Button with Min 44px Target */}
               <button
                 type="button"
                 onClick={handleFindNearestEvacuation}
@@ -1659,7 +1667,7 @@ function MapRouteComponent() {
                 <div className="flex flex-col items-start text-left">
                   <span className="leading-tight">Nearest Evacuation Shelter</span>
                   {nearestEvacShelter && (
-                    <span className="text-[10px] opacity-90 font-medium">
+                    <span className="text-xs opacity-90 font-medium">
                       {nearestEvacShelter.distanceKm < 1
                         ? `${Math.round(nearestEvacShelter.distanceKm * 1000)}m away`
                         : `${nearestEvacShelter.distanceKm.toFixed(1)}km away`}
@@ -1689,7 +1697,7 @@ function MapRouteComponent() {
                             : selectedSpot.category === 'health'
                             ? 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/40 dark:text-teal-300'
                             : selectedSpot.category === 'emergency'
-                            ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300'
+                            ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300'
                             : selectedSpot.category === 'water'
                             ? 'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300'
                             : selectedSpot.category === 'education'
@@ -1697,13 +1705,13 @@ function MapRouteComponent() {
                             : selectedSpot.category === 'mrf'
                             ? 'bg-lime-50 text-lime-800 border-lime-200 dark:bg-lime-950/40 dark:text-lime-300'
                             : selectedSpot.category === 'sports'
-                            ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300'
+                            ? 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300'
                             : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
                         )}
                       >
                         {selectedSpot.categoryTag}
                       </span>
-                      <span className="text-[10px] font-bold bg-muted text-muted-foreground px-2 py-0.5 rounded">
+                      <span className="text-[11px] font-bold uppercase tracking-wider bg-muted text-muted-foreground px-2 py-0.5 rounded">
                         {selectedSpot.scope === 'daine_1'
                           ? 'Daine 1'
                           : selectedSpot.scope === 'daine_2'
@@ -1713,7 +1721,7 @@ function MapRouteComponent() {
                       {(() => {
                         const status = computeOpenStatus(selectedSpot.hours)
                         return (
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${status.badgeClass}`}>
+                          <span className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${status.badgeClass}`}>
                             {status.label}
                           </span>
                         )
@@ -1724,7 +1732,7 @@ function MapRouteComponent() {
                       <button
                         type="button"
                         onClick={() => setIsMobileDrawerExpanded(!isMobileDrawerExpanded)}
-                        className="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer"
+                        className="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
                         aria-label="Expand or collapse bottom drawer"
                       >
                         {isMobileDrawerExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
@@ -1778,9 +1786,10 @@ function MapRouteComponent() {
                         {selectedSpot.amenities.map((item, idx) => (
                           <span
                             key={idx}
-                            className="text-[11px] bg-secondary text-secondary-foreground px-2.5 py-1 rounded-lg font-semibold"
+                            className="text-[11px] bg-secondary text-secondary-foreground px-2.5 py-1 rounded-lg font-semibold inline-flex items-center gap-1"
                           >
-                            ✓ {item}
+                            <Check className="w-3 h-3 text-primary shrink-0" />
+                            {item}
                           </span>
                         ))}
                       </div>
@@ -1909,7 +1918,7 @@ function MapRouteComponent() {
                                 : spot.category === 'health'
                                 ? 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/40 dark:text-teal-300'
                                 : spot.category === 'emergency'
-                                ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300'
+                                ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300'
                                 : spot.category === 'water'
                                 ? 'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300'
                                 : spot.category === 'education'
@@ -1917,18 +1926,18 @@ function MapRouteComponent() {
                                 : spot.category === 'mrf'
                                 ? 'bg-lime-50 text-lime-800 border-lime-200 dark:bg-lime-950/40 dark:text-lime-300'
                                 : spot.category === 'sports'
-                                ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300'
+                                ? 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300'
                                 : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
                             )}
                           >
                             {spot.categoryTag}
                           </span>
-                          <span className="text-[10px] font-bold bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
+                          <span className="text-[11px] font-bold uppercase tracking-wider bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
                             {scopeTag}
                           </span>
                         </div>
 
-                        <span className="text-[10px] font-black text-muted-foreground flex items-center gap-1 bg-muted px-2 py-0.5 rounded shrink-0">
+                        <span className="text-[11px] font-black text-muted-foreground flex items-center gap-1 bg-muted px-2 py-0.5 rounded shrink-0">
                           <Navigation className="h-3 w-3 text-primary" />{' '}
                           {distKm < 1 ? `${Math.round(distKm * 1000)}m` : `${distKm.toFixed(1)}km`}
                         </span>
@@ -1938,7 +1947,7 @@ function MapRouteComponent() {
                         <h3 className="font-black text-sm tracking-tight text-foreground leading-snug">
                           {spot.name}
                         </h3>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border shrink-0 ${openStatus.badgeClass}`}>
+                        <span className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border shrink-0 ${openStatus.badgeClass}`}>
                           {openStatus.label}
                         </span>
                       </div>
@@ -1953,8 +1962,8 @@ function MapRouteComponent() {
 
                       {/* Hours info if available */}
                       {spot.hours && (
-                        <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 mb-2 font-medium">
-                          <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
+                        <p className="text-xs text-muted-foreground flex items-center gap-1.5 mb-2 font-medium">
+                          <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                           <span>{spot.hours}</span>
                         </p>
                       )}
@@ -1980,9 +1989,10 @@ function MapRouteComponent() {
                           {spot.amenities.map((item, idx) => (
                             <span
                               key={idx}
-                              className="text-[10px] bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md font-semibold"
+                              className="text-[11px] bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md font-semibold inline-flex items-center gap-1"
                             >
-                              ✓ {item}
+                              <Check className="w-2.5 h-2.5 text-primary shrink-0" />
+                              {item}
                             </span>
                           ))}
                         </div>

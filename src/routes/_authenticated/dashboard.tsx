@@ -186,8 +186,8 @@ function ComplaintStatusBadge({ status }: { status: string }) {
   }
   if (s === 'scheduled_hearing') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 dark:bg-purple-950/80 dark:text-purple-300 border border-purple-300 dark:border-purple-800 whitespace-nowrap">
-        <Gavel className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary dark:bg-primary/20 dark:text-sky-300 border border-primary/20 whitespace-nowrap">
+        <Gavel className="h-3.5 w-3.5 text-primary dark:text-sky-400 shrink-0" />
         Hearing Scheduled
       </span>
     )
@@ -330,9 +330,9 @@ function DashboardRoute() {
   const barangayLabel = isDaine2 ? 'Barangay Daine 2' : 'Barangay Daine 1';
 
   return (
-    <div className="container mx-auto py-8 sm:py-10 px-4 sm:px-6 md:px-8 space-y-8 max-w-6xl">
+    <div className="container mx-auto py-8 sm:py-10 px-3 sm:px-6 md:px-8 space-y-8 max-w-6xl">
       {/* Tanggapan ng Mamamayan • Resident Portal Header */}
-      <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-br from-card via-card to-muted/40 p-6 sm:p-8 shadow-sm">
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-xs">
         {/* Philippine Flag Subtle Civic Accent Ribbon */}
         <div className="absolute top-0 left-0 right-0 h-1.5 flex">
           <div className="w-[45%] bg-[#0038A8]" />
@@ -391,21 +391,21 @@ function DashboardRoute() {
           }}
           className="group block text-left focus:outline-hidden"
         >
-          <Card className="h-full rounded-2xl border border-border/80 shadow-xs hover:shadow-lg hover:border-sky-500/50 dark:hover:border-sky-400/50 hover:-translate-y-1 active:scale-[0.99] transition-all duration-300 cursor-pointer bg-gradient-to-br from-card to-sky-500/5">
+          <Card className="h-full rounded-2xl border border-border shadow-xs hover:border-primary/40 hover:shadow-sm transition-all duration-200 cursor-pointer bg-card">
             <CardContent className="p-6 flex flex-col justify-between h-full space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-2xl bg-sky-500/10 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 ring-1 ring-sky-500/20">
-                    <FileText className="h-6 w-6" />
+                  <div className="p-2.5 rounded-xl bg-muted text-muted-foreground group-hover:text-primary transition-colors">
+                    <FileText className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-foreground group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
+                    <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
                       Document Requests
                     </h3>
                     <p className="text-xs text-muted-foreground">Barangay Certifications</p>
                   </div>
                 </div>
-                <div className="p-2 rounded-full bg-muted/60 group-hover:bg-sky-500/10 text-muted-foreground group-hover:text-sky-600 group-hover:translate-x-0.5 transition-all">
+                <div className="p-1.5 rounded-full bg-muted text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all">
                   <ChevronRight className="h-4 w-4" />
                 </div>
               </div>
@@ -416,12 +416,12 @@ function DashboardRoute() {
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                   {readyDocsCount > 0 ? (
-                    <span className="inline-flex items-center gap-1 font-bold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 animate-pulse">
+                    <span className="inline-flex items-center gap-1 font-bold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
                       <CheckCircle className="h-3 w-3 text-emerald-600" />
                       {readyDocsCount} Ready for Pickup
                     </span>
                   ) : (
-                    <span className="font-semibold text-muted-foreground px-2 py-0.5 rounded-md bg-muted/40">
+                    <span className="font-semibold text-muted-foreground px-2 py-0.5 rounded-md bg-muted">
                       0 Ready
                     </span>
                   )}
@@ -444,21 +444,21 @@ function DashboardRoute() {
           }}
           className="group block text-left focus:outline-hidden"
         >
-          <Card className="h-full rounded-2xl border border-border/80 shadow-xs hover:shadow-lg hover:border-amber-500/50 dark:hover:border-amber-400/50 hover:-translate-y-1 active:scale-[0.99] transition-all duration-300 cursor-pointer bg-gradient-to-br from-card to-amber-500/5">
+          <Card className="h-full rounded-2xl border border-border shadow-xs hover:border-primary/40 hover:shadow-sm transition-all duration-200 cursor-pointer bg-card">
             <CardContent className="p-6 flex flex-col justify-between h-full space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-2xl bg-amber-500/10 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/20">
-                    <Store className="h-6 w-6" />
+                  <div className="p-2.5 rounded-xl bg-muted text-muted-foreground group-hover:text-primary transition-colors">
+                    <Store className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                    <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
                       My Businesses
                     </h3>
                     <p className="text-xs text-muted-foreground">MSME Growth & Directory</p>
                   </div>
                 </div>
-                <div className="p-2 rounded-full bg-muted/60 group-hover:bg-amber-500/10 text-muted-foreground group-hover:text-amber-600 group-hover:translate-x-0.5 transition-all">
+                <div className="p-1.5 rounded-full bg-muted text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all">
                   <ChevronRight className="h-4 w-4" />
                 </div>
               </div>
@@ -491,21 +491,21 @@ function DashboardRoute() {
           }}
           className="group block text-left focus:outline-hidden"
         >
-          <Card className="h-full rounded-2xl border border-border/80 shadow-xs hover:shadow-lg hover:border-rose-500/50 dark:hover:border-rose-400/50 hover:-translate-y-1 active:scale-[0.99] transition-all duration-300 cursor-pointer bg-gradient-to-br from-card to-rose-500/5">
+          <Card className="h-full rounded-2xl border border-border shadow-xs hover:border-primary/40 hover:shadow-sm transition-all duration-200 cursor-pointer bg-card">
             <CardContent className="p-6 flex flex-col justify-between h-full space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-2xl bg-rose-500/10 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 ring-1 ring-rose-500/20">
-                    <ShieldAlert className="h-6 w-6" />
+                  <div className="p-2.5 rounded-xl bg-muted text-muted-foreground group-hover:text-primary transition-colors">
+                    <ShieldAlert className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-foreground group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+                    <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
                       Incident Reports
                     </h3>
                     <p className="text-xs text-muted-foreground">Peace & Order Desk</p>
                   </div>
                 </div>
-                <div className="p-2 rounded-full bg-muted/60 group-hover:bg-rose-500/10 text-muted-foreground group-hover:text-rose-600 group-hover:translate-x-0.5 transition-all">
+                <div className="p-1.5 rounded-full bg-muted text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all">
                   <ChevronRight className="h-4 w-4" />
                 </div>
               </div>
@@ -521,7 +521,7 @@ function DashboardRoute() {
                   </span>
                   <span className="text-muted-foreground/60">•</span>
                   <span className="inline-flex items-center gap-1 font-medium text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md bg-emerald-500/10">
-                    {resolvedComplaintsCount} Resolved
+                    {resolvedComplaintsCount} Settled
                   </span>
                 </div>
               </div>
@@ -530,23 +530,30 @@ function DashboardRoute() {
         </a>
       </div>
 
-      {/* Holographic Digital Resident ID Section */}
+      {/* Official Digital Resident ID Presentation Section */}
       {currentProfile && (
         <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <UserCheck className="h-5 w-5 text-primary" />
-              Digital Resident Identity Card
-            </h2>
-            <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              Secured with Cryptographic QR Verification
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h2 className="text-xl font-bold flex items-center gap-2 text-foreground">
+                <UserCheck className="h-5 w-5 text-primary" />
+                Digital Resident Identity Card
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Official virtual credential for municipal identification and digital verification
+              </p>
+            </div>
+            <div className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground bg-muted/60 px-3 py-1.5 rounded-full border border-border w-fit">
+              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+              Secured with Official Republic QR Seal
             </div>
           </div>
-          <DigitalResidentID
-            profile={currentProfile}
-            onPhotoUpdated={handlePhotoUpdated}
-          />
+          <div className="rounded-3xl border border-border bg-card p-4 sm:p-6 shadow-xs">
+            <DigitalResidentID
+              profile={currentProfile}
+              onPhotoUpdated={handlePhotoUpdated}
+            />
+          </div>
         </section>
       )}
 
@@ -578,9 +585,7 @@ function DashboardRoute() {
 
           {/* Highlighted Ready for Pickup Print Action Card */}
           {readyDocs.length > 0 && (
-            <div className="relative overflow-hidden rounded-2xl border-2 border-emerald-500/60 bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-card p-5 sm:p-6 shadow-md ring-1 ring-emerald-500/30">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
-              
+            <div className="relative overflow-hidden rounded-2xl border-2 border-emerald-600 bg-card p-5 sm:p-6 shadow-md">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1.5">
                   <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-600 text-white shadow-xs">
@@ -765,7 +770,7 @@ function DashboardRoute() {
                               {doc.purpose}
                             </CardDescription>
                           )}
-                          <p className="text-[11px] text-muted-foreground/80">
+                          <p className="text-xs text-muted-foreground/80">
                             Submitted {format(new Date(doc.created_at), 'MMMM d, yyyy • h:mm a')}
                           </p>
                         </div>
@@ -913,12 +918,12 @@ function DashboardRoute() {
                             <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                               <span className="font-semibold text-foreground">{biz.category}</span>
                               <span>•</span>
-                              <span className={`inline-flex items-center gap-1 font-bold text-[10px] px-2 py-0.5 rounded-full ${
+                              <span className={`inline-flex items-center gap-1 font-bold text-[11px] uppercase tracking-wider px-2 py-0.5 rounded-full ${
                                 isBizDaine2 
-                                  ? 'bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-300' 
+                                  ? 'bg-rose-100 text-rose-900 dark:bg-rose-950 dark:text-rose-300' 
                                   : 'bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-300'
                               }`}>
-                                <Building2 className="h-2.5 w-2.5" />
+                                <Building2 className="h-3 w-3" />
                                 {isBizDaine2 ? 'Daine 2' : 'Daine 1'}
                               </span>
                               {biz.purok && (
@@ -936,7 +941,7 @@ function DashboardRoute() {
 
                         <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0">
                           <BusinessStatusBadge status={biz.status} />
-                          <span className="text-[10px] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             {format(new Date(biz.created_at), 'MMM d, yyyy')}
                           </span>
                         </div>
@@ -1082,7 +1087,7 @@ function DashboardRoute() {
                           </Link>
                         </CardTitle>
                         {comp.is_anonymous && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                             <EyeOff className="h-3 w-3" /> Anonymous
                           </span>
                         )}
@@ -1105,7 +1110,7 @@ function DashboardRoute() {
                           </>
                         )}
                       </CardDescription>
-                      <p className="text-[11px] text-muted-foreground/70">
+                      <p className="text-xs text-muted-foreground/70">
                         Filed on {format(new Date(comp.created_at), 'MMMM d, yyyy')}
                       </p>
                     </div>

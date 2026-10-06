@@ -117,29 +117,23 @@ function SignIn() {
   }
 
   return (
-    <main className="min-h-[100dvh] w-full flex flex-col justify-center items-center relative px-4 py-12 bg-gradient-to-br from-slate-50 via-sky-50/40 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 overflow-x-hidden">
-      {/* Decorative ambient civic glow background */}
-      <div 
-        aria-hidden="true" 
-        className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[500px] bg-gradient-to-b from-[#0038A8]/15 via-[#FCD116]/10 to-transparent blur-3xl opacity-70" 
-      />
-
+    <main className="min-h-[100dvh] w-full flex flex-col justify-center items-center relative px-4 py-12 bg-background overflow-x-hidden">
       {/* Navigation link back to home */}
       <div className="w-full max-w-md mb-4 flex items-center justify-between">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 min-h-[44px] px-3 py-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors rounded-xl hover:bg-black/5 dark:hover:bg-white/5 btn-tactile cursor-pointer"
+          className="inline-flex items-center gap-2 min-h-[44px] px-3 py-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors rounded-xl hover:bg-muted btn-tactile cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Portal Home
         </Link>
-        <Badge variant="outline" className="bg-background/80 backdrop-blur-md text-[11px] font-semibold text-muted-foreground border-border/80">
+        <Badge variant="outline" className="bg-card text-[11px] font-semibold text-muted-foreground border-border/80">
           Daine 1 & 2
         </Badge>
       </div>
 
-      {/* Glassmorphic Card Container */}
-      <div className="glass-dock card-hover w-full max-w-md p-6 sm:p-8 rounded-3xl border border-white/40 dark:border-white/10 shadow-xl backdrop-blur-xl bg-card/90 dark:bg-slate-900/85 space-y-6 relative z-10">
+      {/* Solid Civic Card Container */}
+      <div className="w-full max-w-md p-6 sm:p-8 rounded-3xl border border-border shadow-xl bg-card space-y-6 relative z-10">
         {/* Official Civic Seal & Header */}
         <div className="space-y-3 text-center">
           <div className="relative inline-block">

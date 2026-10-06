@@ -128,10 +128,7 @@ function NewBusinessRoute() {
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* MSME Merchant Onboarding Hero Banner with Benefits Checklist       */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0038A8] via-[#002d87] to-teal-900 text-white p-6 sm:p-8 md:p-10 shadow-xl border border-white/15">
-        {/* Glow & micro-pattern accents */}
-        <div className="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-amber-400/20 blur-3xl pointer-events-none" />
-        <div className="absolute -left-16 -bottom-16 w-80 h-80 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-3xl bg-slate-900 text-white p-6 sm:p-8 md:p-10 shadow-xl border border-border">
         <div className="relative z-10 max-w-4xl space-y-6">
           
           {/* Header Tag */}

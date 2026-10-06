@@ -330,7 +330,7 @@ ${headContent}
               <div>
                 <DialogTitle className="text-base sm:text-lg font-bold flex items-center gap-2">
                   Official Barangay Document Preview
-                  <Badge variant="outline" className="hidden sm:inline-flex text-[10px] font-mono uppercase bg-primary/5 text-primary border-primary/20">
+                  <Badge variant="outline" className="hidden sm:inline-flex text-[11px] font-mono font-bold uppercase tracking-wider bg-primary/5 text-primary border-primary/20">
                     {controlNo}
                   </Badge>
                 </DialogTitle>

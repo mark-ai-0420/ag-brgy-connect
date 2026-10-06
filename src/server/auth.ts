@@ -43,17 +43,42 @@ export const getAuthSession = createServerFn({ method: 'GET' })
       };
     }
     
-    const { data: userRole } = await supabase
+    // Attempt to query user role (handling both migrated barangay_id and legacy schema)
+    let userRole: { role?: string; barangay?: string; barangay_id?: string | null } | null = null;
+    const { data: roleDataWithId, error: roleErrWithId } = await supabase
       .from('user_roles')
       .select('role, barangay, barangay_id')
       .eq('user_id', user.id)
       .maybeSingle();
 
-    const { data: profile } = await supabase
+    if (!roleErrWithId && roleDataWithId) {
+      userRole = roleDataWithId;
+    } else {
+      const { data: fallbackRole } = await supabase
+        .from('user_roles')
+        .select('role, barangay')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      userRole = fallbackRole ?? null;
+    }
+
+    let profile: { barangay?: string; barangay_id?: string | null } | null = null;
+    const { data: profileWithId, error: profErrWithId } = await supabase
       .from('profiles')
       .select('barangay, barangay_id')
       .eq('id', user.id)
       .maybeSingle();
+
+    if (!profErrWithId && profileWithId) {
+      profile = profileWithId;
+    } else {
+      const { data: fallbackProfile } = await supabase
+        .from('profiles')
+        .select('barangay')
+        .eq('id', user.id)
+        .maybeSingle();
+      profile = fallbackProfile ?? null;
+    }
       
     return { 
       session: { user }, 

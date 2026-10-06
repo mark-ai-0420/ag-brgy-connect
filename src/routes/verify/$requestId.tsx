@@ -61,7 +61,7 @@ const STATUS_CONFIGS: Record<
   },
   ready: {
     label: 'Ready for Release',
-    badge: 'bg-indigo-100 text-indigo-950 dark:bg-indigo-950/70 dark:text-indigo-200 border-indigo-400 font-bold',
+    badge: 'bg-sky-100 text-sky-950 dark:bg-sky-950/70 dark:text-sky-200 border-sky-400 font-bold',
     icon: CheckCircle2,
     description: 'Document has been signed and sealed. Ready for physical claim or official digital release.',
   },
@@ -189,25 +189,16 @@ function VerifyRoute() {
 
   return (
     <div className="min-h-[100dvh] py-10 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center bg-slate-50 dark:bg-background relative overflow-hidden">
-      {/* Subtle background national civic glow */}
-      <div
-        className="absolute top-0 right-1/4 w-96 h-96 rounded-full bg-[#0038A8]/5 blur-3xl pointer-events-none"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute bottom-0 left-1/4 w-96 h-96 rounded-full bg-[#CE1126]/5 blur-3xl pointer-events-none"
-        aria-hidden="true"
-      />
-
       {/* Main Certificate Verification Portal Card */}
       <Card className="w-full max-w-2xl shadow-2xl border-2 border-border/80 rounded-3xl overflow-hidden bg-card relative z-10">
         {/* ── 1. Top Republic of the Philippines • Official Document Verification Header with Philippine Flag Stripe ─────────── */}
-        <header className="relative bg-gradient-to-r from-[#002675] via-[#0038A8] to-[#1E3A8A] text-white p-6 sm:p-8 text-center overflow-hidden">
-          {/* Flag Accent Stripe */}
-          <div
-            className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-[#0038A8] via-[#FCD116] to-[#CE1126]"
-            aria-hidden="true"
-          />
+        <header className="relative civic-header text-white p-6 sm:p-8 text-center overflow-hidden">
+          {/* Philippine Tricolor Accent Stripe (Segmented Solid Bars) */}
+          <div className="absolute top-0 right-0 left-0 h-1.5 flex" aria-hidden="true">
+            <div className="w-[45%] bg-[#0038A8]" />
+            <div className="w-[10%] bg-[#FCD116]" />
+            <div className="w-[45%] bg-[#CE1126]" />
+          </div>
 
           <div className="relative z-10 flex flex-col items-center">
             {/* Preserved Official Seal /logo.jpg */}
@@ -278,7 +269,7 @@ function VerifyRoute() {
               </div>
 
               {/* Digital Signature Validation Badge */}
-              <div className="rounded-2xl bg-gradient-to-r from-slate-900 to-blue-950 text-white p-4 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-white/10">
+              <div className="rounded-2xl bg-slate-900 text-white p-4 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-border">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-xl bg-white/10 text-[#FCD116] shrink-0">
                     <ShieldCheck className="h-5 w-5" />
@@ -288,18 +279,18 @@ function VerifyRoute() {
                       <span className="text-xs font-black uppercase tracking-wider text-[#FCD116]">
                         Digital Signature Validated
                       </span>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
                         SHA-256
                       </span>
                     </div>
-                    <p className="text-[11px] text-blue-200 mt-0.5">
+                    <p className="text-xs text-blue-200 mt-0.5">
                       Issued through cryptographic 256-bit civic ledger authentication.
                     </p>
                   </div>
                 </div>
 
                 <div className="shrink-0 text-left sm:text-right">
-                  <span className="text-[10px] uppercase tracking-wider text-blue-300 font-bold block">
+                  <span className="text-xs uppercase tracking-wider text-blue-300 font-bold block">
                     Security Token
                   </span>
                   <span className="font-mono text-xs font-bold text-white tracking-widest">
@@ -325,7 +316,7 @@ function VerifyRoute() {
                 {/* Control Number Card */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3.5 rounded-xl bg-card border border-border">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                    <p className="text-xs font-black uppercase tracking-wider text-muted-foreground">
                       Official Control Number
                     </p>
                     <p className="text-lg sm:text-xl font-mono font-black text-primary tracking-wide">
@@ -357,7 +348,7 @@ function VerifyRoute() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   {/* Bearer / Resident */}
                   <div className="space-y-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                    <span className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                       <User className="h-3 w-3 text-primary" /> Resident / Bearer
                     </span>
                     <p className="text-sm font-black text-foreground font-mono">
@@ -367,7 +358,7 @@ function VerifyRoute() {
 
                   {/* Document Type */}
                   <div className="space-y-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                    <span className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                       <FileCheck2 className="h-3 w-3 text-primary" /> Document Type
                     </span>
                     <p className="text-sm font-bold text-foreground">
@@ -377,7 +368,7 @@ function VerifyRoute() {
 
                   {/* Issuing Authority */}
                   <div className="space-y-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                    <span className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                       <Building2 className="h-3 w-3 text-primary" /> Issuing Barangay Jurisdiction
                     </span>
                     <p className="text-xs font-bold text-foreground">
@@ -391,7 +382,7 @@ function VerifyRoute() {
 
                   {/* Date Recorded */}
                   <div className="space-y-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                    <span className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                       <Calendar className="h-3 w-3 text-primary" /> Date Issued / Recorded
                     </span>
                     <p className="text-xs font-mono font-bold text-foreground">
@@ -402,7 +393,7 @@ function VerifyRoute() {
                   {/* Purpose */}
                   {request.purpose && (
                     <div className="sm:col-span-2 space-y-1 pt-1 border-t border-border/50">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                      <span className="text-xs font-black uppercase tracking-wider text-muted-foreground">
                         Declared Purpose
                       </span>
                       <p className="text-xs font-medium text-foreground/90 leading-relaxed font-mono">
@@ -413,10 +404,10 @@ function VerifyRoute() {
 
                   {/* Digital Signature Hash */}
                   <div className="sm:col-span-2 space-y-1 pt-1 border-t border-border/50">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                    <span className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                       <QrCode className="h-3 w-3 text-primary" /> Cryptographic Ledger Hash
                     </span>
-                    <p className="font-mono text-[11px] text-muted-foreground break-all bg-card p-2 rounded-lg border border-border">
+                    <p className="font-mono text-xs text-muted-foreground break-all bg-card p-2 rounded-lg border border-border">
                       {digitalFingerprint}
                     </p>
                   </div>
@@ -492,7 +483,7 @@ function VerifyRoute() {
         </CardContent>
 
         {/* Footer info */}
-        <div className="bg-muted/40 border-t border-border px-6 py-3.5 text-center text-[11px] text-muted-foreground font-medium">
+        <div className="bg-muted/40 border-t border-border px-6 py-3.5 text-center text-xs text-muted-foreground font-medium">
           Official Civic Document Verification &bull; Republic of the Philippines &bull; Barangay Daine
         </div>
       </Card>

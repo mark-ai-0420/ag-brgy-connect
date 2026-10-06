@@ -95,7 +95,11 @@ export function GlobalSearchDialog({ open, onOpenChange }: { open: boolean, onOp
           />
           {loading && <Loader2 className="ml-2 h-4 w-4 animate-spin text-muted-foreground" />}
           {query && !loading && (
-            <button onClick={() => setQuery('')} className="ml-2 rounded-full p-1 hover:bg-muted text-muted-foreground">
+            <button
+              onClick={() => setQuery('')}
+              className="ml-2 rounded-full p-2 hover:bg-muted text-muted-foreground min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+              aria-label="Clear search"
+            >
               <X className="h-4 w-4" />
               <span className="sr-only">Clear search</span>
             </button>
@@ -107,17 +111,17 @@ export function GlobalSearchDialog({ open, onOpenChange }: { open: boolean, onOp
             <div className="p-4 space-y-4">
               <div className="text-xs font-semibold text-muted-foreground px-2 uppercase">Quick Navigation</div>
               <div className="grid gap-1">
-                <button onClick={() => handleNavigate('/documents')} className="flex items-center w-full px-2 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground text-left">
-                  <FileText className="mr-2 h-4 w-4" /> Request Document
+                <button onClick={() => handleNavigate('/documents')} className="flex items-center w-full px-2 py-2 min-h-[44px] text-sm rounded-md hover:bg-accent hover:text-accent-foreground text-left cursor-pointer">
+                  <FileText className="mr-2 h-4 w-4 text-primary" /> Request Document
                 </button>
-                <button onClick={() => handleNavigate('/map')} className="flex items-center w-full px-2 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground text-left">
-                  <Map className="mr-2 h-4 w-4" /> View GIS Map
+                <button onClick={() => handleNavigate('/map')} className="flex items-center w-full px-2 py-2 min-h-[44px] text-sm rounded-md hover:bg-accent hover:text-accent-foreground text-left cursor-pointer">
+                  <Map className="mr-2 h-4 w-4 text-emerald-600" /> View GIS Map
                 </button>
-                <button onClick={() => handleNavigate('/emergency')} className="flex items-center w-full px-2 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground text-left">
-                  <Phone className="mr-2 h-4 w-4" /> Emergency Directory
+                <button onClick={() => handleNavigate('/emergency')} className="flex items-center w-full px-2 py-2 min-h-[44px] text-sm rounded-md hover:bg-accent hover:text-accent-foreground text-left cursor-pointer">
+                  <Phone className="mr-2 h-4 w-4 text-[#CE1126]" /> Emergency Directory
                 </button>
-                <button onClick={() => handleNavigate('/complaints/new')} className="flex items-center w-full px-2 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground text-left">
-                  <AlertTriangle className="mr-2 h-4 w-4" /> File Incident Report
+                <button onClick={() => handleNavigate('/complaints/new')} className="flex items-center w-full px-2 py-2 min-h-[44px] text-sm rounded-md hover:bg-accent hover:text-accent-foreground text-left cursor-pointer">
+                  <AlertTriangle className="mr-2 h-4 w-4 text-amber-600" /> File Incident Report
                 </button>
               </div>
             </div>
@@ -127,7 +131,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: { open: boolean, onOp
                 <div className="space-y-1">
                   <div className="text-xs font-semibold text-muted-foreground px-2 uppercase mb-2">Announcements</div>
                   {results.announcements.map((item) => (
-                    <button key={item.id} onClick={() => handleNavigate(`/announcements/${item.id}`)} className="flex items-center w-full px-2 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground text-left">
+                    <button key={item.id} onClick={() => handleNavigate(`/announcements/${item.id}`)} className="flex items-center w-full px-2 py-2 min-h-[44px] text-sm rounded-md hover:bg-accent hover:text-accent-foreground text-left cursor-pointer">
                       <Megaphone className="mr-2 h-4 w-4 text-blue-500 shrink-0" />
                       <span className="truncate">{item.title}</span>
                     </button>
@@ -138,7 +142,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: { open: boolean, onOp
                 <div className="space-y-1">
                   <div className="text-xs font-semibold text-muted-foreground px-2 uppercase mb-2">Events</div>
                   {results.events.map((item) => (
-                    <button key={item.id} onClick={() => handleNavigate(`/events/${item.id}`)} className="flex items-center w-full px-2 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground text-left">
+                    <button key={item.id} onClick={() => handleNavigate(`/events/${item.id}`)} className="flex items-center w-full px-2 py-2 min-h-[44px] text-sm rounded-md hover:bg-accent hover:text-accent-foreground text-left cursor-pointer">
                       <Calendar className="mr-2 h-4 w-4 text-green-500 shrink-0" />
                       <span className="truncate">{item.title}</span>
                     </button>
@@ -149,7 +153,7 @@ export function GlobalSearchDialog({ open, onOpenChange }: { open: boolean, onOp
                 <div className="space-y-1">
                   <div className="text-xs font-semibold text-muted-foreground px-2 uppercase mb-2">Businesses</div>
                   {results.businesses.map((item) => (
-                    <button key={item.id} onClick={() => handleNavigate(`/directory/${item.id}`)} className="flex items-center w-full px-2 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground text-left">
+                    <button key={item.id} onClick={() => handleNavigate(`/directory/${item.id}`)} className="flex items-center w-full px-2 py-2 min-h-[44px] text-sm rounded-md hover:bg-accent hover:text-accent-foreground text-left cursor-pointer">
                       <Store className="mr-2 h-4 w-4 text-orange-500 shrink-0" />
                       <span className="truncate">{item.name}</span>
                     </button>
@@ -160,8 +164,8 @@ export function GlobalSearchDialog({ open, onOpenChange }: { open: boolean, onOp
                 <div className="space-y-1">
                   <div className="text-xs font-semibold text-muted-foreground px-2 uppercase mb-2">Officials</div>
                   {results.officials.map((item) => (
-                    <button key={item.id} onClick={() => handleNavigate(`/officials`)} className="flex items-center w-full px-2 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground text-left">
-                      <Users className="mr-2 h-4 w-4 text-purple-500 shrink-0" />
+                    <button key={item.id} onClick={() => handleNavigate(`/officials`)} className="flex items-center w-full px-2 py-2 min-h-[44px] text-sm rounded-md hover:bg-accent hover:text-accent-foreground text-left cursor-pointer">
+                      <Users className="mr-2 h-4 w-4 text-primary shrink-0" />
                       <span className="truncate">{item.name}</span>
                     </button>
                   ))}

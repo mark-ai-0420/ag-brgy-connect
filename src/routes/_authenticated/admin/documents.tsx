@@ -61,35 +61,35 @@ const STATUS_CONFIG: Record<
   pending: {
     label: 'Pending Review',
     badge:
-      'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
+      'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-950/70 dark:text-amber-200 dark:border-amber-800 font-bold',
     dot: 'bg-amber-500',
     icon: Clock,
   },
   in_review: {
     label: 'Approved / In Review',
     badge:
-      'bg-blue-100 text-blue-900 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800',
+      'bg-blue-100 text-blue-950 border-blue-300 dark:bg-blue-950/70 dark:text-blue-200 dark:border-blue-800 font-bold',
     dot: 'bg-blue-500',
     icon: FileCheck2,
   },
   ready: {
     label: 'Ready for Pickup',
     badge:
-      'bg-indigo-100 text-indigo-900 border-indigo-300 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800',
-    dot: 'bg-indigo-500',
+      'bg-sky-100 text-sky-950 border-sky-300 dark:bg-sky-950/70 dark:text-sky-200 dark:border-sky-800 font-bold',
+    dot: 'bg-sky-500',
     icon: PackageCheck,
   },
   completed: {
     label: 'Released / Completed',
     badge:
-      'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
+      'bg-emerald-100 text-emerald-950 border-emerald-300 dark:bg-emerald-950/70 dark:text-emerald-200 dark:border-emerald-800 font-bold',
     dot: 'bg-emerald-500',
     icon: CheckCircle2,
   },
   rejected: {
     label: 'Rejected / On Hold',
     badge:
-      'bg-rose-100 text-rose-900 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800',
+      'bg-rose-100 text-rose-950 border-rose-300 dark:bg-rose-950/70 dark:text-rose-200 dark:border-rose-800 font-bold',
     dot: 'bg-rose-500',
     icon: XCircle,
   },
@@ -117,12 +117,12 @@ const DOC_TYPE_META: Record<
   certificate_of_indigency: {
     label: 'Certificate of Indigency',
     icon: Award,
-    color: 'text-purple-600 dark:text-purple-400',
+    color: 'text-sky-600 dark:text-sky-400',
   },
   business_permit: {
     label: 'Business Clearance / Permit',
     icon: Building2,
-    color: 'text-indigo-600 dark:text-indigo-400',
+    color: 'text-blue-600 dark:text-blue-400',
   },
   other: {
     label: 'Other Certification',
@@ -684,53 +684,53 @@ function AdminDocumentsRoute() {
           </CardContent>
         </Card>
 
-        <Card className="border-amber-200 dark:border-amber-900/50 bg-amber-50/40 dark:bg-amber-950/20 shadow-2xs">
+        <Card className="border border-border bg-card shadow-xs">
           <CardContent className="p-4 space-y-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
               Pending
             </span>
-            <p className="text-2xl font-black text-amber-900 dark:text-amber-200">{counts.pending ?? 0}</p>
-            <span className="text-[11px] text-amber-700/80 dark:text-amber-400">Requires triage</span>
+            <p className="text-2xl font-black text-foreground">{counts.pending ?? 0}</p>
+            <span className="text-xs text-muted-foreground">Requires triage</span>
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200 dark:border-blue-900/50 bg-blue-50/40 dark:bg-blue-950/20 shadow-2xs">
+        <Card className="border border-border bg-card shadow-xs">
           <CardContent className="p-4 space-y-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-800 dark:text-blue-300">
+            <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">
               In Review
             </span>
-            <p className="text-2xl font-black text-blue-900 dark:text-blue-200">{counts.in_review ?? 0}</p>
-            <span className="text-[11px] text-blue-700/80 dark:text-blue-400">Record check</span>
+            <p className="text-2xl font-black text-foreground">{counts.in_review ?? 0}</p>
+            <span className="text-xs text-muted-foreground">Record check</span>
           </CardContent>
         </Card>
 
-        <Card className="border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/40 dark:bg-indigo-950/20 shadow-2xs">
+        <Card className="border border-border bg-card shadow-xs">
           <CardContent className="p-4 space-y-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-indigo-800 dark:text-indigo-300">
+            <span className="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-400">
               Ready Pickup
             </span>
             <p className="text-2xl font-black text-foreground">{counts.ready ?? 0}</p>
-            <span className="text-[11px] text-indigo-700/80 dark:text-indigo-400">At Hall desk</span>
+            <span className="text-xs text-muted-foreground">At Hall desk</span>
           </CardContent>
         </Card>
 
-        <Card className="border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-2xs">
+        <Card className="border border-border bg-card shadow-xs">
           <CardContent className="p-4 space-y-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
               Released
             </span>
-            <p className="text-2xl font-black text-emerald-900 dark:text-emerald-200">{counts.completed ?? 0}</p>
-            <span className="text-[11px] text-emerald-700/80 dark:text-emerald-400">Claimed by citizen</span>
+            <p className="text-2xl font-black text-foreground">{counts.completed ?? 0}</p>
+            <span className="text-xs text-muted-foreground">Claimed by citizen</span>
           </CardContent>
         </Card>
 
-        <Card className="border-rose-200 dark:border-rose-900/50 bg-rose-50/40 dark:bg-rose-950/20 shadow-2xs">
+        <Card className="border border-border bg-card shadow-xs">
           <CardContent className="p-4 space-y-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-rose-800 dark:text-rose-300">
+            <span className="text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-400">
               Rejected
             </span>
-            <p className="text-2xl font-black text-rose-900 dark:text-rose-200">{counts.rejected ?? 0}</p>
-            <span className="text-[11px] text-rose-700/80 dark:text-rose-400">Disapproved / Fix</span>
+            <p className="text-2xl font-black text-foreground">{counts.rejected ?? 0}</p>
+            <span className="text-xs text-muted-foreground">Disapproved / Fix</span>
           </CardContent>
         </Card>
       </div>
@@ -828,7 +828,7 @@ function AdminDocumentsRoute() {
                 >
                   <span>{label}</span>
                   <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                    className={`text-[11px] px-1.5 py-0.5 rounded-full font-bold ${
                       isSelected ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-foreground'
                     }`}
                   >
@@ -863,16 +863,16 @@ function AdminDocumentsRoute() {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-muted/40">
-                <TableRow>
-                  <TableHead className="w-[140px] font-bold text-xs">Tracking Code</TableHead>
-                  <TableHead className="font-bold text-xs">Resident</TableHead>
-                  <TableHead className="font-bold text-xs">Document Type</TableHead>
-                  <TableHead className="font-bold text-xs">Purpose / Remarks</TableHead>
-                  <TableHead className="font-bold text-xs">Jurisdiction</TableHead>
-                  <TableHead className="font-bold text-xs">Submitted</TableHead>
-                  <TableHead className="font-bold text-xs">Status</TableHead>
-                  <TableHead className="text-right font-bold text-xs pr-6">Actions & Quick Update</TableHead>
+              <TableHeader className="bg-muted/50 border-b border-border">
+                <TableRow className="border-b border-border hover:bg-transparent">
+                  <TableHead className="w-[140px] font-bold text-xs uppercase tracking-wider text-muted-foreground">Tracking Code</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Resident</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Document Type</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Purpose / Remarks</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Jurisdiction</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Submitted</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">Status</TableHead>
+                  <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground pr-6">Actions & Quick Update</TableHead>
                 </TableRow>
               </TableHeader>
 
@@ -915,7 +915,7 @@ function AdminDocumentsRoute() {
                     return (
                       <TableRow
                         key={req.id}
-                        className="hover:bg-muted/40 transition-colors group border-b border-border/60"
+                        className="hover:bg-muted/50 transition-colors group border-b border-border"
                       >
                         {/* Tracking Reference Code */}
                         <TableCell className="align-middle">
@@ -1041,7 +1041,7 @@ function AdminDocumentsRoute() {
                                   onClick={() => handleFastStatusUpdate(req, 'ready')}
                                   className="min-h-[40px] cursor-pointer gap-2 font-semibold text-xs"
                                 >
-                                  <PackageCheck className="h-4 w-4 text-indigo-600" />
+                                  <PackageCheck className="h-4 w-4 text-sky-600" />
                                   <span>Mark Ready for Pickup</span>
                                   {req.status === 'ready' && <Check className="h-3.5 w-3.5 ml-auto text-primary" />}
                                 </DropdownMenuItem>

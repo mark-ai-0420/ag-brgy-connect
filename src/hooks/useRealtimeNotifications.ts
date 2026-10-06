@@ -13,9 +13,9 @@ const DOC_TYPE_LABELS: Record<string, string> = {
 
 const STATUS_MESSAGES: Record<string, string> = {
   in_review: 'is now being reviewed',
-  ready: 'is ready for pickup! 🎉',
-  completed: 'has been completed ✅',
-  rejected: 'could not be processed ❌',
+  ready: 'is ready for pickup.',
+  completed: 'has been completed.',
+  rejected: 'could not be processed.',
 }
 
 export function useRealtimeNotifications(userId: string | null) {
@@ -72,10 +72,10 @@ export function useRealtimeNotifications(userId: string | null) {
           if (newRecord.status !== oldRecord.status) {
             const title = newRecord.title ?? 'Complaint'
             const statusLabels: Record<string, string> = {
-              investigating: 'is now under investigation 🔍',
-              scheduled_hearing: 'has a hearing scheduled ⚖️',
-              resolved: 'has been resolved ✅',
-              dismissed: 'was reviewed and closed ℹ️',
+              investigating: 'is now under investigation.',
+              scheduled_hearing: 'has a hearing scheduled.',
+              resolved: 'has been resolved.',
+              dismissed: 'was reviewed and closed.',
             }
             const statusMsg = statusLabels[newRecord.status] ?? `status updated to ${newRecord.status}`
             
