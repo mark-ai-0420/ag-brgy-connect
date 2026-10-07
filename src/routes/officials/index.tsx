@@ -23,6 +23,8 @@ import { useState, useMemo } from 'react'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { useBarangayScope, type BarangayScope } from '#/hooks/useBarangayScope'
+import { useTenant } from '#/lib/tenant/TenantContext'
+import type { Barangay } from '#/server/tenant'
 import { FeedSkeleton } from '#/components/common/FeedSkeleton'
 
 export interface Official {
@@ -71,21 +73,21 @@ export const Route = createFileRoute('/officials/')({
   head: () => ({
     meta: [
       {
-        title: 'Barangay Officials Roster | Barangay Daine Governance',
+        title: 'Sangguniang Barangay Officials Roster | Civic Governance',
       },
       {
         name: 'description',
         content:
-          'Meet the elected Punong Barangay, Sangguniang Barangay Kagawad members, and appointed officials of Barangay Daine 1 and Daine 2, Indang, Cavite.',
+          'Meet the elected Punong Barangay, Sangguniang Barangay Kagawad members, and appointed public servants in our barangay governance roster.',
       },
       {
         property: 'og:title',
-        content: 'Barangay Officials Roster | Barangay Daine Governance',
+        content: 'Sangguniang Barangay Officials Roster | Civic Governance',
       },
       {
         property: 'og:description',
         content:
-          'Meet the elected Punong Barangay, Sangguniang Barangay Kagawad members, and appointed officials of Barangay Daine 1 and Daine 2, Indang, Cavite.',
+          'Meet the elected Punong Barangay, Sangguniang Barangay Kagawad members, and appointed public servants in our barangay governance roster.',
       },
       {
         property: 'og:type',
@@ -150,15 +152,17 @@ function getConsultationSchedule(position: string, committee: string | null): st
 }
 
 // Punong Barangay Executive Spotlight Component
-function PunongBarangaySpotlight({ official }: { official: Official }) {
-  const barangayLabel =
-    official.barangay === 'daine_1'
-      ? 'Barangay Daine 1'
-      : official.barangay === 'daine_2'
-        ? 'Barangay Daine 2'
-        : 'Barangay Daine'
-  const barangayColor = official.barangay === 'daine_1' ? '#0038A8' : '#CE1126'
-  const contactPhone = official.contact_number || '+63 918 123 4567'
+function PunongBarangaySpotlight({
+  official,
+  activeBarangay,
+}: {
+  official: Official
+  activeBarangay: Barangay
+}) {
+  const barangayLabel = activeBarangay.name
+  const barangayColor = '#0038A8'
+  const contactPhone = official.contact_number || activeBarangay.emergency_hotline || '+63 918 123 4567'
+  const sealUrl = activeBarangay.seal_url || activeBarangay.logo_url || '/logo.jpg'
 
   return (
     <Card className="overflow-hidden border-2 border-amber-500/80 bg-card shadow-lg rounded-3xl">
@@ -190,8 +194,8 @@ function PunongBarangaySpotlight({ official }: { official: Official }) {
               />
             ) : (
               <img
-                src="/logo.jpg"
-                alt="Official Seal of Barangay Daine"
+                src={sealUrl}
+                alt={`Official Seal of ${barangayLabel}`}
                 width="176"
                 height="176"
                 className="w-full h-full object-cover"
@@ -200,7 +204,7 @@ function PunongBarangaySpotlight({ official }: { official: Official }) {
           </div>
           {/* Official Seal Badge */}
           <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-white dark:bg-slate-900 shadow-md border-2 border-amber-400 flex items-center justify-center p-1">
-            <img src="/logo.jpg" alt="Seal" width="40" height="40" className="w-full h-full rounded-full object-cover" />
+            <img src={sealUrl} alt="Seal" width="40" height="40" className="w-full h-full rounded-full object-cover" />
           </div>
         </div>
 
@@ -233,7 +237,7 @@ function PunongBarangaySpotlight({ official }: { official: Official }) {
             </p>
             <div className="flex items-center justify-center md:justify-start gap-2 text-xs text-muted-foreground pt-1">
               <MapPin className="h-3.5 w-3.5 text-[#CE1126] shrink-0" />
-              <span>Executive Suite, {barangayLabel} Barangay Hall, Indang, Cavite</span>
+              <span>Executive Suite, {barangayLabel} Barangay Hall, {activeBarangay.municipality}, {activeBarangay.province}</span>
             </div>
           </div>
 
@@ -256,7 +260,7 @@ function PunongBarangaySpotlight({ official }: { official: Official }) {
               className="font-bold min-h-[44px] h-11 px-4 rounded-xl border-border hover:border-primary text-foreground hover:text-primary cursor-pointer"
               asChild
             >
-              <a href="mailto:office@barangaydaine.gov.ph">
+              <a href={`mailto:office@${activeBarangay.slug}.gov.ph`}>
                 <Mail className="h-4 w-4 mr-2" />
                 <span>Send Formal Inquiry</span>
               </a>
@@ -364,17 +368,19 @@ function OfficialCard({ official }: { official: Official }) {
 function OfficialsRoute() {
   const allOfficials = Route.useLoaderData() ?? []
   const { scope: activeBarangayScope, setScope } = useBarangayScope()
-  const [selectedBarangayTab, setSelectedBarangayTab] = useState<'daine_1' | 'daine_2'>(
-    activeBarangayScope === 'daine2' ? 'daine_2' : 'daine_1'
-  )
-
-  // Keep local tab in sync with global scope if changed from header
-  const currentBarangay = activeBarangayScope === 'daine2' ? 'daine_2' : 'daine_1'
-  const activeTab = activeBarangayScope === 'all' ? selectedBarangayTab : currentBarangay
+  const { activeBarangay, barangays, setTenantSlug } = useTenant()
 
   const officialsForBarangay = useMemo(() => {
-    return allOfficials.filter((o: Official) => o.barangay === activeTab)
-  }, [allOfficials, activeTab])
+    const filtered = allOfficials.filter((o: Official) => {
+      if (o.barangay_id && o.barangay_id === activeBarangay.id) return true
+      const slugKey = activeBarangay.slug.replace('-', '_')
+      if (o.barangay === slugKey || o.barangay === activeBarangay.slug) return true
+      if (activeBarangay.slug === 'daine-1' && o.barangay === 'daine_1') return true
+      if (activeBarangay.slug === 'daine-2' && o.barangay === 'daine_2') return true
+      return false
+    })
+    return filtered
+  }, [allOfficials, activeBarangay])
 
   // Categorize officials
   const punongBarangay = useMemo(() => {
@@ -410,8 +416,6 @@ function OfficialsRoute() {
     )
   }, [officialsForBarangay])
 
-  const barangayDisplayName = activeTab === 'daine_1' ? 'Barangay Daine 1' : 'Barangay Daine 2'
-
   return (
     <div className="min-h-[100dvh] pb-20 bg-slate-50/50 dark:bg-background">
       {/* ── 1. Official Barangay Leaders Header ───────────────────────────────────────── */}
@@ -431,8 +435,8 @@ function OfficialsRoute() {
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md p-1.5 border border-white/20 shrink-0 shadow-lg">
                 <img
-                  src="/logo.jpg"
-                  alt="Official Seal of Barangay Daine"
+                  src={activeBarangay.seal_url || activeBarangay.logo_url || '/logo.jpg'}
+                  alt={`Official Seal of ${activeBarangay.name}`}
                   className="w-full h-full object-cover rounded-xl"
                 />
               </div>
@@ -442,10 +446,10 @@ function OfficialsRoute() {
                   <span>Executive Governance & Council Roster</span>
                 </div>
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
-                  Barangay Officials Roster
+                  Sangguniang Barangay Roster • {activeBarangay.name}, {activeBarangay.municipality}
                 </h1>
                 <p className="text-blue-100 text-xs sm:text-sm max-w-xl font-medium mt-1">
-                  Meet the democratically elected leaders and appointed public servants of Barangay Daine, Indang, Cavite.
+                  Meet the democratically elected leaders and appointed public servants of {activeBarangay.name}, {activeBarangay.municipality}, {activeBarangay.province}.
                 </p>
               </div>
             </div>
@@ -474,35 +478,29 @@ function OfficialsRoute() {
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <Layers className="h-4 w-4 text-primary shrink-0" />
             <span className="text-xs font-bold text-muted-foreground mr-1 shrink-0">Jurisdiction:</span>
-            <div className="inline-flex p-1 bg-muted rounded-xl border border-border w-full sm:w-auto">
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedBarangayTab('daine_1')
-                  if (activeBarangayScope !== 'all') setScope('daine1')
-                }}
-                className={`flex-1 sm:flex-none min-h-[44px] px-5 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
-                  activeTab === 'daine_1'
-                    ? 'bg-[#0038A8] text-white shadow-md'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
-                }`}
-              >
-                Barangay Daine 1
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedBarangayTab('daine_2')
-                  if (activeBarangayScope !== 'all') setScope('daine2')
-                }}
-                className={`flex-1 sm:flex-none min-h-[44px] px-5 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
-                  activeTab === 'daine_2'
-                    ? 'bg-[#CE1126] text-white shadow-md'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
-                }`}
-              >
-                Barangay Daine 2
-              </button>
+            <div className="inline-flex flex-wrap p-1 bg-muted rounded-xl border border-border w-full sm:w-auto gap-1">
+              {barangays.map((b) => {
+                const isActive = activeBarangay.id === b.id || activeBarangay.slug === b.slug
+                return (
+                  <button
+                    key={b.id}
+                    type="button"
+                    onClick={() => {
+                      setTenantSlug(b.slug)
+                      if (b.slug === 'daine-1') setScope('daine1')
+                      else if (b.slug === 'daine-2') setScope('daine2')
+                      else setScope(b.slug as any)
+                    }}
+                    className={`flex-1 sm:flex-none min-h-[44px] px-5 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-primary text-primary-foreground shadow-md'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
+                    }`}
+                  >
+                    {b.name}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
@@ -527,10 +525,10 @@ function OfficialsRoute() {
                 id="executive-spotlight-heading"
                 className="text-sm font-black uppercase tracking-wider text-amber-700 dark:text-amber-400"
               >
-                Executive Leadership &bull; {barangayDisplayName}
+                Executive Leadership &bull; {activeBarangay.name}
               </h2>
             </div>
-            <PunongBarangaySpotlight official={punongBarangay} />
+            <PunongBarangaySpotlight official={punongBarangay} activeBarangay={activeBarangay} />
           </section>
         )}
 
@@ -606,7 +604,7 @@ function OfficialsRoute() {
                 Need to Consult an Official or Attend Regular Barangay Sessions?
               </h3>
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                Regular Sangguniang Barangay public sessions are held every 1st and 3rd Monday of the month at the Session Hall. Walk-in consultations are welcome during official office hours. For document requests or formal mediation hearings, please visit the Barangay Secretary desk.
+                Regular Sangguniang Barangay public sessions are held every 1st and 3rd Monday of the month at the Session Hall. Walk-in consultations are welcome during official office hours. For document requests or formal mediation hearings, please visit the {activeBarangay ? `${activeBarangay.name} Barangay Secretary desk` : 'Barangay Secretary desk'}.
               </p>
             </div>
 

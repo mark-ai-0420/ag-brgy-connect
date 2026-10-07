@@ -21,6 +21,7 @@ import {
 import { useState, useMemo } from 'react'
 import { FeedSkeleton } from '#/components/common/FeedSkeleton'
 import { useBarangayScope } from '#/hooks/useBarangayScope'
+import { useTenant } from '#/lib/tenant/TenantContext'
 
 const getBusinesses = createServerFn({ method: 'GET' }).handler(async () => {
   try {
@@ -47,21 +48,21 @@ export const Route = createFileRoute('/directory/')({
   head: () => ({
     meta: [
       {
-        title: 'MSME Business Directory | Barangay Daine',
+        title: 'MSME Business Directory | BrgyConnect',
       },
       {
         name: 'description',
         content:
-          'Explore local sari-sari stores, eateries, repair shops, and MSMEs across Barangay Daine 1 and Daine 2, Indang, Cavite.',
+          'Explore local sari-sari stores, eateries, repair shops, and MSMEs across partner barangays.',
       },
       {
         property: 'og:title',
-        content: 'MSME Business Directory | Barangay Daine',
+        content: 'MSME Business Directory | BrgyConnect',
       },
       {
         property: 'og:description',
         content:
-          'Explore local sari-sari stores, eateries, repair shops, and MSMEs across Barangay Daine 1 and Daine 2, Indang, Cavite.',
+          'Explore local sari-sari stores, eateries, repair shops, and MSMEs across partner barangays.',
       },
       {
         property: 'og:type',
@@ -233,6 +234,17 @@ function DirectoryRoute() {
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState<Category>('All')
   const { scope: activeBarangayScope } = useBarangayScope()
+  const { activeBarangay, barangays } = useTenant()
+
+  const scopeLabel = useMemo(() => {
+    if (activeBarangayScope === 'all') return 'All Barangays'
+    if (activeBarangayScope === 'daine1') return 'Barangay Daine I'
+    if (activeBarangayScope === 'daine2') return 'Barangay Daine II'
+    const found = barangays.find((b) => b.slug === activeBarangayScope || b.id === activeBarangayScope)
+    if (found) return found.name
+    if (activeBarangay) return activeBarangay.name
+    return 'Local Community'
+  }, [activeBarangayScope, barangays, activeBarangay])
 
   // Pre-calculate category count indicators scoped by current barangay scope
   const categoryCounts = useMemo(() => {
@@ -243,8 +255,17 @@ function DirectoryRoute() {
 
     businesses.forEach((b: any) => {
       if (activeBarangayScope !== 'all') {
-        const dbScope = activeBarangayScope === 'daine1' ? 'daine_1' : 'daine_2'
-        if (b.barangay && b.barangay !== dbScope) {
+        const dbScope =
+          activeBarangayScope === 'daine1'
+            ? 'daine_1'
+            : activeBarangayScope === 'daine2'
+              ? 'daine_2'
+              : activeBarangayScope
+        if (
+          b.barangay &&
+          b.barangay !== dbScope &&
+          b.barangay !== activeBarangayScope.replace('-', '_')
+        ) {
           return
         }
       }
@@ -262,8 +283,17 @@ function DirectoryRoute() {
     return businesses.filter((b: any) => {
       // Scope filter
       if (activeBarangayScope !== 'all') {
-        const dbScope = activeBarangayScope === 'daine1' ? 'daine_1' : 'daine_2'
-        if (b.barangay && b.barangay !== dbScope) {
+        const dbScope =
+          activeBarangayScope === 'daine1'
+            ? 'daine_1'
+            : activeBarangayScope === 'daine2'
+              ? 'daine_2'
+              : activeBarangayScope
+        if (
+          b.barangay &&
+          b.barangay !== dbScope &&
+          b.barangay !== activeBarangayScope.replace('-', '_')
+        ) {
           return false
         }
       }
@@ -301,15 +331,17 @@ function DirectoryRoute() {
         <div className="relative z-10 max-w-3xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-xs sm:text-sm font-bold tracking-wide border border-white/20 text-slate-100 shadow-xs">
             <Store className="h-4 w-4 text-[#FCD116]" />
-            <span>Local Business &amp; Merchant Directory</span>
+            <span>{activeBarangay ? `${activeBarangay.name} Business Registry` : 'Local Business & Merchant Directory'}</span>
           </div>
 
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
-            Barangay Daine MSME &amp; Business Directory
+            {activeBarangay ? `${activeBarangay.name} MSME & Business Directory` : 'Barangay MSME & Business Directory'}
           </h1>
 
           <p className="text-white/90 text-sm sm:text-base md:text-lg max-w-2xl leading-relaxed">
-            Discover and support local sari-sari stores, eateries, repair shops, water stations, and service providers across Daine 1 &amp; Daine 2. Own a local enterprise? Register your business today for free community visibility!
+            {activeBarangay
+              ? `Discover and support local sari-sari stores, eateries, repair shops, water stations, and service providers in ${activeBarangay.name}, ${activeBarangay.municipality}. Own a local enterprise? Register your business today for free community visibility!`
+              : 'Discover and support local sari-sari stores, eateries, repair shops, water stations, and service providers across partner communities. Own a local enterprise? Register your business today for free community visibility!'}
           </p>
 
           <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -325,7 +357,7 @@ function DirectoryRoute() {
             </Button>
             <div className="inline-flex items-center gap-2 text-xs sm:text-sm text-white/95 font-medium px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
               <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Free Verification for Daine Residents</span>
+              <span>{activeBarangay ? `Free Verification for ${activeBarangay.short_name || activeBarangay.name} Residents` : 'Free Verification for Local Residents'}</span>
             </div>
           </div>
         </div>
@@ -394,11 +426,7 @@ function DirectoryRoute() {
         <p className="text-sm font-semibold text-muted-foreground">
           {filtered.length} {filtered.length === 1 ? 'business' : 'businesses'} listed in{' '}
           <span className="text-foreground">
-            {activeBarangayScope === 'daine1'
-              ? 'Barangay Daine I'
-              : activeBarangayScope === 'daine2'
-                ? 'Barangay Daine II'
-                : 'Barangay Daine (All)'}
+            {scopeLabel}
           </span>
         </p>
         {(search || activeCategory !== 'All') && (
@@ -417,7 +445,7 @@ function DirectoryRoute() {
           const badgeClass =
             CATEGORY_COLORS[business.category as string] ??
             'bg-gray-100 text-gray-700 border-gray-200'
-          const isDaine2 = business.barangay === 'daine_2'
+          const isDaine2 = business.barangay === 'daine_2' || business.barangay === 'daine-2'
           const messengerUrl = getMessengerUrl(business.messenger_link)
           const openStatus = computeOpenStatus(business.hours)
 
@@ -449,7 +477,7 @@ function DirectoryRoute() {
                       <Store className="h-7 w-7 text-primary/70" />
                     </div>
                     <span className="text-xs font-semibold text-muted-foreground mt-2">
-                      Barangay Daine MSME
+                      {activeBarangay ? `${activeBarangay.short_name || activeBarangay.name} MSME` : 'Barangay MSME'}
                     </span>
                   </div>
                 )}
@@ -478,7 +506,11 @@ function DirectoryRoute() {
                     }`}
                   >
                     <Building2 className="h-3 w-3" />
-                    {isDaine2 ? 'Daine 2' : 'Daine 1'}
+                    {business.barangay === 'daine_2' || business.barangay === 'daine-2'
+                      ? 'Daine 2'
+                      : business.barangay === 'daine_1' || business.barangay === 'daine-1'
+                        ? 'Daine 1'
+                        : business.barangay_name || business.barangay || activeBarangay?.name || 'Local'}
                   </span>
 
                   {/* Pulsing Live Open Status Badge */}
@@ -642,13 +674,7 @@ function DirectoryRoute() {
             <div>
               <h3 className="font-bold text-lg mb-1">No businesses found</h3>
               <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-                No matching businesses found for this filter in{' '}
-                {activeBarangayScope === 'daine1'
-                  ? 'Daine 1'
-                  : activeBarangayScope === 'daine2'
-                    ? 'Daine 2'
-                    : 'Barangay Daine'}
-                .
+                No matching businesses found for this filter in {scopeLabel}.
               </p>
             </div>
             <div className="flex flex-wrap gap-3 justify-center">

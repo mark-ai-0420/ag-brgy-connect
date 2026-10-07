@@ -19,7 +19,7 @@ import { BarangayScopeProvider } from '#/hooks/useBarangayScope'
 import { NavBar } from '#/components/layout/Navbar'
 import { Footer } from '#/components/layout/Footer'
 import { EmergencySpeedDial } from '#/components/emergency/EmergencySpeedDial'
-import { KaDaineChatbot } from '#/components/chat/KaDaineChatbot'
+import { KaBarangayChatbot } from '#/components/chat/KaDaineChatbot'
 import { SessionTimeoutModal } from '#/components/auth/SessionTimeoutModal'
 import { OfflineIndicator } from '#/components/common/OfflineIndicator'
 import { PWAInstallBanner } from '#/components/common/PWAInstallBanner'
@@ -44,12 +44,12 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'BrgyConnect | Barangay Daine, Indang, Cavite',
+        title: 'BrgyConnect | Republika ng Pilipinas • Unified Digital Barangay Portal',
       },
       {
         name: 'description',
         content:
-          "BrgyConnect: Official digital portal of Barangay Daine, Indang, Cavite for community services, document requests, announcements, and local business directory.",
+          'Official digital civic portal for Philippine barangays. Track document clearances, view municipal notices, explore local MSMEs, and contact emergency responders 24/7.',
       },
       {
         name: 'theme-color',
@@ -73,12 +73,12 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
       {
         property: 'og:title',
-        content: 'BrgyConnect | Barangay Daine, Indang, Cavite',
+        content: 'BrgyConnect | Republika ng Pilipinas • Unified Digital Barangay Portal',
       },
       {
         property: 'og:description',
         content:
-          "BrgyConnect: Official digital portal of Barangay Daine, Indang, Cavite for community services, document requests, announcements, and local business directory.",
+          'Official digital civic portal for Philippine barangays. Track document clearances, view municipal notices, explore local MSMEs, and contact emergency responders 24/7.',
       },
       {
         property: 'og:type',
@@ -146,9 +146,18 @@ function RootComponent() {
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {
-        // SW registration failed silently
-      })
+      if (process.env.NODE_ENV === 'development') {
+        // In local development, unregister service workers to prevent stale asset/style caching
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          for (const registration of registrations) {
+            registration.unregister()
+          }
+        })
+      } else {
+        navigator.serviceWorker.register('/sw.js').catch(() => {
+          // SW registration failed silently
+        })
+      }
     }
   }, [])
 
@@ -170,7 +179,7 @@ function RootComponent() {
           <Footer />
           <PWAInstallBanner />
           {!shouldSuppressFloating && <EmergencySpeedDial />}
-          {!shouldSuppressFloating && <KaDaineChatbot />}
+          {!shouldSuppressFloating && <KaBarangayChatbot />}
           <SessionTimeoutModal />
         </BarangayScopeProvider>
       </TenantProvider>

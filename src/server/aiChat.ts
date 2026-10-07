@@ -109,22 +109,7 @@ export const sendChatMessage = createServerFn({ method: 'POST' })
       };
     }
 
-    // Zero-token spam check
-    if (isBlatantSpam(message)) {
-      return {
-        text: 'Hello! I am Ka-Daine, the resident assistant for Barangay Daine, Indang, Cavite. I can only assist with barangay clearances, local services, officials, and community inquiries.',
-      };
-    }
-
-    const apiKey = process.env.GEMINI_API_KEY || '';
-
-    if (!apiKey) {
-      return {
-        text: 'System notice: GEMINI_API_KEY is not configured on the server.',
-      };
-    }
-
-    const supabase = createSupabaseServerClient();
+    // Resolve dynamic tenant context
     let tenantContext: any = null;
     try {
       const { resolveRequestTenant } = await import('#/server/tenant');
@@ -139,6 +124,23 @@ export const sendChatMessage = createServerFn({ method: 'POST' })
     const municipality = activeTenant?.municipality || 'Indang';
     const province = activeTenant?.province || 'Cavite';
     const purokList = activeTenant?.puroks?.join(', ') || 'Purok 1 through 7';
+
+    // Zero-token spam check
+    if (isBlatantSpam(message)) {
+      return {
+        text: `Hello! I am Ka-Barangay, the digital resident assistant for ${tenantName}, ${municipality}, ${province}. I can assist with barangay clearances, local public services, officials, and community inquiries.`,
+      };
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY || '';
+
+    if (!apiKey) {
+      return {
+        text: 'System notice: GEMINI_API_KEY is not configured on the server.',
+      };
+    }
+
+    const supabase = createSupabaseServerClient();
 
     let officialsText = 'Punong Barangay (Daine 1): Hon. Rolando E. Daine\nPunong Barangay (Daine 2): Hon. Danilo M. Mendoza';
     let contactsText =
@@ -248,6 +250,6 @@ ${contactsText}
     }
 
     return {
-      text: 'Hello! I am having a temporary connection hiccup with the network. Please try asking again in a moment, or visit our Barangay Hall in Indang, Cavite.',
+      text: `Hello! I am having a temporary connection hiccup with the network. Please try asking again in a moment, or visit our Barangay Hall in ${municipality}, ${province}.`,
     };
   });

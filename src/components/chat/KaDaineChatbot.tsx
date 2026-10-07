@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Bot, Loader2 } from 'lucide-react';
 import { sendChatMessage } from '#/server/aiChat';
+import { useTenant } from '#/lib/tenant/TenantContext';
 
 type Role = 'user' | 'model';
 
@@ -11,26 +12,29 @@ interface Message {
 
 const SUGGESTED_PROMPTS = [
   "How do I request a Barangay Clearance?",
-  "Who is the Barangay Captain?",
+  "Who is the Punong Barangay?",
   "Where is the nearest evacuation center?",
   "Emergency Hotlines",
 ];
 
-export function KaDaineChatbot() {
+export function KaBarangayChatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const { activeBarangay } = useTenant();
+  const tenantName = activeBarangay?.name || 'Barangay Daine';
+
   const [clientId, setClientId] = useState<string>('anon');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      let id = localStorage.getItem('ka_daine_client_id');
+      let id = localStorage.getItem('ka_barangay_client_id') || localStorage.getItem('ka_daine_client_id');
       if (!id) {
         id = 'resident_' + Math.random().toString(36).substring(2, 11);
-        localStorage.setItem('ka_daine_client_id', id);
+        localStorage.setItem('ka_barangay_client_id', id);
       }
       setClientId(id);
     }
@@ -70,7 +74,7 @@ export function KaDaineChatbot() {
         throw new Error('Empty response from assistant');
       }
     } catch (error: any) {
-      console.error('Ka-Daine chat error:', error);
+      console.error('Ka-Barangay chat error:', error);
       setMessages([
         ...currentMessages,
         {
@@ -91,8 +95,8 @@ export function KaDaineChatbot() {
         <button
           onClick={() => setIsOpen(true)}
           className="relative flex items-center justify-center w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-transform hover:scale-105 group focus:outline-none focus:ring-4 focus:ring-primary/30 cursor-pointer"
-          title="Chat with Ka-Daine AI Resident Assistant"
-          aria-label="Chat with Ka-Daine AI Resident Assistant"
+          title="Chat with Ka-Barangay AI Assistant"
+          aria-label="Chat with Ka-Barangay AI Assistant"
           aria-expanded={false}
         >
           <MessageCircle className="w-6 h-6" />
@@ -100,7 +104,7 @@ export function KaDaineChatbot() {
             <Bot className="w-3 h-3" />
           </div>
           <div className="absolute right-16 top-1/2 -translate-y-1/2 px-3 py-1 bg-white text-gray-800 text-sm font-medium rounded-md shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap dark:bg-gray-800 dark:text-gray-200">
-            Chat with Ka-Daine
+            Chat with Ka-Barangay
           </div>
         </button>
       )}
@@ -108,7 +112,7 @@ export function KaDaineChatbot() {
       {isOpen && (
         <div
           role="dialog"
-          aria-label="Ka-Daine AI Resident Assistant Chat"
+          aria-label="Ka-Barangay AI Resident Assistant Chat"
           aria-modal="true"
           className="flex flex-col w-[380px] max-w-[calc(100vw-2rem)] h-[600px] max-h-[calc(100vh-4rem)] bg-background border rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-5 fade-in duration-300 ring-1 ring-black/5 dark:ring-white/10"
         >
@@ -129,10 +133,10 @@ export function KaDaineChatbot() {
                 </div>
               </div>
               <div>
-                <h3 className="font-semibold text-sm">Ka-Daine Resident Assistant</h3>
+                <h3 className="font-semibold text-sm">Ka-Barangay AI Assistant</h3>
                 <div className="flex items-center text-xs text-primary-foreground/80">
                   <span className="w-2 h-2 rounded-full bg-green-400 mr-1"></span>
-                  Online
+                  <span>{activeBarangay ? `${activeBarangay.short_name} • Online` : 'Online'}</span>
                 </div>
               </div>
             </div>
@@ -154,7 +158,9 @@ export function KaDaineChatbot() {
                 </div>
                 <div className="text-center space-y-1">
                   <h4 className="font-medium text-foreground">Magandang araw po!</h4>
-                  <p className="text-sm text-muted-foreground">Ako si Ka-Daine. Paano ko po kayo matutulungan ngayon?</p>
+                  <p className="text-sm text-muted-foreground">
+                    Ako si Ka-Barangay, ang digital resident assistant para sa {tenantName}. Paano ko po kayo matutulungan ngayon?
+                  </p>
                 </div>
                 <div className="flex flex-wrap justify-center gap-2 mt-4">
                   {SUGGESTED_PROMPTS.map((prompt, idx) => (
@@ -214,7 +220,7 @@ export function KaDaineChatbot() {
                 maxLength={500}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Type your message (max 500 chars)..."
-                aria-label="Type your question for Ka-Daine"
+                aria-label="Type your question for Ka-Barangay"
                 className="flex-1 bg-slate-100 dark:bg-zinc-900 border-transparent focus:bg-white dark:focus:bg-zinc-950 border focus:border-primary/50 text-sm rounded-full pl-4 pr-12 py-3 outline-none transition-all"
                 disabled={isLoading}
               />
@@ -233,3 +239,5 @@ export function KaDaineChatbot() {
     </div>
   );
 }
+
+export const KaDaineChatbot = KaBarangayChatbot;

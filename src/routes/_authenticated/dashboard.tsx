@@ -3,6 +3,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { getAuthSession } from '#/server/auth'
 import { useState, useEffect, useMemo } from 'react'
+import { useTenant } from '#/lib/tenant/TenantContext'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '#/components/ui/card'
 import { Button } from '#/components/ui/button'
 import { cn } from '#/lib/utils'
@@ -326,8 +327,17 @@ function DashboardRoute() {
     }
   };
 
-  const isDaine2 = currentProfile?.barangay === 'daine_2';
-  const barangayLabel = isDaine2 ? 'Barangay Daine 2' : 'Barangay Daine 1';
+  const { activeBarangay, barangays } = useTenant();
+
+  const residentBarangay = useMemo(() => {
+    if (!currentProfile?.barangay) return activeBarangay;
+    const cleanSlug = currentProfile.barangay.replace('_', '-');
+    return (
+      barangays.find(
+        (b) => b.slug === cleanSlug || b.id === currentProfile.barangay || b.slug === currentProfile.barangay
+      ) || activeBarangay
+    );
+  }, [currentProfile?.barangay, barangays, activeBarangay]);
 
   return (
     <div className="container mx-auto py-8 sm:py-10 px-3 sm:px-6 md:px-8 space-y-8 max-w-6xl">
@@ -342,15 +352,21 @@ function DashboardRoute() {
 
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pt-1">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold tracking-wider uppercase">
-              <Building2 className="h-3.5 w-3.5" />
-              Tanggapan ng Mamamayan • Resident Portal • {barangayLabel}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold tracking-wider uppercase">
+                <Building2 className="h-3.5 w-3.5" />
+                Tanggapan ng Mamamayan • Resident Portal • {residentBarangay.name}
+              </div>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold text-muted-foreground bg-muted/60 border border-border/60">
+                <MapPin className="h-3 w-3 text-primary" />
+                {residentBarangay.municipality}, {residentBarangay.province}
+              </span>
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">
               Mabuhay, {currentProfile?.full_name?.split(' ')[0] || 'Resident'}!
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground max-w-2xl leading-relaxed">
-              Access your official digital ID, fast-track barangay clearances and certifications, manage registered MSMEs, and file peace & order reports.
+              Official citizen portal for {residentBarangay.name}, {residentBarangay.municipality}, {residentBarangay.province}. Access your digital ID, fast-track barangay clearances and certifications, manage registered MSMEs, and file peace &amp; order reports.
             </p>
           </div>
 
@@ -402,7 +418,7 @@ function DashboardRoute() {
                     <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
                       Document Requests
                     </h3>
-                    <p className="text-xs text-muted-foreground">Barangay Certifications</p>
+                    <p className="text-xs text-muted-foreground">{residentBarangay.short_name || residentBarangay.name} Clearance &amp; Certs</p>
                   </div>
                 </div>
                 <div className="p-1.5 rounded-full bg-muted text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all">
@@ -455,7 +471,7 @@ function DashboardRoute() {
                     <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
                       My Businesses
                     </h3>
-                    <p className="text-xs text-muted-foreground">MSME Growth & Directory</p>
+                    <p className="text-xs text-muted-foreground">MSME Hub • {residentBarangay.municipality}</p>
                   </div>
                 </div>
                 <div className="p-1.5 rounded-full bg-muted text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all">
@@ -502,7 +518,7 @@ function DashboardRoute() {
                     <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
                       Incident Reports
                     </h3>
-                    <p className="text-xs text-muted-foreground">Peace & Order Desk</p>
+                    <p className="text-xs text-muted-foreground">Peace &amp; Order • {residentBarangay.name}</p>
                   </div>
                 </div>
                 <div className="p-1.5 rounded-full bg-muted text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all">
@@ -540,7 +556,7 @@ function DashboardRoute() {
                 Digital Resident Identity Card
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Official virtual credential for municipal identification and digital verification
+                Official virtual credential for {residentBarangay.name}, {residentBarangay.municipality}, {residentBarangay.province}
               </p>
             </div>
             <div className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground bg-muted/60 px-3 py-1.5 rounded-full border border-border w-fit">
@@ -551,6 +567,7 @@ function DashboardRoute() {
           <div className="rounded-3xl border border-border bg-card p-4 sm:p-6 shadow-xs">
             <DigitalResidentID
               profile={currentProfile}
+              barangayMeta={residentBarangay}
               onPhotoUpdated={handlePhotoUpdated}
             />
           </div>
@@ -568,7 +585,7 @@ function DashboardRoute() {
                 Document Requests
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Official certificates & clearances processed by the barangay
+                Official certificates & clearances processed by {residentBarangay.name}
               </p>
             </div>
             <Button
@@ -596,7 +613,7 @@ function DashboardRoute() {
                     {DOC_TYPE_LABELS[readyDocs[0].document_type] ?? readyDocs[0].document_type}
                   </h3>
                   <p className="text-xs text-muted-foreground max-w-md leading-relaxed">
-                    Your official document has been validated and digitally signed. You may download and print the high-resolution certificate now or pick up the printed copy at the Barangay Hall.
+                    Your official document has been validated and digitally signed. You may download and print the high-resolution certificate now or pick up the printed copy at the {residentBarangay.name} Barangay Hall Counter.
                   </p>
                 </div>
 
@@ -721,7 +738,7 @@ function DashboardRoute() {
                   <div className="space-y-1">
                     <p className="text-base font-bold text-foreground">No Document Requests Yet</p>
                     <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                      Need a Barangay Clearance, Certificate of Residency, or Indigency? Apply digitally in under 2 minutes.
+                      Need a {residentBarangay.name} Clearance, Certificate of Residency, or Indigency? Apply digitally in under 2 minutes.
                     </p>
                   </div>
                   <Button variant="default" size="default" asChild className="min-h-[44px] px-5 rounded-xl font-bold">
@@ -857,7 +874,7 @@ function DashboardRoute() {
                 My Registered Businesses
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Manage your local sari-sari store, carinderia, or services
+                Manage your local sari-sari store, carinderia, or services in {residentBarangay.name}
               </p>
             </div>
             <Button
@@ -882,7 +899,7 @@ function DashboardRoute() {
                   <div className="max-w-md mx-auto space-y-1">
                     <h3 className="font-bold text-base text-foreground">No Registered Businesses Yet</h3>
                     <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed">
-                      Promote your sari-sari store, carinderia, water station, or local service across Barangay Daine 1 & 2 for free. Get verified and discovered by your neighbors!
+                      Promote your sari-sari store, carinderia, water station, or local service across {residentBarangay.name} &amp; {residentBarangay.municipality} for free. Get verified and discovered by your neighbors!
                     </p>
                   </div>
                   <Button asChild size="default" className="min-h-[44px] px-6 rounded-xl font-bold bg-primary hover:bg-primary/90">
@@ -894,7 +911,8 @@ function DashboardRoute() {
               </Card>
             ) : (
               businesses.map(biz => {
-                const isBizDaine2 = biz.barangay === 'daine_2'
+                const bizBarangay = barangays.find(b => b.slug === (biz.barangay || '').replace('_', '-') || b.id === biz.barangay || b.slug === biz.barangay)
+                const bizBarangayLabel = bizBarangay?.short_name || bizBarangay?.name || (biz.barangay === 'daine_2' ? 'Daine 2' : 'Daine 1')
                 return (
                   <Card key={biz.id} className="rounded-2xl border border-border/80 hover:border-primary/40 transition-all shadow-xs overflow-hidden">
                     <CardHeader className="py-4 px-5 pb-3">
@@ -918,13 +936,9 @@ function DashboardRoute() {
                             <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                               <span className="font-semibold text-foreground">{biz.category}</span>
                               <span>•</span>
-                              <span className={`inline-flex items-center gap-1 font-bold text-[11px] uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                                isBizDaine2 
-                                  ? 'bg-rose-100 text-rose-900 dark:bg-rose-950 dark:text-rose-300' 
-                                  : 'bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-300'
-                              }`}>
+                              <span className="inline-flex items-center gap-1 font-bold text-[11px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                                 <Building2 className="h-3 w-3" />
-                                {isBizDaine2 ? 'Daine 2' : 'Daine 1'}
+                                {bizBarangayLabel}
                               </span>
                               {biz.purok && (
                                 <>
@@ -954,7 +968,7 @@ function DashboardRoute() {
                         <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs text-emerald-900 dark:text-emerald-200">
                           <span className="flex items-center gap-1.5 font-semibold">
                             <CheckCircle className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                            Live on Barangay Daine Directory
+                            Live on {bizBarangayLabel} Directory
                           </span>
                           <Link
                             to="/directory/$businessId"
@@ -1029,7 +1043,7 @@ function DashboardRoute() {
               My Incident Reports & Peace & Order
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Secure blotter tickets, mediation records, and incident reports
+              Secure blotter tickets, mediation records, and incident reports for {residentBarangay.name}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -1062,7 +1076,7 @@ function DashboardRoute() {
                 <div className="space-y-1">
                   <p className="text-base font-bold text-foreground">No Incident Reports Filed</p>
                   <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                    Report local disturbances, disputes, or security concerns directly to the Lupon Tagapamayapa & Barangay Tanod.
+                    Report local disturbances, disputes, or security concerns directly to the {residentBarangay.name} Lupon Tagapamayapa &amp; Barangay Tanod.
                   </p>
                 </div>
                 <Button variant="outline" size="default" asChild className="min-h-[44px] px-5 rounded-xl font-bold">
@@ -1074,7 +1088,7 @@ function DashboardRoute() {
             complaints.map((comp: any) => (
               <Card key={comp.id} className="rounded-2xl border border-border/80 hover:border-primary/40 transition-colors shadow-xs">
                 <CardHeader className="py-4 px-5 pb-3">
-                  <div className="flex justify-between items-start gap-4">
+                  <div className="flex flex-col sm:flex-row sm:justify-between items-start gap-3 sm:gap-4">
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center gap-2">
                         <CardTitle className="text-base font-bold truncate">
@@ -1114,7 +1128,9 @@ function DashboardRoute() {
                         Filed on {format(new Date(comp.created_at), 'MMMM d, yyyy')}
                       </p>
                     </div>
-                    <ComplaintStatusBadge status={comp.status} />
+                    <div className="shrink-0">
+                      <ComplaintStatusBadge status={comp.status} />
+                    </div>
                   </div>
                 </CardHeader>
                 {comp.admin_notes && (
@@ -1122,7 +1138,7 @@ function DashboardRoute() {
                     <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-950 dark:text-amber-200">
                       <Info className="h-4 w-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
                       <div>
-                        <span className="font-bold">Barangay Action Update:</span> {comp.admin_notes}
+                        <span className="font-bold">{residentBarangay.name} Action Update:</span> {comp.admin_notes}
                       </div>
                     </div>
                   </CardContent>

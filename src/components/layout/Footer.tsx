@@ -1,8 +1,10 @@
 import { Link } from '@tanstack/react-router'
-import { ShieldAlert, FileText, PhoneCall, MapPin, ExternalLink, Globe } from 'lucide-react'
+import { ShieldAlert, FileText, PhoneCall, MapPin, Globe } from 'lucide-react'
+import { useTenant } from '#/lib/tenant/TenantContext'
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
+  const { activeBarangay } = useTenant()
 
   return (
     <footer className="bg-card text-card-foreground border-t border-border mt-auto">
@@ -13,7 +15,7 @@ export function Footer() {
             <div className="flex items-center gap-4">
               <img
                 src="/logo.jpg"
-                alt="Barangay Daine Official Seal"
+                alt="BrgyConnect Seal"
                 width="48"
                 height="48"
                 className="h-12 w-12 rounded-full object-cover ring-2 ring-primary/20 shadow-sm shrink-0"
@@ -24,14 +26,14 @@ export function Footer() {
                     Republic of the Philippines
                   </span>
                   <span className="text-xs text-foreground/80 dark:text-muted-foreground font-semibold">
-                    Province of Cavite &bull; Municipality of Indang
+                    {activeBarangay ? `${activeBarangay.province} • ${activeBarangay.municipality}` : 'Province of Cavite • Municipality of Indang'}
                   </span>
                 </div>
                 <h2 className="text-base font-extrabold text-foreground tracking-tight mt-1">
-                  BrgyConnect &bull; Barangay Daine Digital Portal
+                  BrgyConnect &bull; {activeBarangay ? `${activeBarangay.name} Digital Portal` : 'Digital Barangay Portal'}
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  Serving Barangay Daine 1 and Barangay Daine 2 with transparent, fast, and accessible digital governance.
+                  {activeBarangay ? `Serving ${activeBarangay.name} with transparent, fast, and accessible digital governance.` : 'Serving Philippine barangays with transparent, fast, and accessible digital governance.'}
                 </p>
               </div>
             </div>
@@ -156,7 +158,7 @@ export function Footer() {
                 Municipal Jurisdiction
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-                Barangay Hall Complex, Barangay Daine, Municipality of Indang, Province of Cavite 4122, Philippines.
+                {activeBarangay ? `Barangay Hall Complex, ${activeBarangay.name}, ${activeBarangay.municipality}, ${activeBarangay.province}, Philippines.` : 'Barangay Hall Complex, Republic of the Philippines.'}
               </p>
               <div className="p-3 bg-muted/60 rounded-xl border border-border/80 text-[11px] text-muted-foreground">
                 <p className="font-bold text-foreground mb-0.5">Philippine Standard Time (PST)</p>
@@ -172,7 +174,7 @@ export function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-2.5 text-center md:text-left">
             <span>
-              &copy; {currentYear} Barangay Daine, Indang, Cavite. Republic of the Philippines. All rights reserved.
+              &copy; {currentYear} BrgyConnect &bull; Republic of the Philippines. Local Government Digital Services.
             </span>
           </div>
 

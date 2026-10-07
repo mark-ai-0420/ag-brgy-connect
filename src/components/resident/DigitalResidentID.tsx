@@ -21,6 +21,8 @@ import { cn } from '#/lib/utils'
 import { uploadAvatarPhoto } from '#/lib/upload'
 import { supabase } from '#/lib/supabase'
 import { updateResidentAvatar } from '#/server/profile'
+import { useTenant } from '#/lib/tenant/TenantContext'
+import type { Barangay } from '#/server/tenant'
 
 export interface ResidentProfile {
   id: string
@@ -38,6 +40,7 @@ export interface DigitalResidentIDProps {
   profile?: ResidentProfile | null
   className?: string
   onPhotoUpdated?: (newUrl: string) => void
+  barangayMeta?: Partial<Barangay> | null
 }
 
 function drawRoundedRectPath(
@@ -68,8 +71,10 @@ export function DigitalResidentID({
   profile,
   className = '',
   onPhotoUpdated,
+  barangayMeta: propBarangayMeta,
 }: DigitalResidentIDProps) {
   const router = useRouter()
+  const { activeBarangay, barangays } = useTenant()
   const [side, setSide] = useState<'front' | 'back'>('front')
   const [isDownloading, setIsDownloading] = useState(false)
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
@@ -115,7 +120,32 @@ export function DigitalResidentID({
     }
   }, [profile])
 
-  if (!activeProfile) {
+  const effectiveProfile = activeProfile
+
+  const barangayMeta = (propBarangayMeta && propBarangayMeta.name)
+    ? { ...activeBarangay, ...propBarangayMeta }
+    : (effectiveProfile?.barangay
+        ? (barangays.find(
+            (b) =>
+              b.slug === effectiveProfile.barangay?.replace('_', '-') ||
+              b.id === effectiveProfile.barangay ||
+              b.slug === effectiveProfile.barangay
+          ) || activeBarangay)
+        : activeBarangay)
+
+  const barangayTitle = (barangayMeta.name || 'BARANGAY').toUpperCase()
+  const barangayProvince = barangayMeta.province || 'Cavite'
+  const barangayMunicipality = barangayMeta.municipality || 'Indang'
+  const barangaySub = `${barangayMeta.name}, ${barangayMunicipality}, ${barangayProvince}`
+  const prefix = `${barangayMeta.code_prefix || 'BD'}-RES-`
+  const controlNumber = effectiveProfile
+    ? `${prefix}${effectiveProfile.id.replace(/-/g, '').slice(0, 8).toUpperCase()}`
+    : ''
+  const residentName = effectiveProfile?.full_name || 'Bona Fide Resident'
+  const purokName = effectiveProfile?.purok || 'Purok Centro'
+  const sealUrl = barangayMeta.seal_url || barangayMeta.logo_url || '/logo.jpg'
+
+  if (!effectiveProfile) {
     return (
       <div className={`p-8 rounded-3xl border border-border/80 bg-card text-center space-y-4 shadow-sm ${className}`}>
         <div className="p-3.5 rounded-2xl bg-primary/10 text-primary w-14 h-14 flex items-center justify-center mx-auto shadow-inner">
@@ -133,15 +163,6 @@ export function DigitalResidentID({
       </div>
     )
   }
-
-  const effectiveProfile = activeProfile
-  const isDaine2 = effectiveProfile.barangay === 'daine_2'
-  const barangayTitle = isDaine2 ? 'BARANGAY DAINE 2' : 'BARANGAY DAINE 1'
-  const barangaySub = isDaine2 ? 'Daine 2, Indang, Cavite' : 'Daine 1, Indang, Cavite'
-  const prefix = isDaine2 ? 'BD2-RES-' : 'BD1-RES-'
-  const controlNumber = `${prefix}${effectiveProfile.id.replace(/-/g, '').slice(0, 8).toUpperCase()}`
-  const residentName = effectiveProfile.full_name || 'Bona Fide Resident'
-  const purokName = effectiveProfile.purok || 'Purok Centro'
 
   const issueDateObj = effectiveProfile.created_at ? new Date(effectiveProfile.created_at) : new Date()
   const issuedDateFormatted = format(issueDateObj, 'MMM dd, yyyy')
@@ -285,7 +306,7 @@ export function DigitalResidentID({
         await new Promise((resolve, reject) => {
           logoImg.onload = () => resolve(true)
           logoImg.onerror = reject
-          logoImg.src = '/logo.jpg'
+          logoImg.src = sealUrl
           setTimeout(() => resolve(false), 2000)
         })
         ctx.save()
@@ -306,10 +327,10 @@ export function DigitalResidentID({
       // Header Texts
       ctx.textAlign = 'center'
       ctx.fillStyle = '#94A3B8'
-      ctx.font = 'bold 13px system-ui, sans-serif'
-      ctx.letterSpacing = '2px'
+      ctx.font = 'bold 12px system-ui, sans-serif'
+      ctx.letterSpacing = '1.5px'
       ctx.fillText(
-        'REPUBLIC OF THE PHILIPPINES • PROVINCE OF CAVITE • MUNICIPALITY OF INDANG',
+        `REPUBLIC OF THE PHILIPPINES • PROVINCE OF ${barangayProvince.toUpperCase()} • MUNICIPALITY OF ${barangayMunicipality.toUpperCase()}`,
         width / 2 + 20,
         72
       )
@@ -575,7 +596,7 @@ export function DigitalResidentID({
                 </Badge>
               )}
             </div>
-            <p className="text-xs text-muted-foreground">Certified Digital Credential • {barangayTitle}</p>
+            <p className="text-xs text-muted-foreground">Certified Digital Credential • {barangayMeta.name}</p>
           </div>
         </div>
 
@@ -625,20 +646,20 @@ export function DigitalResidentID({
               <div className="rounded-2xl bg-[#071C44] p-3.5 border border-amber-400/40 text-center shadow-md relative overflow-hidden">
                 <div className="flex items-center justify-between gap-2">
                   <img
-                    src="/logo.jpg"
-                    alt="Barangay Official Seal"
+                    src={sealUrl}
+                    alt={`${barangayMeta.name} Official Seal`}
                     className="h-12 w-12 rounded-full object-cover ring-2 ring-amber-400/90 shadow-md shrink-0 bg-white"
                   />
                   <div className="min-w-0 flex-1 px-1">
                     <p className="text-[11px] uppercase font-bold tracking-wider text-slate-200">
-                      Republic of the Philippines • Province of Cavite
+                      REPUBLIC OF THE PHILIPPINES
+                    </p>
+                    <p className="text-[11px] font-bold tracking-wider text-amber-300">
+                      Province of {barangayProvince} • Municipality of {barangayMunicipality}
                     </p>
                     <h2 className="text-base sm:text-lg font-black tracking-wide text-white uppercase truncate">
-                      {barangayTitle}
+                      {barangayMeta.name}
                     </h2>
-                    <p className="text-[11px] font-bold tracking-wider text-amber-300 uppercase">
-                      Municipality of Indang • Official Resident Card
-                    </p>
                   </div>
                   <div className="h-11 w-11 rounded-full bg-amber-400/15 ring-2 ring-amber-400/70 flex items-center justify-center text-amber-300 shrink-0">
                     <ShieldCheck className="h-6 w-6" />
@@ -849,7 +870,7 @@ export function DigitalResidentID({
                   NOTICE: This digital identification certifies bona fide residency in {barangaySub}.
                 </p>
                 <p>
-                  Property of the Barangay Government. If found, surrender to the Barangay Hall or scan QR code.
+                  Property of the Barangay Government of {barangayMeta.name}. If found, surrender to the Barangay Hall or scan QR code.
                 </p>
               </div>
             </div>

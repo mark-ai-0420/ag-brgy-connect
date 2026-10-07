@@ -87,12 +87,6 @@ export const Route = createFileRoute('/map/')({
           'Interactive map locator for evacuation shelters, civic amenities, and local businesses in Brgy. Daine 1 & 2, Indang, Cavite.',
       },
     ],
-    links: [
-      {
-        rel: 'stylesheet',
-        href: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-      },
-    ],
   }),
   loader: async (): Promise<MapBusiness[]> => getMapBusinesses(),
 })

@@ -22,142 +22,151 @@ import {
   X,
 } from 'lucide-react'
 import { useBarangayScope } from '#/hooks/useBarangayScope'
+import { useTenant } from '#/lib/tenant/TenantContext'
 import { useNetworkStatus } from '#/hooks/useNetworkStatus'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { toast } from 'sonner'
 
 // Reliable mapping of icons by category name
-const CATEGORY_ICONS: Record<string, ComponentType<{ className?: string }>> = {
-  'Barangay Daine 1 Operations & Responders': ShieldAlert,
-  'Barangay Daine 2 Operations & Responders': ShieldAlert,
-  'Police & Law Enforcement': ShieldCheck,
-  'Bureau of Fire Protection (BFP)': Flame,
-  'Medical & Healthcare Services': Stethoscope,
-  'Disaster & Rescue Operations (MDRRMO)': Ambulance,
-  'Additional Verified Hotlines': Radio,
+function getCategoryIcon(category: string): ComponentType<{ className?: string }> {
+  if (category.includes('Operations') || category.includes('Responders') || category.includes('Barangay')) return ShieldAlert
+  if (category.includes('Police') || category.includes('Law Enforcement')) return ShieldCheck
+  if (category.includes('Fire') || category.includes('BFP')) return Flame
+  if (category.includes('Medical') || category.includes('Health')) return Stethoscope
+  if (category.includes('Disaster') || category.includes('Rescue') || category.includes('MDRRMO')) return Ambulance
+  return Radio
 }
 
-// 4 Primary Tactile Hero Speed-Dial Cards
-const PRIMARY_SPEED_DIAL = [
-  {
-    title: '911 National Emergency',
-    subtitle: 'Direct Emergency Dispatch',
-    number: '911',
-    icon: AlertTriangle,
-    badge: 'Direct Dispatch',
-    cardBorder: 'border-red-600/80 bg-red-50/20 dark:bg-red-950/20',
-    iconBg: 'bg-red-600 text-white',
-    numberColor: 'text-red-600 dark:text-red-400',
-    buttonBg: 'bg-red-600 hover:bg-red-700',
-  },
-  {
-    title: 'PNP Indang Police',
-    subtitle: 'Municipal Police Desk',
-    number: '(046) 415-0211',
-    icon: ShieldCheck,
-    badge: 'Law & Order',
-    cardBorder: 'border-border hover:border-primary/60',
-    iconBg: 'bg-primary text-primary-foreground',
-    numberColor: 'text-foreground',
-    buttonBg: 'bg-primary hover:bg-primary/90',
-  },
-  {
-    title: 'BFP Indang Fire',
-    subtitle: 'Fire & Rescue Station',
-    number: '(046) 415-0322',
-    icon: Flame,
-    badge: 'Fire Protection',
-    cardBorder: 'border-border hover:border-red-500/60',
-    iconBg: 'bg-red-600 text-white',
-    numberColor: 'text-foreground',
-    buttonBg: 'bg-red-600 hover:bg-red-700',
-  },
-  {
-    title: 'MDRRMO Rescue',
-    subtitle: 'Disaster & Medical Rescue',
-    number: '0998-555-0100',
-    icon: Ambulance,
-    badge: 'Emergency Med',
-    cardBorder: 'border-border hover:border-emerald-600/60',
-    iconBg: 'bg-emerald-700 text-white',
-    numberColor: 'text-foreground',
-    buttonBg: 'bg-emerald-700 hover:bg-emerald-800',
-  },
-]
+import type { Barangay } from '#/server/tenant'
 
-// Built-in emergency contacts guaranteed to always render
-const DEFAULT_EMERGENCY_SECTIONS = [
-  {
-    category: 'Barangay Daine 1 Operations & Responders',
-    scope: 'daine_1',
-    color: 'text-blue-700 dark:text-blue-400',
-    borderColor: 'border-l-blue-600',
-    bgAccent: 'bg-blue-50 dark:bg-blue-950/30',
-    contacts: [
-      { name: 'Barangay Daine 1 Operations Desk', label: 'Executive Hotline', phone: '0917-123-0001' },
-      { name: 'Daine 1 Barangay Tanod Patrol Unit', label: 'Peace & Order', phone: '0928-555-0101' },
-      { name: 'Daine 1 Barangay Health Station', label: 'First Aid & Maternal Care', phone: '0928-555-0103' },
-    ],
-  },
-  {
-    category: 'Barangay Daine 2 Operations & Responders',
-    scope: 'daine_2',
-    color: 'text-amber-700 dark:text-amber-400',
-    borderColor: 'border-l-amber-600',
-    bgAccent: 'bg-amber-50 dark:bg-amber-950/30',
-    contacts: [
-      { name: 'Barangay Daine 2 Operations Desk', label: 'Executive Hotline', phone: '0917-123-0002' },
-      { name: 'Daine 2 Barangay Tanod Patrol Unit', label: 'Peace & Order', phone: '0928-555-0102' },
-      { name: 'Daine 2 Barangay Health Station', label: 'First Aid & Maternal Care', phone: '0928-555-0104' },
-    ],
-  },
-  {
-    category: 'Police & Law Enforcement',
-    scope: 'both',
-    color: 'text-blue-700 dark:text-blue-400',
-    borderColor: 'border-l-blue-600',
-    bgAccent: 'bg-blue-50 dark:bg-blue-950/30',
-    contacts: [
-      { name: 'Indang Municipal Police Station (PNP)', label: 'Municipal Police Desk', phone: '(046) 415-0211, 0998-598-5612' },
-      { name: 'Cavite Provincial Police Office', label: 'Provincial Command', phone: '(046) 431-0370' },
-    ],
-  },
-  {
-    category: 'Bureau of Fire Protection (BFP)',
-    scope: 'both',
-    color: 'text-red-700 dark:text-red-400',
-    borderColor: 'border-l-red-600',
-    bgAccent: 'bg-red-50 dark:bg-red-950/30',
-    contacts: [
-      { name: 'BFP Indang Fire Station', label: 'Fire & Rescue Hotline', phone: '(046) 415-0322, 0915-602-1991' },
-      { name: 'BFP Cavite Provincial Operations', label: 'Provincial Command', phone: '(046) 419-0120' },
-    ],
-  },
-  {
-    category: 'Medical & Healthcare Services',
-    scope: 'both',
-    color: 'text-emerald-700 dark:text-emerald-400',
-    borderColor: 'border-l-emerald-600',
-    bgAccent: 'bg-emerald-50 dark:bg-emerald-950/30',
-    contacts: [
-      { name: 'Indang Rural Health Unit (RHU / Main)', label: 'Public Health Office', phone: '(046) 415-0102' },
-      { name: 'General Emilio Aguinaldo Memorial Hospital', label: 'Provincial Hospital', phone: '(046) 416-0262' },
-      { name: 'De La Salle University Medical Center (DLSUMC)', label: 'Tertiary Hospital', phone: '(046) 481-8000' },
-    ],
-  },
-  {
-    category: 'Disaster & Rescue Operations (MDRRMO)',
-    scope: 'both',
-    color: 'text-cyan-700 dark:text-cyan-400',
-    borderColor: 'border-l-cyan-600',
-    bgAccent: 'bg-cyan-50 dark:bg-cyan-950/30',
-    contacts: [
-      { name: 'MDRRMO Indang Emergency Rescue Unit', label: 'Disaster & Ambulance', phone: '0998-555-0100, (046) 415-0011' },
-      { name: 'Cavite PDRRMO Emergency Hotline', label: 'Provincial Disaster Center', phone: '(046) 419-1406' },
-    ],
-  },
-]
+function buildEmergencySections(activeBarangay: Barangay, barangays: Barangay[]) {
+  const sections: Array<{
+    category: string
+    scope: string
+    slug?: string
+    color: string
+    borderColor: string
+    bgAccent: string
+    contacts: Array<{ name: string; label: string; phone: string }>
+  }> = []
+
+  // Built-in barangay operations sections
+  barangays.forEach((b) => {
+    sections.push({
+      category: `${b.name} Operations & Responders`,
+      scope: b.slug === 'daine-1' ? 'daine_1' : b.slug === 'daine-2' ? 'daine_2' : b.slug,
+      slug: b.slug,
+      color: 'text-blue-700 dark:text-blue-400',
+      borderColor: 'border-l-blue-600',
+      bgAccent: 'bg-blue-50 dark:bg-blue-950/30',
+      contacts: [
+        {
+          name: `${b.name} Operations Desk`,
+          label: 'Executive Hotline',
+          phone: b.emergency_hotline || 'Contact Local Hall',
+        },
+        {
+          name: `${b.short_name || b.name} Barangay Tanod Patrol Unit`,
+          label: 'Peace & Order',
+          phone: b.police_hotline || b.emergency_hotline || '0928-555-0101',
+        },
+        {
+          name: `${b.short_name || b.name} Barangay Health Station`,
+          label: 'First Aid & Maternal Care',
+          phone: b.health_center_hotline || '0928-555-0103',
+        },
+      ],
+    })
+  })
+
+  // Shared municipal & provincial emergency services
+  sections.push(
+    {
+      category: 'Police & Law Enforcement',
+      scope: 'both',
+      color: 'text-blue-700 dark:text-blue-400',
+      borderColor: 'border-l-blue-600',
+      bgAccent: 'bg-blue-50 dark:bg-blue-950/30',
+      contacts: [
+        {
+          name: `${activeBarangay.municipality} Municipal Police Station (PNP)`,
+          label: `${activeBarangay.municipality} Police Desk`,
+          phone: activeBarangay.police_hotline || '(046) 415-0211, 0998-598-5612',
+        },
+        {
+          name: `${activeBarangay.province} Provincial Police Office`,
+          label: 'Provincial Command',
+          phone: '(046) 431-0370',
+        },
+      ],
+    },
+    {
+      category: 'Bureau of Fire Protection (BFP)',
+      scope: 'both',
+      color: 'text-red-700 dark:text-red-400',
+      borderColor: 'border-l-red-600',
+      bgAccent: 'bg-red-50 dark:bg-red-950/30',
+      contacts: [
+        {
+          name: `BFP ${activeBarangay.municipality} Fire Station`,
+          label: 'Fire & Rescue Hotline',
+          phone: '(046) 415-0322, 0915-602-1991',
+        },
+        {
+          name: `BFP ${activeBarangay.province} Provincial Operations`,
+          label: 'Provincial Command',
+          phone: '(046) 419-0120',
+        },
+      ],
+    },
+    {
+      category: 'Medical & Healthcare Services',
+      scope: 'both',
+      color: 'text-emerald-700 dark:text-emerald-400',
+      borderColor: 'border-l-emerald-600',
+      bgAccent: 'bg-emerald-50 dark:bg-emerald-950/30',
+      contacts: [
+        {
+          name: `${activeBarangay.municipality} Rural Health Unit (RHU / Main)`,
+          label: 'Public Health Office',
+          phone: activeBarangay.health_center_hotline || '(046) 415-0102',
+        },
+        {
+          name: 'General Emilio Aguinaldo Memorial Hospital',
+          label: 'Provincial Hospital',
+          phone: '(046) 416-0262',
+        },
+        {
+          name: 'De La Salle University Medical Center (DLSUMC)',
+          label: 'Tertiary Hospital',
+          phone: '(046) 481-8000',
+        },
+      ],
+    },
+    {
+      category: 'Disaster & Rescue Operations (MDRRMO)',
+      scope: 'both',
+      color: 'text-cyan-700 dark:text-cyan-400',
+      borderColor: 'border-l-cyan-600',
+      bgAccent: 'bg-cyan-50 dark:bg-cyan-950/30',
+      contacts: [
+        {
+          name: `MDRRMO ${activeBarangay.municipality} Emergency Rescue Unit`,
+          label: 'Disaster & Ambulance',
+          phone: '0998-555-0100, (046) 415-0011',
+        },
+        {
+          name: `${activeBarangay.province} PDRRMO Emergency Hotline`,
+          label: 'Provincial Disaster Center',
+          phone: '(046) 419-1406',
+        },
+      ],
+    }
+  )
+
+  return sections
+}
 
 function formatTelUri(phoneStr: string): string {
   const digits = phoneStr.replace(/[^0-9+]/g, '')
@@ -186,21 +195,21 @@ export const Route = createFileRoute('/emergency')({
   head: () => ({
     meta: [
       {
-        title: 'Emergency Hotlines & Disaster Response | Barangay Daine',
+        title: 'Emergency Hotlines & Disaster Response | Civic Directory',
       },
       {
         name: 'description',
         content:
-          'Emergency hotlines and disaster response contact numbers for Barangay Daine 1 and Daine 2, Indang, Cavite. Direct speed-dial to 911, PNP Indang Police, BFP Fire, RHU, and MDRRMO Rescue.',
+          'Emergency hotlines and disaster response contact numbers. Direct speed-dial to 911, Municipal Police, BFP Fire, RHU Healthcare, and Barangay Tanod.',
       },
       {
         property: 'og:title',
-        content: 'Emergency Hotlines & Disaster Response | Barangay Daine',
+        content: 'Emergency Hotlines & Disaster Response | Civic Directory',
       },
       {
         property: 'og:description',
         content:
-          'Emergency hotlines and disaster response contact numbers for Barangay Daine 1 and Daine 2, Indang, Cavite. Direct speed-dial to 911, PNP Indang Police, BFP Fire, RHU, and MDRRMO Rescue.',
+          'Emergency hotlines and disaster response contact numbers. Direct speed-dial to 911, Municipal Police, BFP Fire, RHU Healthcare, and Barangay Tanod.',
       },
       {
         property: 'og:type',
@@ -215,17 +224,78 @@ export const Route = createFileRoute('/emergency')({
 function EmergencyRoute() {
   const dbContacts = Route.useLoaderData() ?? []
   const { scope, setScope } = useBarangayScope()
+  const { activeBarangay, barangays, setTenantSlug } = useTenant()
   const { isOffline } = useNetworkStatus()
   const [searchQuery, setSearchQuery] = useState('')
   const [copiedNumber, setCopiedNumber] = useState<string | null>(null)
 
+  const primarySpeedDial = useMemo(
+    () => {
+      const isIndang = activeBarangay.municipality.toLowerCase() === 'indang'
+      return [
+        {
+          title: '911 National Emergency',
+          subtitle: 'Direct Emergency Dispatch',
+          number: '911',
+          icon: AlertTriangle,
+          badge: 'Direct Dispatch',
+          cardBorder: 'border-red-600/80 bg-red-50/20 dark:bg-red-950/20',
+          iconBg: 'bg-red-600 text-white',
+          numberColor: 'text-red-600 dark:text-red-400',
+          buttonBg: 'bg-red-600 hover:bg-red-700',
+        },
+        {
+          title: `PNP ${activeBarangay.municipality} Police`,
+          subtitle: `${activeBarangay.municipality} Municipal Police Desk`,
+          number: activeBarangay.police_hotline || (isIndang ? '(046) 415-0211' : '911 / (02) 8722-0650'),
+          icon: ShieldCheck,
+          badge: 'Law & Order',
+          cardBorder: 'border-border hover:border-primary/60',
+          iconBg: 'bg-primary text-primary-foreground',
+          numberColor: 'text-foreground',
+          buttonBg: 'bg-primary hover:bg-primary/90',
+        },
+        {
+          title: `BFP ${activeBarangay.municipality} Fire`,
+          subtitle: `${activeBarangay.municipality} Fire & Rescue Station`,
+          number: isIndang ? '(046) 415-0322' : '911 / (02) 8426-0219',
+          icon: Flame,
+          badge: 'Fire Protection',
+          cardBorder: 'border-border hover:border-red-500/60',
+          iconBg: 'bg-red-600 text-white',
+          numberColor: 'text-foreground',
+          buttonBg: 'bg-red-600 hover:bg-red-700',
+        },
+        {
+          title: `MDRRMO ${activeBarangay.municipality}`,
+          subtitle: `Disaster & Rescue (${activeBarangay.province})`,
+          number: isIndang ? '0998-555-0100' : '911 / Direct Dispatch',
+          icon: Ambulance,
+          badge: 'Emergency Med',
+          cardBorder: 'border-border hover:border-emerald-600/60',
+          iconBg: 'bg-emerald-700 text-white',
+          numberColor: 'text-foreground',
+          buttonBg: 'bg-emerald-700 hover:bg-emerald-800',
+        },
+      ]
+    },
+    [activeBarangay]
+  )
+
+  const defaultEmergencySections = useMemo(
+    () => buildEmergencySections(activeBarangay, barangays),
+    [activeBarangay, barangays]
+  )
+
   // Merge database custom contacts with built-in default directory
   const displaySections = useMemo(() => {
     // 1. Filter out default sections based on active scope
-    const sections = DEFAULT_EMERGENCY_SECTIONS.filter((sec) => {
-      if (scope === 'daine1') return sec.scope === 'daine_1' || sec.scope === 'both'
-      if (scope === 'daine2') return sec.scope === 'daine_2' || sec.scope === 'both'
-      return true
+    const sections = defaultEmergencySections.filter((sec) => {
+      if (scope === 'all') return true
+      if (sec.scope === 'both') return true
+      if (scope === 'daine1') return sec.scope === 'daine_1' || sec.slug === 'daine-1'
+      if (scope === 'daine2') return sec.scope === 'daine_2' || sec.slug === 'daine-2'
+      return sec.slug === scope || sec.scope === scope
     })
 
     // 2. Add custom contacts from database, filtering them individually
@@ -275,7 +345,7 @@ function EmergencyRoute() {
         ),
       }))
       .filter((section) => section.contacts.length > 0)
-  }, [dbContacts, scope, searchQuery])
+  }, [dbContacts, defaultEmergencySections, scope, searchQuery])
 
   const handleCopyNumber = async (number: string, e: MouseEvent) => {
     e.preventDefault()
@@ -348,7 +418,7 @@ function EmergencyRoute() {
                     Emergency Response Desk
                   </span>
                   <span className="text-xs font-semibold uppercase tracking-wider bg-white/10 dark:bg-muted text-white dark:text-foreground px-2 py-0.5 rounded-full border border-white/20 dark:border-border">
-                    Indang, Cavite
+                    {activeBarangay.municipality}, {activeBarangay.province}
                   </span>
                 </div>
                 <h1
@@ -391,7 +461,7 @@ function EmergencyRoute() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-              {PRIMARY_SPEED_DIAL.map((card) => {
+              {primarySpeedDial.map((card) => {
                 const Icon = card.icon
                 const telUri = formatTelUri(card.number)
                 return (
@@ -454,13 +524,15 @@ function EmergencyRoute() {
             <div
               role="tablist"
               aria-label="Filter Hotlines by Jurisdiction"
-              className="grid grid-cols-3 sm:flex items-center gap-1.5 bg-muted/60 p-1 rounded-xl border border-border/40"
+              className="flex flex-wrap items-center gap-1.5 bg-muted/60 p-1 rounded-xl border border-border/40"
             >
-              {([
+              {[
                 { id: 'all', label: 'All Jurisdictions' },
-                { id: 'daine1', label: 'Barangay Daine 1' },
-                { id: 'daine2', label: 'Barangay Daine 2' },
-              ] as const).map((tab) => {
+                ...barangays.map((b) => ({
+                  id: b.slug === 'daine-1' ? 'daine1' : b.slug === 'daine-2' ? 'daine2' : b.slug,
+                  label: b.name,
+                })),
+              ].map((tab) => {
                 const isSelected = scope === tab.id
                 return (
                   <button
@@ -469,7 +541,17 @@ function EmergencyRoute() {
                     type="button"
                     aria-selected={isSelected}
                     aria-controls={tab.id}
-                    onClick={() => setScope(tab.id)}
+                    onClick={async () => {
+                      setScope(tab.id as any)
+                      if (tab.id !== 'all') {
+                        const targetBarangay = barangays.find(
+                          (b) => b.slug === tab.id || b.id === tab.id || b.slug.replace('-', '_') === tab.id
+                        )
+                        if (targetBarangay) {
+                          await setTenantSlug(targetBarangay.slug)
+                        }
+                      }
+                    }}
                     className={`min-h-[44px] px-4 py-2 text-xs font-bold rounded-lg transition-all btn-tactile cursor-pointer ${
                       isSelected
                         ? 'bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/40'
@@ -538,7 +620,7 @@ function EmergencyRoute() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
             {displaySections.map((section, idx) => {
-              const Icon = CATEGORY_ICONS[section.category] || ShieldAlert
+              const Icon = getCategoryIcon(section.category)
               return (
                 <Card
                   key={idx}
@@ -659,7 +741,7 @@ function EmergencyRoute() {
             <div className="space-y-1">
               <h4 className="text-xs font-bold text-foreground">When Calling 911 or Hotlines</h4>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                State your exact Sitio/Street in Barangay Daine 1 or 2, describe the situation clearly, and stay on the line until instructed.
+                State your exact Sitio/Street in {activeBarangay.name}, describe the situation clearly, and stay on the line until instructed.
               </p>
             </div>
           </div>
@@ -689,7 +771,7 @@ function EmergencyRoute() {
                   Interactive Evacuation Map
                 </h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  View designated disaster evacuation centers and relief stations across Indang.
+                  View designated disaster evacuation centers and relief stations across {activeBarangay.municipality}.
                 </p>
               </div>
             </div>
@@ -699,7 +781,7 @@ function EmergencyRoute() {
         {/* Official Verification Notice */}
         <div className="mt-8 p-4 rounded-2xl bg-muted/40 border border-border/50 text-center max-w-2xl mx-auto">
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Emergency contact numbers are verified in coordination with the <strong>Barangay Councils of Daine 1 & Daine 2</strong> and the <strong>Municipality of Indang, Cavite</strong>. In any life-threatening situation, dial <strong>911</strong> immediately.
+            Emergency contact numbers are verified in coordination with the <strong>Barangay Council of {activeBarangay.name}</strong> and the <strong>Municipality of {activeBarangay.municipality}, {activeBarangay.province}</strong>. In any life-threatening situation, dial <strong>911</strong> immediately.
           </p>
         </div>
       </main>

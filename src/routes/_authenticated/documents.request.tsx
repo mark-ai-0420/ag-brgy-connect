@@ -16,6 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#
 import { Textarea } from '#/components/ui/textarea'
 import { Badge } from '#/components/ui/badge'
 import { toast } from 'sonner'
+import { useTenant } from '#/lib/tenant/TenantContext'
+import { cn } from '#/lib/utils'
 import {
   FileText,
   Loader2,
@@ -231,8 +233,11 @@ export const Route = createFileRoute('/_authenticated/documents/request')({
 function DocumentRequestRoute() {
   const navigate = useNavigate()
   const { role } = useAuth()
+  const { activeBarangay, barangays } = useTenant()
   const loaderData = Route.useLoaderData()
   const profile = loaderData?.profile
+
+  const defaultBarangayVal = (profile?.barangay as string) || activeBarangay.slug
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema) as any,
@@ -243,15 +248,35 @@ function DocumentRequestRoute() {
       phone: profile?.phone || '',
       address: profile?.address || '',
       purok: profile?.purok || '',
-      barangay: (profile?.barangay as 'daine_1' | 'daine_2') || 'daine_1',
+      barangay: defaultBarangayVal as any,
     },
   })
+
+  const currentBarangaySlug = form.watch('barangay')
+
+  // Derive the active barangay object from the form's selected jurisdiction
+  const formSelectedBarangay = useMemo(() => {
+    return (
+      barangays.find(
+        (b) =>
+          b.slug === currentBarangaySlug ||
+          b.id === currentBarangaySlug ||
+          b.slug.replace('-', '_') === currentBarangaySlug
+      ) || activeBarangay
+    )
+  }, [barangays, currentBarangaySlug, activeBarangay])
+
+  const availablePuroks = useMemo(() => {
+    if (formSelectedBarangay.puroks && formSelectedBarangay.puroks.length > 0) {
+      return formSelectedBarangay.puroks
+    }
+    return ['Purok 1', 'Purok 2', 'Purok 3', 'Purok 4', 'Purok 5', 'Sitio Ilaya', 'Sitio Centro']
+  }, [formSelectedBarangay.puroks])
 
   const [activePreset, setActivePreset] = useState<string | null>(null)
   const currentDocType = form.watch('document_type')
   const currentFullName = form.watch('full_name')
   const currentPurpose = form.watch('purpose')
-  const currentBarangay = form.watch('barangay')
 
   const selectedDocConfig = useMemo(() => {
     return DOCUMENT_TYPES.find((d) => d.id === currentDocType) || DOCUMENT_TYPES[0]
@@ -281,7 +306,7 @@ function DocumentRequestRoute() {
       form.setValue('phone', profile.phone || '')
       form.setValue('address', profile.address || '')
       form.setValue('purok', profile.purok || '')
-      form.setValue('barangay', (profile.barangay as 'daine_1' | 'daine_2') || 'daine_1')
+      form.setValue('barangay', (profile.barangay as any) || activeBarangay.slug.replace('-', '_'))
       toast.success('Resident profile information restored.')
     }
   }
@@ -308,16 +333,16 @@ function DocumentRequestRoute() {
                 <FileText className="h-6 w-6" />
               </div>
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-                    Request Barangay Document
+                    Official Document Clearance Request • {activeBarangay.name}
                   </h1>
                   <Badge variant="outline" className="hidden sm:inline-flex bg-primary/5 text-primary border-primary/20 text-[11px] font-bold">
                     Online Citizen Portal
                   </Badge>
                 </div>
                 <p className="text-xs sm:text-sm text-muted-foreground">
-                  Official certificates & clearances processed directly by the Office of the Barangay Secretary.
+                  Official certificates & clearances processed directly by the Office of the Barangay Secretary of {activeBarangay.name}.
                 </p>
               </div>
             </div>
@@ -368,7 +393,7 @@ function DocumentRequestRoute() {
                 Resident Profile Connected &amp; Verified
               </p>
               <p className="text-xs text-emerald-700 dark:text-emerald-300 truncate">
-                Pre-populated from {profile?.full_name || 'your official record'} • {profile?.barangay === 'daine_2' ? 'Barangay Daine 2' : 'Barangay Daine 1'}
+                Pre-populated from {profile?.full_name || 'your official record'} • {activeBarangay.name}
               </p>
             </div>
           </div>
@@ -639,12 +664,13 @@ function DocumentRequestRoute() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="daine_1" className="min-h-[44px]">
-                                  Barangay Daine 1
-                                </SelectItem>
-                                <SelectItem value="daine_2" className="min-h-[44px]">
-                                  Barangay Daine 2
-                                </SelectItem>
+                                {barangays.map((b) => {
+                                  return (
+                                    <SelectItem key={b.id} value={b.slug} className="min-h-[44px]">
+                                      {b.name}
+                                    </SelectItem>
+                                  )
+                                })}
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -658,13 +684,35 @@ function DocumentRequestRoute() {
                         name="purok"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-xs font-semibold flex items-center gap-1.5">
-                              <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                              Purok / Sitio
+                            <FormLabel className="text-xs font-semibold flex items-center justify-between">
+                              <span className="flex items-center gap-1.5">
+                                <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                                Purok / Sitio
+                              </span>
+                              <span className="text-[11px] font-normal text-muted-foreground">
+                                {activeBarangay.name}
+                              </span>
                             </FormLabel>
+                            <div className="flex flex-wrap gap-1.5 mb-2">
+                              {availablePuroks.map((p) => (
+                                <button
+                                  key={p}
+                                  type="button"
+                                  onClick={() => field.onChange(p)}
+                                  className={cn(
+                                    "px-2.5 py-1 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
+                                    field.value === p
+                                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                                      : "bg-muted/50 hover:bg-muted text-foreground border-border/70"
+                                  )}
+                                >
+                                  {p}
+                                </button>
+                              ))}
+                            </div>
                             <FormControl>
                               <Input
-                                placeholder="e.g., Purok 2 (Centro), Sitio Ilaya"
+                                placeholder={`e.g., ${availablePuroks[0] || 'Purok 1'}, Sitio Ilaya`}
                                 {...field}
                                 className="min-h-[44px] rounded-xl text-sm"
                               />
@@ -683,11 +731,11 @@ function DocumentRequestRoute() {
                             <FormItem>
                               <FormLabel className="text-xs font-semibold flex items-center gap-1.5">
                                 <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                                Residential Address in Barangay Daine
+                                Residential Address in {activeBarangay.name}
                               </FormLabel>
                               <FormControl>
                                 <Input
-                                  placeholder="House No., Street, Sitio, Barangay Daine, Indang, Cavite"
+                                  placeholder={`House No., Street, Sitio, ${activeBarangay.name}, ${activeBarangay.municipality}, ${activeBarangay.province}`}
                                   {...field}
                                   className="min-h-[44px] rounded-xl text-sm"
                                 />
@@ -802,7 +850,7 @@ function DocumentRequestRoute() {
                                 ₱{selectedDocConfig.fee}.00
                               </span>
                               <p className="text-xs font-normal text-muted-foreground">
-                                Payable at Barangay Hall on release
+                                Payable at {formSelectedBarangay.name} Barangay Hall Counter on release
                               </p>
                             </div>
                           )}
@@ -817,7 +865,7 @@ function DocumentRequestRoute() {
                         <span>Estimated Turnaround: {selectedDocConfig.turnaround}</span>
                       </div>
                       <p className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed">
-                        Pickup at {currentBarangay === 'daine_2' ? 'Barangay Daine 2 Hall' : 'Barangay Daine 1 Hall'} during official office hours (Mon-Fri, 8:00 AM – 5:00 PM).
+                        Pickup at {formSelectedBarangay.name} Barangay Hall Counter during official office hours (Mon-Fri, 8:00 AM – 5:00 PM).
                       </p>
                     </div>
 
@@ -883,7 +931,7 @@ function DocumentRequestRoute() {
                   <div className="space-y-1">
                     <p className="font-bold text-foreground">Need urgent assistance?</p>
                     <p className="text-xs leading-relaxed">
-                      For rush processing or special circumstances, call the Barangay Secretariat directly or visit the hall during operating hours.
+                      For rush processing or special circumstances, call the {activeBarangay.name} Secretariat directly or visit the hall during operating hours.
                     </p>
                   </div>
                 </div>

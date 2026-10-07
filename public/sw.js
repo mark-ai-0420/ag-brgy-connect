@@ -35,6 +35,17 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url)
 
+  // Bypass cache completely in local development or for Vite HMR/dev requests
+  if (
+    url.hostname === 'localhost' ||
+    url.hostname === '127.0.0.1' ||
+    url.port === '3000' ||
+    url.pathname.startsWith('/@') ||
+    url.pathname.startsWith('/src/')
+  ) {
+    return
+  }
+
   // 1. Navigation & Emergency Contacts: Stale-While-Revalidate
   const isNavigation = request.mode === 'navigate'
   const isEmergency = url.pathname.includes('/emergency') || url.pathname.includes('emergency')

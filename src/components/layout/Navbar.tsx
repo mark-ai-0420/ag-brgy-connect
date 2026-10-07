@@ -46,6 +46,7 @@ export function NavBar() {
   const [communityOpen, setCommunityOpen] = useState(false)
   const [scopeOpen, setScopeOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [scopeSearch, setScopeSearch] = useState('')
 
   const servicesRef = useRef<HTMLDivElement>(null)
   const communityRef = useRef<HTMLDivElement>(null)
@@ -160,6 +161,17 @@ export function NavBar() {
     : (barangays.find((item) => item.slug === scope || item.id === scope)?.short_name ||
        (scope === 'daine1' ? 'Daine 1' : scope === 'daine2' ? 'Daine 2' : activeBarangay.short_name))
 
+  const filteredBarangays = barangays.filter((b) => {
+    if (!scopeSearch.trim()) return true
+    const q = scopeSearch.toLowerCase()
+    return (
+      b.name.toLowerCase().includes(q) ||
+      b.short_name.toLowerCase().includes(q) ||
+      b.municipality.toLowerCase().includes(q) ||
+      b.province.toLowerCase().includes(q)
+    )
+  })
+
   return (
     <nav aria-label="Main Navigation" className="bg-[#0C2B64] dark:bg-[#07142E] text-white shadow-md sticky top-0 z-50 border-b border-white/10 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -177,7 +189,9 @@ export function NavBar() {
               />
               <div className="flex flex-col">
                 <span className="font-extrabold text-base leading-tight tracking-tight text-white">BrgyConnect</span>
-                <span className="text-xs text-white/80 font-medium leading-none tracking-wide">Barangay Daine &bull; Indang, Cavite</span>
+                <span className="hidden sm:inline-block text-xs text-white/80 font-medium leading-none tracking-wide">
+                  {activeBarangay ? `${activeBarangay.short_name} • ${activeBarangay.municipality}, ${activeBarangay.province}` : 'Republika ng Pilipinas • National Portal'}
+                </span>
               </div>
             </Link>
           </div>
@@ -457,8 +471,8 @@ export function NavBar() {
                 </button>
 
                 {scopeOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-card text-card-foreground border border-border rounded-xl shadow-xl p-1.5 z-50 animate-in fade-in-0 zoom-in-95 duration-150">
-                    <div className="p-1 mb-1 border-b border-border">
+                  <div className="absolute right-0 mt-2 w-72 bg-card text-card-foreground border border-border rounded-xl shadow-xl p-2 z-50 animate-in fade-in-0 zoom-in-95 duration-150">
+                    <div className="p-1 mb-1.5 border-b border-border/60">
                       <button
                         type="button"
                         onClick={handleLocateMe}
@@ -478,49 +492,71 @@ export function NavBar() {
                       </button>
                     </div>
 
-                    <p className="px-3 py-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                    <div className="px-1 pb-2">
+                      <div className="relative">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                        <input
+                          type="text"
+                          value={scopeSearch}
+                          onChange={(e) => setScopeSearch(e.target.value)}
+                          placeholder="Search barangays..."
+                          aria-label="Filter registered barangays"
+                          className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-muted/60 border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
+                    </div>
+
+                    <p className="px-2 py-1 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
                       Select Barangay Jurisdiction
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setScope('all')
-                        setScopeOpen(false)
-                      }}
-                      className={`w-full flex items-center justify-between min-h-[44px] px-3 py-2 text-xs rounded-lg font-semibold transition-colors cursor-pointer ${
-                        scope === 'all'
-                          ? 'bg-primary/10 text-primary font-bold shadow-xs'
-                          : 'hover:bg-accent hover:text-accent-foreground text-foreground'
-                      }`}
-                    >
-                      <span>All Barangays</span>
-                      {scope === 'all' && <Check className="h-4 w-4 text-primary font-bold" />}
-                    </button>
-                    {barangays.map((b) => {
-                      const isSelected = scope !== 'all' && (activeBarangay.id === b.id || scope === b.slug || (scope === 'daine1' && b.slug === 'daine-1') || (scope === 'daine2' && b.slug === 'daine-2'))
-                      return (
-                        <button
-                          key={b.id}
-                          type="button"
-                          onClick={() => {
-                            setTenantSlug(b.slug)
-                            setScope(b.slug === 'daine-1' ? 'daine1' : b.slug === 'daine-2' ? 'daine2' : b.slug)
-                            setScopeOpen(false)
-                          }}
-                          className={`w-full flex items-center justify-between min-h-[44px] px-3 py-2 text-xs rounded-lg font-semibold transition-colors cursor-pointer ${
-                            isSelected
-                              ? 'bg-primary/10 text-primary font-bold shadow-xs'
-                              : 'hover:bg-accent hover:text-accent-foreground text-foreground'
-                          }`}
-                        >
-                          <div className="text-left">
-                            <span className="block font-medium">{b.name}</span>
-                            <span className="block text-xs text-muted-foreground">{b.code_prefix} &bull; {b.municipality}</span>
-                          </div>
-                          {isSelected && <Check className="h-4 w-4 text-primary font-bold ml-2 shrink-0" />}
-                        </button>
-                      )
-                    })}
+                    <div className="max-h-60 overflow-y-auto space-y-1 pr-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setScope('all')
+                          setScopeOpen(false)
+                        }}
+                        className={`w-full flex items-center justify-between min-h-[44px] px-3 py-2 text-xs rounded-lg font-semibold transition-colors cursor-pointer ${
+                          scope === 'all'
+                            ? 'bg-primary/10 text-primary font-bold shadow-xs'
+                            : 'hover:bg-accent hover:text-accent-foreground text-foreground'
+                        }`}
+                      >
+                        <div className="text-left">
+                          <span className="block font-semibold">All Barangays</span>
+                          <span className="block text-[11px] text-muted-foreground">Universal portal view</span>
+                        </div>
+                        {scope === 'all' && <Check className="h-4 w-4 text-primary font-bold" />}
+                      </button>
+                      {filteredBarangays.map((b) => {
+                        const isSelected = scope !== 'all' && (activeBarangay.id === b.id || scope === b.slug || (scope === 'daine1' && b.slug === 'daine-1') || (scope === 'daine2' && b.slug === 'daine-2'))
+                        return (
+                          <button
+                            key={b.id}
+                            type="button"
+                            onClick={() => {
+                              setTenantSlug(b.slug)
+                              setScope(b.slug === 'daine-1' ? 'daine1' : b.slug === 'daine-2' ? 'daine2' : b.slug)
+                              setScopeOpen(false)
+                            }}
+                            className={`w-full flex items-center justify-between min-h-[44px] px-3 py-2 text-xs rounded-lg font-semibold transition-colors cursor-pointer ${
+                              isSelected
+                                ? 'bg-primary/10 text-primary font-bold shadow-xs'
+                                : 'hover:bg-accent hover:text-accent-foreground text-foreground'
+                            }`}
+                          >
+                            <div className="text-left">
+                              <span className="block font-medium">{b.name}</span>
+                              <span className="block text-xs text-muted-foreground">{b.code_prefix} &bull; {b.municipality}, {b.province}</span>
+                            </div>
+                            {isSelected && <Check className="h-4 w-4 text-primary font-bold ml-2 shrink-0" />}
+                          </button>
+                        )
+                      })}
+                      {filteredBarangays.length === 0 && (
+                        <p className="text-xs text-center py-4 text-muted-foreground">No matching barangays</p>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -548,15 +584,17 @@ export function NavBar() {
               </kbd>
             </button>
 
-            {/* Notifications Popover Drawer */}
-            <NotificationBell userId={user?.id} />
+            {/* Notifications Popover Drawer (Desktop only - accessible in mobile drawer) */}
+            <div className="hidden sm:block">
+              <NotificationBell userId={user?.id} />
+            </div>
 
             {/* Theme Toggle */}
             <ThemeToggle />
 
-            {/* User Avatar Dropdown / Sign-In Button */}
+            {/* User Avatar Dropdown / Sign-In Button (Desktop only - accessible in mobile drawer) */}
             {user ? (
-              <div className="relative" ref={userMenuRef}>
+              <div className="relative hidden sm:block" ref={userMenuRef}>
                 <button
                   onClick={() => setUserMenuOpen((prev) => !prev)}
                   aria-expanded={userMenuOpen}
@@ -684,7 +722,19 @@ export function NavBar() {
                   <span>{isLocating ? 'Detecting via GPS...' : 'Locate Me (Detect Nearest Barangay)'}</span>
                 </button>
 
-                <div className="flex flex-wrap gap-1.5 p-1 bg-black/25 rounded-xl">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/60 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={scopeSearch}
+                    onChange={(e) => setScopeSearch(e.target.value)}
+                    placeholder="Filter barangays..."
+                    aria-label="Filter registered barangays"
+                    className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-black/30 border border-white/20 rounded-xl text-white placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-white/40"
+                  />
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 p-1 bg-black/25 rounded-xl max-h-48 overflow-y-auto">
                   <button
                     type="button"
                     onClick={() => setScope('all')}
@@ -696,7 +746,7 @@ export function NavBar() {
                   >
                     All Barangays
                   </button>
-                  {barangays.map((b) => {
+                  {filteredBarangays.map((b) => {
                     const isSelected = scope !== 'all' && (activeBarangay.id === b.id || scope === b.slug || (scope === 'daine1' && b.slug === 'daine-1') || (scope === 'daine2' && b.slug === 'daine-2'))
                     return (
                       <button
@@ -716,6 +766,9 @@ export function NavBar() {
                       </button>
                     )
                   })}
+                  {filteredBarangays.length === 0 && (
+                    <p className="w-full text-center text-xs py-2 text-white/60">No barangays found</p>
+                  )}
                 </div>
               </div>
             )}

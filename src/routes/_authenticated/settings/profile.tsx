@@ -1,7 +1,8 @@
-import { useState, useRef, type ChangeEvent } from 'react'
+import { useState, useRef, useMemo, type ChangeEvent } from 'react'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { getTenantBarangay } from '#/server/tenant'
+import { useTenant } from '#/lib/tenant/TenantContext'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -147,13 +148,14 @@ const PUROK_OPTIONS = OFFICIAL_PUROKS
 
 function ProfileSettingsPage() {
   const { user, profile } = Route.useLoaderData() ?? {}
+  const { barangays, activeBarangay } = useTenant()
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
 
-  const defaultBarangay = (profile?.barangay as 'daine_1' | 'daine_2') || 
-    (user?.user_metadata?.barangay as 'daine_1' | 'daine_2') || 
-    'daine_1'
+  const defaultBarangay = (profile?.barangay as string) || 
+    (user?.user_metadata?.barangay as string) || 
+    activeBarangay.slug.replace('-', '_')
 
   const defaultPurok = profile?.purok || user?.user_metadata?.purok || 'Purok 1'
 
@@ -180,6 +182,22 @@ function ProfileSettingsPage() {
   const birthDateValue = form.watch('birth_date')
   const calculatedAge = birthDateValue ? calculateAge(birthDateValue) : null
   const seniorCitizen = birthDateValue ? isSeniorCitizen(birthDateValue) : false
+
+  const currentSelectedBarangayObj = useMemo(() => {
+    if (!selectedBarangay) return activeBarangay
+    const cleanSlug = selectedBarangay.replace('_', '-')
+    return (
+      barangays.find((b) => b.slug === cleanSlug || b.id === selectedBarangay || b.slug === selectedBarangay) ||
+      activeBarangay
+    )
+  }, [selectedBarangay, barangays, activeBarangay])
+
+  const dynamicPuroks = useMemo(() => {
+    if (currentSelectedBarangayObj.puroks && currentSelectedBarangayObj.puroks.length > 0) {
+      return currentSelectedBarangayObj.puroks
+    }
+    return PUROK_OPTIONS
+  }, [currentSelectedBarangayObj.puroks])
 
   const handleAvatarFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -238,7 +256,7 @@ function ProfileSettingsPage() {
               Official Civic Registry
             </Badge>
             <Badge variant="secondary" className="text-xs font-semibold">
-              {selectedBarangay === 'daine_2' ? 'Barangay Daine 2' : 'Barangay Daine 1'}
+              {currentSelectedBarangayObj.name}
             </Badge>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
@@ -540,53 +558,48 @@ function ProfileSettingsPage() {
                   Barangay Jurisdiction <span className="text-destructive">*</span>
                 </Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <label
-                    className={`flex items-center justify-between p-3.5 rounded-xl border-2 cursor-pointer transition-all min-h-[48px] btn-tactile ${
-                      selectedBarangay === 'daine_1'
-                        ? 'border-[#0038A8] bg-[#0038A8]/10 dark:bg-sky-950/30 text-foreground font-bold shadow-xs'
-                        : 'border-border/80 bg-background hover:bg-muted/50 text-muted-foreground'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <input
-                        type="radio"
-                        value="daine_1"
-                        {...form.register('barangay')}
-                        className="h-4 w-4 text-[#0038A8] focus:ring-[#0038A8]"
-                      />
-                      <div>
-                        <div className="text-sm font-bold text-foreground">Barangay Daine 1</div>
-                        <div className="text-[11px] text-muted-foreground">Main Administrative Zone</div>
-                      </div>
-                    </div>
-                    {selectedBarangay === 'daine_1' && (
-                      <Badge className="bg-[#0038A8] text-white text-[11px] font-bold uppercase tracking-wider px-2 py-0.5">Selected</Badge>
-                    )}
-                  </label>
+                  {barangays.map((b) => {
+                    const isSelected =
+                      selectedBarangay === b.slug ||
+                      selectedBarangay === b.slug.replace('-', '_') ||
+                      selectedBarangay === b.id ||
+                      currentSelectedBarangayObj.id === b.id
 
-                  <label
-                    className={`flex items-center justify-between p-3.5 rounded-xl border-2 cursor-pointer transition-all min-h-[48px] btn-tactile ${
-                      selectedBarangay === 'daine_2'
-                        ? 'border-[#0038A8] bg-[#0038A8]/10 dark:bg-sky-950/30 text-foreground font-bold shadow-xs'
-                        : 'border-border/80 bg-background hover:bg-muted/50 text-muted-foreground'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <input
-                        type="radio"
-                        value="daine_2"
-                        {...form.register('barangay')}
-                        className="h-4 w-4 text-[#0038A8] focus:ring-[#0038A8]"
-                      />
-                      <div>
-                        <div className="text-sm font-bold text-foreground">Barangay Daine 2</div>
-                        <div className="text-[11px] text-muted-foreground">Community & Agro Zone</div>
-                      </div>
-                    </div>
-                    {selectedBarangay === 'daine_2' && (
-                      <Badge className="bg-[#0038A8] text-white text-[11px] font-bold uppercase tracking-wider px-2 py-0.5">Selected</Badge>
-                    )}
-                  </label>
+                    return (
+                      <label
+                        key={b.id || b.slug}
+                        className={`flex items-center justify-between p-3.5 rounded-xl border-2 cursor-pointer transition-all min-h-[48px] btn-tactile ${
+                          isSelected
+                            ? 'border-[#0038A8] bg-[#0038A8]/10 dark:bg-sky-950/30 text-foreground font-bold shadow-xs'
+                            : 'border-border/80 bg-background hover:bg-muted/50 text-muted-foreground'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <input
+                            type="radio"
+                            value={b.slug}
+                            checked={isSelected}
+                            {...form.register('barangay')}
+                            onChange={() => {
+                              form.setValue('barangay', b.slug, { shouldDirty: true, shouldValidate: true })
+                            }}
+                            className="h-4 w-4 text-[#0038A8] focus:ring-[#0038A8]"
+                          />
+                          <div>
+                            <div className="text-sm font-bold text-foreground">{b.name}</div>
+                            <div className="text-[11px] text-muted-foreground">
+                              {b.municipality}, {b.province}
+                            </div>
+                          </div>
+                        </div>
+                        {isSelected && (
+                          <Badge className="bg-[#0038A8] text-white text-[11px] font-bold uppercase tracking-wider px-2 py-0.5">
+                            Selected
+                          </Badge>
+                        )}
+                      </label>
+                    )
+                  })}
                 </div>
                 {form.formState.errors.barangay && (
                   <p className="text-xs font-semibold text-destructive mt-1">
@@ -605,13 +618,13 @@ function ProfileSettingsPage() {
                     Select your designated residential purok
                   </span>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
-                  {PUROK_OPTIONS.slice(0, 4).map((p) => (
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {dynamicPuroks.map((p) => (
                     <button
                       key={p}
                       type="button"
                       onClick={() => form.setValue('purok', p, { shouldDirty: true, shouldValidate: true })}
-                      className={`min-h-[44px] px-3 py-2 text-xs font-bold rounded-xl border transition-all btn-tactile cursor-pointer ${
+                      className={`min-h-[38px] px-3 py-1.5 text-xs font-bold rounded-xl border transition-all btn-tactile cursor-pointer ${
                         selectedPurok === p
                           ? 'border-[#0038A8] bg-[#0038A8] text-white shadow-xs'
                           : 'border-border/80 bg-background hover:bg-muted text-foreground'
@@ -643,7 +656,7 @@ function ProfileSettingsPage() {
                 <Textarea
                   id="address"
                   {...form.register('address')}
-                  placeholder="House Number, Street / Road Name, Landmark..."
+                  placeholder={`House Number, Street / Road Name, Landmark in ${currentSelectedBarangayObj.name}...`}
                   rows={3}
                   className="rounded-xl border-border focus-visible:ring-primary/40 resize-none text-sm"
                   aria-invalid={!!form.formState.errors.address}

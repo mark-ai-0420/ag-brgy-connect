@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { createSupabaseServerClient } from '#/lib/supabase.server'
 import { useBarangayScope } from '#/hooks/useBarangayScope'
+import { useTenant } from '#/lib/tenant/TenantContext'
 import { format, parseISO } from 'date-fns'
 import { useState, useMemo, type ReactNode, type FormEvent } from 'react'
 import {
@@ -69,21 +70,21 @@ export const Route = createFileRoute('/')({
   head: () => ({
     meta: [
       {
-        title: 'BrgyConnect | Barangay Daine, Indang, Cavite: Unified Digital Portal',
+        title: 'BrgyConnect | Official Civic Portal & Public E-Services',
       },
       {
         name: 'description',
         content:
-          'Official digital civic portal for Barangay Daine 1 and Daine 2, Indang, Cavite. Track document requests, view announcements, explore local MSMEs, and contact emergency responders 24/7.',
+          'Official digital civic portal for citizen document requests, incident blotter reporting, local MSME directory, and 24/7 emergency response.',
       },
       {
         property: 'og:title',
-        content: 'BrgyConnect | Barangay Daine, Indang, Cavite: Unified Digital Portal',
+        content: 'BrgyConnect | Official Civic Portal & Public E-Services',
       },
       {
         property: 'og:description',
         content:
-          'Official digital civic portal for Barangay Daine 1 and Daine 2, Indang, Cavite. Track document requests, view announcements, explore local MSMEs, and contact emergency responders 24/7.',
+          'Official digital civic portal for citizen document requests, incident blotter reporting, local MSME directory, and 24/7 emergency response.',
       },
       {
         property: 'og:type',
@@ -125,65 +126,13 @@ interface Step {
   description: string
 }
 
-/* ── Bento Grid Definition ───────────────────────────────────────────────── */
-const bentoServices: BentoServiceCard[] = [
-  {
-    to: '/documents',
-    icon: <FileCheck className="h-8 w-8 text-primary" />,
-    badge: 'Official E-Services',
-    title: 'Online Document Requests & Clearances',
-    description:
-      'Request Barangay Clearance, Indigency Certificate, Residency Proof, and Business Clearances 24/7 without standing in line. Real-time digital status verification.',
-    color: 'text-primary',
-    accentColor: 'border-primary/20 bg-primary/10 text-primary',
-    bgColor: '',
-    colSpan: 'lg:col-span-7',
-    actionLabel: 'Request Document',
-    highlights: ['Barangay Clearance', 'Indigency Certificate', 'Certificate of Residency', 'Business Permit'],
-  },
-  {
-    to: '/complaints',
-    icon: <ShieldAlert className="h-8 w-8 text-primary" />,
-    badge: 'Public Safety Desk',
-    title: 'Incident & Blotter Reporting',
-    description:
-      'File complaints, community grievances, or safety concerns securely with direct desk routing to Barangay Peace & Order officers.',
-    color: 'text-primary',
-    accentColor: 'border-border bg-muted/60 text-foreground',
-    bgColor: '',
-    colSpan: 'lg:col-span-5',
-    actionLabel: 'File Incident Report',
-    highlights: ['Blotter Records', 'Lupon Mediation', 'Safety Alerts'],
-  },
-  {
-    to: '/directory',
-    icon: <Store className="h-8 w-8 text-primary" />,
-    badge: 'Commercial Hub',
-    title: 'Verified Business Directory',
-    description:
-      'Discover registered local enterprises, agriculture suppliers, services, and neighborhood trade across Barangay Daine I & II.',
-    color: 'text-primary',
-    accentColor: 'border-border bg-muted/60 text-foreground',
-    bgColor: '',
-    colSpan: 'lg:col-span-5',
-    actionLabel: 'Explore Directory',
-    highlights: ['Registered Stores', 'Local Services', 'Agri Products'],
-  },
-  {
-    to: '/emergency',
-    icon: <Phone className="h-8 w-8 text-rose-600 dark:text-rose-400" />,
-    badge: '24/7 Response Hotline',
-    title: 'Emergency Hotlines & Responders',
-    description:
-      'Immediate speed-dial access to Indang Police (PNP), BFP Fire Station, Municipal Health Office (MHO) RHU Ambulance, and Barangay Tanod.',
-    color: 'text-rose-600 dark:text-rose-400',
-    accentColor: 'border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-400',
-    bgColor: '',
-    colSpan: 'lg:col-span-7',
-    actionLabel: 'Emergency Contacts',
-    highlights: ['PNP Indang', 'BFP Fire Rescue', 'Cavite RHU Ambulance', 'Tanod Patrol'],
-  },
-]
+/* ── Step Definition ──────────────────────────────────────────────────────── */
+interface Step {
+  number: string
+  icon: ReactNode
+  title: string
+  description: string
+}
 
 const steps: Step[] = [
   {
@@ -215,6 +164,74 @@ function Home() {
   const recentAnnouncements = loaderData?.recentAnnouncements ?? []
   const upcomingEvents = loaderData?.upcomingEvents ?? []
   const { scope: activeBarangayScope } = useBarangayScope()
+  const { activeBarangay } = useTenant()
+
+  const bentoServices: BentoServiceCard[] = useMemo(
+    () => [
+      {
+        to: '/documents',
+        icon: <FileCheck className="h-8 w-8 text-primary" />,
+        badge: 'Official E-Services',
+        title: 'Online Document Requests & Clearances',
+        description:
+          'Request Barangay Clearance, Indigency Certificate, Residency Proof, and Business Clearances 24/7 without standing in line. Real-time digital status verification.',
+        color: 'text-primary',
+        accentColor: 'border-primary/20 bg-primary/10 text-primary',
+        bgColor: '',
+        colSpan: 'lg:col-span-7',
+        actionLabel: 'Request Document',
+        highlights: ['Barangay Clearance', 'Indigency Certificate', 'Certificate of Residency', 'Business Permit'],
+      },
+      {
+        to: '/complaints',
+        icon: <ShieldAlert className="h-8 w-8 text-primary" />,
+        badge: 'Public Safety Desk',
+        title: 'Incident & Blotter Reporting',
+        description:
+          'File complaints, community grievances, or safety concerns securely with direct desk routing to Barangay Peace & Order officers.',
+        color: 'text-primary',
+        accentColor: 'border-border bg-muted/60 text-foreground',
+        bgColor: '',
+        colSpan: 'lg:col-span-5',
+        actionLabel: 'File Incident Report',
+        highlights: ['Blotter Records', 'Lupon Mediation', 'Safety Alerts'],
+      },
+      {
+        to: '/directory',
+        icon: <Store className="h-8 w-8 text-primary" />,
+        badge: 'Commercial Hub',
+        title: 'Verified Business Directory',
+        description:
+          `Discover registered local enterprises, agriculture suppliers, services, and neighborhood trade across ${activeBarangay?.name || 'the community'}.`,
+        color: 'text-primary',
+        accentColor: 'border-border bg-muted/60 text-foreground',
+        bgColor: '',
+        colSpan: 'lg:col-span-5',
+        actionLabel: 'Explore Directory',
+        highlights: ['Registered Stores', 'Local Services', 'Agri Products'],
+      },
+      {
+        to: '/emergency',
+        icon: <Phone className="h-8 w-8 text-rose-600 dark:text-rose-400" />,
+        badge: '24/7 Response Hotline',
+        title: 'Emergency Hotlines & Responders',
+        description:
+          `Immediate speed-dial access to ${activeBarangay?.municipality || 'Municipal'} Police (PNP), BFP Fire Station, Municipal Health Office (MHO) RHU Ambulance, and ${activeBarangay?.name || 'Barangay'} Tanod.`,
+        color: 'text-rose-600 dark:text-rose-400',
+        accentColor: 'border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-400',
+        bgColor: '',
+        colSpan: 'lg:col-span-7',
+        actionLabel: 'Emergency Contacts',
+        highlights: [
+          `PNP ${activeBarangay?.municipality || 'Indang'}`,
+          'BFP Fire Rescue',
+          'RHU Ambulance',
+          'Tanod Patrol',
+        ],
+      },
+    ],
+    [activeBarangay]
+  )
 
   const handleTrackSubmit = (e?: FormEvent) => {
     if (e) e.preventDefault()
@@ -270,20 +287,32 @@ function Home() {
               {/* High-contrast Eyebrow Badge */}
               <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-white text-xs sm:text-sm font-semibold shadow-xs">
                 <span className="inline-block h-2 w-2 rounded-full bg-[#E5A824]" />
-                <span className="tracking-wide">Barangay Daine, Indang, Cavite</span>
+                <span className="tracking-wide">
+                  {activeBarangayScope === 'all'
+                    ? 'Republika ng Pilipinas • Local Government Portal'
+                    : `${activeBarangay.name} • ${activeBarangay.municipality}, ${activeBarangay.province}`}
+                </span>
               </div>
 
               {/* Large Bold Hero Typography */}
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.08] tracking-tight">
-                Barangay Daine
-                <br />
-                <span className="text-[#F3BA42]">
-                  Connected.
-                </span>
+                {activeBarangay ? (
+                  <>
+                    {activeBarangay.name}
+                    <br />
+                    <span className="text-[#F3BA42]">Connected.</span>
+                  </>
+                ) : (
+                  <>
+                    Connecting
+                    <br />
+                    <span className="text-[#F3BA42]">Philippine Barangays.</span>
+                  </>
+                )}
               </h1>
 
               <p className="text-base sm:text-lg md:text-xl text-white/90 max-w-2xl leading-relaxed font-normal">
-                Official digital portal of Barangay Daine, Indang, Cavite for public services, document clearances, and 24/7 community assistance.
+                Official digital civic portal of {activeBarangay.name}, {activeBarangay.municipality}, {activeBarangay.province} for citizen clearances, incident reporting, and 24/7 community assistance.
               </p>
 
               {/* CTAs with >=44px touch targets & WCAG AAA contrast */}
@@ -337,7 +366,7 @@ function Home() {
                       type="text"
                       value={trackingInput}
                       onChange={(e) => setTrackingInput(e.target.value.toUpperCase())}
-                      placeholder="e.g. BRGY-2026-0042"
+                      placeholder={`e.g. ${activeBarangay.code_prefix || 'BD1'}-2026-0042`}
                       className="min-h-[48px] pl-11 pr-11 text-sm sm:text-base font-mono uppercase tracking-wider rounded-xl bg-background text-foreground border-input shadow-inner focus-visible:ring-2 focus-visible:ring-primary"
                       aria-label="Document Tracking Reference Number"
                     />
@@ -364,27 +393,27 @@ function Home() {
                   </Button>
                 </form>
 
-                {/* Sample Reference Chips (BRGY-2026-0042, BRGY-2026-0089) with >=44px touch targets */}
+                {/* Sample Reference Chips with >=44px touch targets */}
                 <div className="pt-3 border-t border-border/40 space-y-2">
                   <span className="text-xs text-muted-foreground font-semibold block">Quick Reference Samples:</span>
                   <div className="flex flex-wrap items-center gap-2.5">
                     <button
                       type="button"
-                      onClick={() => handleSampleClick('BRGY-2026-0042')}
+                      onClick={() => handleSampleClick(`${activeBarangay.code_prefix || 'BD1'}-2026-0042`)}
                       className="min-h-[44px] px-3.5 py-2 inline-flex items-center gap-2 text-foreground bg-muted/60 hover:bg-muted font-mono text-xs sm:text-sm font-semibold border border-border rounded-xl transition-all cursor-pointer shadow-2xs active:scale-95"
-                      aria-label="Track sample code BRGY-2026-0042"
+                      aria-label={`Track sample code ${activeBarangay.code_prefix || 'BD1'}-2026-0042`}
                     >
                       <span className="h-2 w-2 rounded-full bg-primary" />
-                      BRGY-2026-0042
+                      {activeBarangay.code_prefix || 'BD1'}-2026-0042
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleSampleClick('BRGY-2026-0089')}
+                      onClick={() => handleSampleClick(`${activeBarangay.code_prefix || 'BD1'}-2026-0089`)}
                       className="min-h-[44px] px-3.5 py-2 inline-flex items-center gap-2 text-foreground bg-muted/60 hover:bg-muted font-mono text-xs sm:text-sm font-semibold border border-border rounded-xl transition-all cursor-pointer shadow-2xs active:scale-95"
-                      aria-label="Track sample code BRGY-2026-0089"
+                      aria-label={`Track sample code ${activeBarangay.code_prefix || 'BD1'}-2026-0089`}
                     >
                       <span className="h-2 w-2 rounded-full bg-primary" />
-                      BRGY-2026-0089
+                      {activeBarangay.code_prefix || 'BD1'}-2026-0089
                     </button>
                   </div>
                 </div>

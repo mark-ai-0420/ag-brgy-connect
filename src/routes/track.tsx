@@ -37,6 +37,7 @@ import { Badge } from '#/components/ui/badge'
 import { Separator } from '#/components/ui/separator'
 import { trackDocumentRequest, type DocumentTrackingResult, type TrackingStage } from '#/server/documents'
 import { useNetworkStatus } from '#/hooks/useNetworkStatus'
+import { useTenant } from '#/lib/tenant/TenantContext'
 
 export interface CachedTrackingRecord {
   code: string
@@ -53,21 +54,21 @@ export const Route = createFileRoute('/track')({
   head: () => ({
     meta: [
       {
-        title: 'Document Tracking & Public Verification | Barangay Daine',
+        title: 'Document Tracking & Public Verification | BrgyConnect',
       },
       {
         name: 'description',
         content:
-          'Track the live issuance status of your Barangay Clearance, Certificate of Indigency, Residency, or Business Clearance in Barangay Daine, Indang, Cavite.',
+          'Track the live issuance status of your Barangay Clearance, Certificate of Indigency, Residency, or Business Clearance across partner barangays.',
       },
       {
         property: 'og:title',
-        content: 'Document Tracking & Public Verification | Barangay Daine',
+        content: 'Document Tracking & Public Verification | BrgyConnect',
       },
       {
         property: 'og:description',
         content:
-          'Track the live issuance status of your Barangay Clearance, Certificate of Indigency, Residency, or Business Clearance in Barangay Daine, Indang, Cavite.',
+          'Track the live issuance status of your Barangay Clearance, Certificate of Indigency, Residency, or Business Clearance across partner barangays.',
       },
       {
         property: 'og:type',
@@ -198,6 +199,7 @@ function TrackDocumentRoute() {
   const searchParams = Route.useSearch()
   const navigate = useNavigate({ from: '/track' })
   const { isOffline } = useNetworkStatus()
+  const { activeBarangay, barangays } = useTenant()
 
   const [inputCode, setInputCode] = useState(searchParams.code || '')
   const [activeCode, setActiveCode] = useState(searchParams.code || '')
@@ -418,7 +420,7 @@ function TrackDocumentRoute() {
         <div className="container mx-auto max-w-4xl text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-[#FCD116] text-xs font-bold mb-4 backdrop-blur-md shadow-xs">
             <SearchCheck className="h-4 w-4" />
-            <span>Public Document Registry &bull; Real-time Verification</span>
+            <span>{activeBarangay ? `${activeBarangay.name} Registry` : 'Public Document Registry'} &bull; Real-time Verification</span>
           </div>
 
           {/* Page Main Heading (h1) */}
@@ -427,7 +429,7 @@ function TrackDocumentRoute() {
           </h1>
 
           <p className="text-white/85 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed mb-8 font-medium">
-            Check the live issuance status of your Barangay Clearance, Certificate of Indigency, Residency, or Business Clearance in real-time. No login required.
+            Check the live issuance status of your Barangay Clearance, Certificate of Indigency, Residency, or Business Clearance in real-time{activeBarangay ? ` for ${activeBarangay.name}` : ''}. No login required.
           </p>
 
           {/* Search Box Card */}
@@ -443,7 +445,7 @@ function TrackDocumentRoute() {
                 type="text"
                 value={inputCode}
                 onChange={(e) => setInputCode(e.target.value.toUpperCase())}
-                placeholder="Enter Reference Code (e.g. BD1-8F3A29D1 or Request ID)"
+                placeholder={`Enter Reference Code (e.g. ${activeBarangay?.code_prefix || 'BD1'}-8F3A29D1 or Request ID)`}
                 aria-label="Enter document tracking reference code"
                 className="pl-11 pr-4 min-h-[48px] h-12 text-sm sm:text-base font-mono uppercase rounded-xl bg-background border-input shadow-inner focus-visible:ring-[#0038A8]"
                 autoCapitalize="characters"
@@ -475,7 +477,10 @@ function TrackDocumentRoute() {
           {/* Quick Sample Reference Badges (min 44px touch target) */}
           <div className="flex flex-wrap items-center justify-center gap-2.5 mt-5 text-xs text-white/80">
             <span className="font-semibold text-white/90">Sample Codes:</span>
-            {['BD1-8F3A29D1', 'BD2-4E90B17A', 'BD1-2026-0881'].map((sample) => (
+            {(barangays.length > 0
+              ? barangays.slice(0, 3).map((b, i) => `${b.code_prefix || `BD${i + 1}`}-${['8F3A29D1', '4E90B17A', '2026-0881'][i % 3]}`)
+              : ['BD1-8F3A29D1', 'BD2-4E90B17A', 'BD1-2026-0881']
+            ).map((sample) => (
               <button
                 key={sample}
                 type="button"
@@ -1077,7 +1082,20 @@ function TrackDocumentRoute() {
                   </h3>
                   <ul className="list-disc pl-4 space-y-1.5">
                     <li>Double-check for any typos or missing hyphens in your Reference Code.</li>
-                    <li>Ensure the prefix matches your issuing barangay (e.g. <strong>BD1-</strong> for Daine 1 or <strong>BD2-</strong> for Daine 2).</li>
+                    <li>
+                      Ensure the prefix matches your issuing barangay {barangays.length > 0 ? (
+                        <span>(e.g.{' '}
+                          {barangays.slice(0, 3).map((b, idx) => (
+                            <span key={b.id || idx}>
+                              {idx > 0 && ' or '}
+                              <strong>{b.code_prefix}-</strong> for {b.name}
+                            </span>
+                          ))}
+                        )</span>
+                      ) : (
+                        <span>(e.g. <strong>{activeBarangay?.code_prefix || 'BD1'}-</strong> for {activeBarangay?.name || 'your barangay'})</span>
+                      )}.
+                    </li>
                     <li>If you submitted the request within the last 5 minutes, please allow a moment for the database to sync.</li>
                     <li>You can also look up the full 36-character Request UUID from your email confirmation or resident dashboard.</li>
                   </ul>
